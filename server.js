@@ -5,7 +5,7 @@ import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Secret from './models/Secret.js';
 import { body, validationResult } from 'express-validator';
-import { encryptHybrid, decryptHybrid } from './CryptoUtils.js';
+import { encryptHybrid, decryptHybrid } from './cryptoUtils.js';
 
 dotenv.config();
 
