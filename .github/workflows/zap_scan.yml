@@ -55,8 +55,11 @@ jobs:
       with:
         target: 'https://localhost:3000'
         cmd_options: '-config scanner.threadPerHost=5 -config scanner.attackOnStart=true -config api.disablekey=true'
-        fail_action: false  # Don't break the build on vuln findings
+        fail_action: false
         allow_issue_writing: true
+
+    - name: 🗂️ Copy report to workspace
+      run: cp /zap/wrk/report_html.html ./report_html.html
 
     - name: 📁 Upload ZAP report
       uses: actions/upload-artifact@v4
