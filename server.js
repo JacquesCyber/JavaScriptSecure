@@ -93,9 +93,11 @@ app.get('/health', (req, res) => {
 });
 
 // Connect to MongoDB, then start HTTPS server
+// Connect to MongoDB, then start HTTPS server
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB via Mongoose');
+    
     https.createServer({ key, cert }, app).listen(port, '0.0.0.0', () => {
       console.log(`✅ HTTPS server running at https://0.0.0.0:${port}`);
     });
