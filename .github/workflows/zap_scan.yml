@@ -10,6 +10,10 @@ jobs:
   zap_scan:
     runs-on: ubuntu-latest
     
+    env:
+      MONGODB_URI: mongodb://localhost:27017/test_db
+      NODE_ENV: test
+    
     services:
       mongo:
         image: mongo:latest
@@ -30,9 +34,28 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
         
-      - name: 🔐 Create dummy SSL cert
+      - name: 🔐 Create SSL certificates and keys
         run: |
-          openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
+          # Create RSA private key (4096 bits for security)
+          openssl genrsa -out private.pem 4096
+          
+          # Extract public key from private key (for cryptoUtils.js)
+          openssl rsa -in private.pem -pubout -out public.pem
+          
+          # Create self-signed certificate for HTTPS server
+          openssl req -x509 -new -key private.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
+          
+          # Create key.pem (alias for private key - server.js expects this)
+          cp private.pem key.pem
+          
+          echo "✅ Generated all required certificate files:"
+          ls -la *.pem
+          
+          echo "🔍 Verifying files exist:"
+          echo "private.pem: $(test -f private.pem && echo '✅' || echo '❌')"
+          echo "public.pem: $(test -f public.pem && echo '✅' || echo '❌')"
+          echo "cert.pem: $(test -f cert.pem && echo '✅' || echo '❌')"
+          echo "key.pem: $(test -f key.pem && echo '✅' || echo '❌')"
           
       - name: 🚀 Start app
         run: |
