@@ -1,0 +1,65 @@
+name: ZAP Baseline Scan
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  zap_scan:
+    runs-on: ubuntu-latest
+
+    services:
+      mongo:
+        image: mongo
+        ports:
+          - 27017:27017
+        options: --health-cmd "mongosh --eval 'db.stats()'" --health-interval 10s --health-timeout 5s --health-retries 5
+
+    steps:
+    - name: 🧾 Checkout code
+      uses: actions/checkout@v4
+
+    - name: 🟢 Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '20'
+
+    - name: 📦 Install dependencies
+      run: npm install
+
+    - name: 🔐 Create dummy SSL cert
+      run: |
+        openssl req -x509 -newkey rsa:4096 -keyout key.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
+
+    - name: 🚀 Start app
+      run: |
+        npm run dev &
+        echo "Waiting for server..."
+        sleep 10
+
+    - name: 🧪 Wait for /health endpoint
+      run: |
+        for i in {1..30}; do
+          if curl -k --silent https://localhost:3000/health; then
+            echo "Server is up!"
+            break
+          fi
+          echo "Waiting..."
+          sleep 2
+        done
+
+    - name: 🛡️ Run OWASP ZAP Baseline Scan
+      uses: zaproxy/action-baseline@v0.10.0
+      with:
+        target: 'https://localhost:3000'
+        cmd_options: '-config scanner.threadPerHost=5 -config scanner.attackOnStart=true -config api.disablekey=true'
+        fail_action: false  # Don't break the build on vuln findings
+        allow_issue_writing: true
+
+    - name: 📁 Upload ZAP report
+      uses: actions/upload-artifact@v4
+      with:
+        name: zap-report
+        path: report_html.html

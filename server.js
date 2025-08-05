@@ -1,15 +1,20 @@
-// server.js
 import express from 'express';
 import https from 'https';
 import fs from 'fs';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
 import Secret from './models/Secret.js';
+import { body, validationResult } from 'express-validator';
+import { encryptHybrid, decryptHybrid } from './CryptoUtils.js';
 
 dotenv.config();
 
 const app = express();
 const port = 3000;
+
+// HTTPS certs — read once at top
+const key = fs.readFileSync('./key.pem');
+const cert = fs.readFileSync('./cert.pem');
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -17,22 +22,9 @@ app.use(express.json());
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
 
-// MongoDB connection
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => {
-    console.log('✅ Connected to MongoDB via Mongoose');
-  })
-  .catch((err) => {
-    console.error('❌ Mongoose connection error:', err);
-  });
-
-// POST /store route
-import { body, validationResult } from 'express-validator';
-import { encryptHybrid, decryptHybrid } from './CryptoUtils.js';
-
 // POST /store route with validation and hybrid encryption
 app.post('/store',
-  body('data').trim().isLength({ min: 1 }).escape(), // 🔐 basic sanitization (may need improvement)
+  body('data').trim().isLength({ min: 1 }).escape(),
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
@@ -95,12 +87,19 @@ app.get('/', (req, res) => {
   res.send('🔐 HTTPS server is running securely on localhost!');
 });
 
-// HTTPS certs
-const key = fs.readFileSync('./key.pem');
-const cert = fs.readFileSync('./cert.pem');
-
-// Create HTTPS server
-https.createServer({ key, cert }, app).listen(port, () => {
-  console.log(`✅ HTTPS server running at https://localhost:${port}`);
+// Health check endpoint
+app.get('/health', (req, res) => {
+  res.sendStatus(200);
 });
 
+// Connect to MongoDB, then start HTTPS server
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => {
+    console.log('✅ Connected to MongoDB via Mongoose');
+    https.createServer({ key, cert }, app).listen(port, '0.0.0.0', () => {
+      console.log(`✅ HTTPS server running at https://0.0.0.0:${port}`);
+    });
+  })
+  .catch((err) => {
+    console.error('❌ Mongoose connection error:', err);
+  });
