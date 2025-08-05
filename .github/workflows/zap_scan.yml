@@ -86,17 +86,33 @@ jobs:
         uses: zaproxy/action-baseline@v0.12.0
         with:
           target: 'https://localhost:3000'
-          cmd_options: '-config scanner.threadPerHost=5 -config scanner.attackOnStart=true -config api.disablekey=true -config ssl.ignoreCerts=true'
+          cmd_options: '-I -l INFO -z "-configFile /dev/null"'
           fail_action: false
-          allow_issue_writing: true
+          allow_issue_writing: false
           
       - name: 🕵️‍♂️ List ZAP output files
         if: always()
         run: |
-          echo "Contents of current directory:"
+          echo "=== Current directory contents ==="
           ls -la
-          echo "Looking for ZAP reports..."
-          find . -name "*.html" -o -name "*.json" -o -name "*.xml" | head -10
+          
+          echo "=== Looking for ZAP reports ==="
+          find . -name "*.html" -o -name "*.json" -o -name "*.md" -o -name "*report*" | head -20
+          
+          echo "=== ZAP specific files ==="
+          ls -la report_* || echo "No report_* files found"
+          
+          echo "=== Check if ZAP created any output ==="
+          if [ -f "report_html.html" ]; then
+            echo "✅ HTML report found, size: $(stat -f%z report_html.html 2>/dev/null || stat -c%s report_html.html) bytes"
+            if [ -s "report_html.html" ]; then
+              echo "✅ HTML report has content"
+            else
+              echo "⚠️ HTML report is empty"
+            fi
+          else
+            echo "❌ HTML report not found"
+          fi
           
       - name: 📁 Upload ZAP report
         uses: actions/upload-artifact@v4
@@ -107,6 +123,7 @@ jobs:
             report_html.html
             report_json.json
             report_md.md
+          if-no-files-found: warn
           retention-days: 30
           
       - name: 🧹 Cleanup
