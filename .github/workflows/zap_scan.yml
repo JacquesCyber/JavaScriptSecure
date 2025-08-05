@@ -1,4 +1,4 @@
-name: ZAP Baseline Scan
+name: Security Scan
 
 on:
   pull_request:
@@ -7,12 +7,8 @@ on:
     branches: [main]
 
 jobs:
-  zap_scan:
+  security_scan:
     runs-on: ubuntu-latest
-    
-    env:
-      MONGODB_URI: mongodb://localhost:27017/test_db
-      NODE_ENV: test
     
     services:
       mongo:
@@ -20,6 +16,10 @@ jobs:
         ports:
           - 27017:27017
         options: --health-cmd "mongosh --eval 'db.stats()'" --health-interval 10s --health-timeout 5s --health-retries 5
+    
+    env:
+      MONGODB_URI: mongodb://localhost:27017/test_db
+      NODE_ENV: test
     
     steps:
       - name: 🧾 Checkout code
@@ -34,102 +34,56 @@ jobs:
       - name: 📦 Install dependencies
         run: npm ci
         
-      - name: 🔐 Create SSL certificates and keys
+      - name: 🔐 Create certificates (for crypto functions)
         run: |
-          # Create RSA private key (4096 bits for security)
-          openssl genrsa -out private.pem 4096
-          
-          # Extract public key from private key (for cryptoUtils.js)
+          # Create minimal certs for your crypto functions
+          openssl genrsa -out private.pem 2048
           openssl rsa -in private.pem -pubout -out public.pem
+          echo "✅ Created crypto certificates"
           
-          # Create self-signed certificate for HTTPS server
-          openssl req -x509 -new -key private.pem -out cert.pem -days 365 -nodes -subj "/CN=localhost"
-          
-          # Create key.pem (alias for private key - server.js expects this)
-          cp private.pem key.pem
-          
-          echo "✅ Generated all required certificate files:"
-          ls -la *.pem
-          
-          echo "🔍 Verifying files exist:"
-          echo "private.pem: $(test -f private.pem && echo '✅' || echo '❌')"
-          echo "public.pem: $(test -f public.pem && echo '✅' || echo '❌')"
-          echo "cert.pem: $(test -f cert.pem && echo '✅' || echo '❌')"
-          echo "key.pem: $(test -f key.pem && echo '✅' || echo '❌')"
-          
-      - name: 🚀 Start app
+      - name: 🚀 Start app (HTTP for testing)
         run: |
-          npm run dev &
+          npm run test:server &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
-          echo "Waiting for server to start..."
-          sleep 15
+          echo "🚀 Starting HTTP server for security testing..."
+          sleep 10
           
-      - name: 🧪 Wait for /health endpoint
+      - name: 🧪 Wait for health check
         run: |
-          for i in {1..30}; do
-            if curl -k --silent --fail https://localhost:3000/health; then
-              echo "✅ Server is up and healthy!"
+          for i in {1..15}; do
+            if curl --silent --fail http://localhost:3000/health; then
+              echo "✅ Server is healthy!"
               break
             fi
-            echo "⏳ Waiting for server... (attempt $i/30)"
-            sleep 3
+            echo "⏳ Waiting for server... ($i/15)"
+            sleep 2
           done
           
-          # Final check
-          if ! curl -k --silent --fail https://localhost:3000/health; then
-            echo "❌ Server failed to start properly"
+          # Verify server is actually running
+          if ! curl --silent --fail http://localhost:3000/health; then
+            echo "❌ Server failed to start"
             exit 1
           fi
           
-      - name: 🛡️ Run OWASP ZAP Baseline Scan
+      - name: 🛡️ Run OWASP ZAP Security Scan
         uses: zaproxy/action-baseline@v0.12.0
         with:
-          target: 'https://localhost:3000'
-          cmd_options: '-I -l INFO -z "-configFile /dev/null"'
+          target: 'http://localhost:3000'
           fail_action: false
-          allow_issue_writing: false
           
-      - name: 🕵️‍♂️ List ZAP output files
-        if: always()
-        run: |
-          echo "=== Current directory contents ==="
-          ls -la
-          
-          echo "=== Looking for ZAP reports ==="
-          find . -name "*.html" -o -name "*.json" -o -name "*.md" -o -name "*report*" | head -20
-          
-          echo "=== ZAP specific files ==="
-          ls -la report_* || echo "No report_* files found"
-          
-          echo "=== Check if ZAP created any output ==="
-          if [ -f "report_html.html" ]; then
-            echo "✅ HTML report found, size: $(stat -f%z report_html.html 2>/dev/null || stat -c%s report_html.html) bytes"
-            if [ -s "report_html.html" ]; then
-              echo "✅ HTML report has content"
-            else
-              echo "⚠️ HTML report is empty"
-            fi
-          else
-            echo "❌ HTML report not found"
-          fi
-          
-      - name: 📁 Upload ZAP report
+      - name: 📁 Upload security report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: zap-report-${{ github.run_number }}
-          path: |
-            report_html.html
-            report_json.json
-            report_md.md
-          if-no-files-found: warn
+          name: security-report-${{ github.run_number }}
+          path: report_html.html
           retention-days: 30
           
       - name: 🧹 Cleanup
         if: always()
         run: |
           if [ ! -z "$APP_PID" ]; then
-            echo "Stopping application (PID: $APP_PID)"
+            echo "🛑 Stopping server (PID: $APP_PID)"
             kill $APP_PID || true
           fi

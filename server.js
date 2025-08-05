@@ -1,5 +1,6 @@
 import express from 'express';
 import https from 'https';
+import http from 'http';
 import fs from 'fs';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
@@ -11,10 +12,6 @@ dotenv.config();
 
 const app = express();
 const port = 3000;
-
-// HTTPS certs — read once at top
-const key = fs.readFileSync('./key.pem');
-const cert = fs.readFileSync('./cert.pem');
 
 // Middleware to parse JSON
 app.use(express.json());
@@ -84,24 +81,46 @@ app.get('/secret/:id', async (req, res) => {
 
 // GET / route
 app.get('/', (req, res) => {
-  res.send('🔐 HTTPS server is running securely on localhost!');
+  const protocol = req.secure ? 'HTTPS' : 'HTTP';
+  res.send(`🔐 ${protocol} server is running securely!`);
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.sendStatus(200);
+  res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
-// Connect to MongoDB, then start HTTPS server
-// Connect to MongoDB, then start HTTPS server
+// Connect to MongoDB, then start appropriate server
 mongoose.connect(process.env.MONGODB_URI)
   .then(() => {
     console.log('✅ Connected to MongoDB via Mongoose');
     
-    https.createServer({ key, cert }, app).listen(port, '0.0.0.0', () => {
-      console.log(`✅ HTTPS server running at https://0.0.0.0:${port}`);
-    });
+    // Choose server type based on environment
+    if (process.env.NODE_ENV === 'test') {
+      // HTTP server for testing/CI/CD
+      http.createServer(app).listen(port, '0.0.0.0', () => {
+        console.log(`✅ HTTP server running at http://0.0.0.0:${port} (TEST MODE)`);
+      });
+    } else {
+      // HTTPS server for production
+      try {
+        const key = fs.readFileSync('./key.pem');
+        const cert = fs.readFileSync('./cert.pem');
+        
+        https.createServer({ key, cert }, app).listen(port, '0.0.0.0', () => {
+          console.log(`✅ HTTPS server running at https://0.0.0.0:${port} (PRODUCTION MODE)`);
+        });
+      } catch (err) {
+        console.error('❌ Could not load SSL certificates. Starting HTTP server instead.');
+        console.error('💡 For HTTPS, ensure key.pem and cert.pem exist in the project root.');
+        
+        http.createServer(app).listen(port, '0.0.0.0', () => {
+          console.log(`✅ HTTP server running at http://0.0.0.0:${port} (FALLBACK MODE)`);
+        });
+      }
+    }
   })
   .catch((err) => {
     console.error('❌ Mongoose connection error:', err);
+    process.exit(1);
   });
