@@ -1,5 +1,5 @@
 import { connect } from './mongoClient.js';
-import { encrypt, decrypt } from './CryptoUtils.js';
+import { encrypt, decrypt } from './cryptoUtils.js';
 
 async function run() {
   const db = await connect();

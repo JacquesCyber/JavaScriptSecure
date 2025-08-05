@@ -1,8 +1,14 @@
 import crypto from 'crypto';
 import fs from 'fs';
+import path from 'path';
+import { fileURLToPath } from 'url';
 
-const publicKey = fs.readFileSync('./public.pem', 'utf8');
-const privateKey = fs.readFileSync('./private.pem', 'utf8');
+// Get __dirname equivalent in ES modules
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+// Construct absolute paths
+const publicKey = fs.readFileSync(path.join(__dirname, 'public.pem'), 'utf8');
+const privateKey = fs.readFileSync(path.join(__dirname, 'private.pem'), 'utf8');
 
 // AES + RSA Hybrid Encryption
 export function encryptHybrid(data) {
