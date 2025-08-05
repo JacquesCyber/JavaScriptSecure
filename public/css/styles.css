@@ -1,0 +1,145 @@
+/* Cyborg Theme Enhancements */
+body {
+  background: linear-gradient(135deg, #0d1117 0%, #161b22 50%, #21262d 100%);
+  font-family: 'Courier New', monospace;
+}
+
+/* Card Animations */
+.card {
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
+  background: linear-gradient(145deg, #1a1f2e, #2d3748) !important;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #17a2b8;
+  box-shadow: 0 0 30px rgba(23, 162, 184, 0.3) !important;
+}
+
+/* Header Glow Effect */
+.card-header {
+  background: linear-gradient(45deg, #17a2b8, #20c997) !important;
+  text-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+  border-bottom: 2px solid #17a2b8;
+}
+
+/* Form Input Enhancements */
+.form-control {
+  border: 2px solid #495057;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.form-control:focus {
+  border-color: #17a2b8;
+  box-shadow: 0 0 15px rgba(23, 162, 184, 0.4);
+  background-color: #1a1f2e !important;
+  color: #17a2b8 !important;
+}
+
+.form-control:hover {
+  border-color: #6c757d;
+}
+
+/* Labels with Glow */
+.form-label {
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  text-shadow: 0 0 5px currentColor;
+}
+
+/* Button Enhancement */
+.btn-info {
+  background: linear-gradient(45deg, #17a2b8, #20c997);
+  border: none;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  transition: all 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-info:hover {
+  background: linear-gradient(45deg, #20c997, #17a2b8);
+  box-shadow: 0 0 20px rgba(23, 162, 184, 0.5);
+  transform: translateY(-2px);
+}
+
+.btn-info::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  transition: left 0.5s;
+}
+
+.btn-info:hover::before {
+  left: 100%;
+}
+
+/* Footer Enhancement */
+.card-footer {
+  background: linear-gradient(45deg, #495057, #6c757d) !important;
+  border-top: 2px solid #17a2b8;
+}
+
+/* Glowing Border Animation */
+@keyframes glow {
+  0% { box-shadow: 0 0 10px rgba(23, 162, 184, 0.3); }
+  50% { box-shadow: 0 0 20px rgba(23, 162, 184, 0.6); }
+  100% { box-shadow: 0 0 10px rgba(23, 162, 184, 0.3); }
+}
+
+.card {
+  animation: glow 3s ease-in-out infinite;
+}
+
+/* Input Placeholder Styling */
+.form-control::placeholder {
+  color: #6c757d;
+  opacity: 0.8;
+}
+
+/* Validation States Enhancement */
+.form-control.is-invalid {
+  border-color: #dc3545;
+  box-shadow: 0 0 10px rgba(220, 53, 69, 0.3);
+}
+
+.form-control.is-valid {
+  border-color: #28a745;
+  box-shadow: 0 0 10px rgba(40, 167, 69, 0.3);
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+  .container-fluid {
+    padding: 1rem;
+  }
+  
+  .card {
+    margin: 1rem 0;
+  }
+}
+
+/* Loading Animation for Button */
+.btn-info.loading::after {
+  content: '';
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  margin: auto;
+  border: 2px solid transparent;
+  border-top-color: #ffffff;
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
