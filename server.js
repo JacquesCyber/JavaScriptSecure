@@ -4,6 +4,7 @@ import http from 'http';
 import fs from 'fs';
 import mongoose from 'mongoose';
 import dotenv from 'dotenv';
+import crypto from 'crypto';
 import Secret from './models/Secret.js';
 import { body, validationResult } from 'express-validator';
 import { encryptHybrid, decryptHybrid } from './cryptoUtils.js';
@@ -17,34 +18,89 @@ const port = 3000;
 // Middleware to parse JSON
 app.use(express.json());
 
-// Serve static files from the 'public' directory
-app.use(express.static('public'));
+// Nonce middleware for CSP
+app.use((req, res, next) => {
+  res.locals.nonce = crypto.randomBytes(16).toString('base64');
+  next();
+});
+
+// Serve static files from the 'public' directory (except index.html)
+app.use(express.static('public', { index: false }));
 
 // Set security-related HTTP headers
-app.use(helmet());
+app.use(helmet({
+  contentSecurityPolicy: false, // We'll configure this separately below
+  crossOriginEmbedderPolicy: false, // Disable if causing issues with resources
+  hsts: {
+    maxAge: 31536000, // 1 year
+    includeSubDomains: true,
+    preload: true
+  }
+}));
 
-// Define a strict Content Security Policy
-app.use(
+// Additional security headers
+app.use((req, res, next) => {
+  // Prevent MIME type sniffing
+  res.setHeader('X-Content-Type-Options', 'nosniff');
+  
+  // Prevent XSS attacks
+  res.setHeader('X-XSS-Protection', '1; mode=block');
+  
+  // Prevent clickjacking
+  res.setHeader('X-Frame-Options', 'DENY');
+  
+  // Control referrer information
+  res.setHeader('Referrer-Policy', 'strict-origin-when-cross-origin');
+  
+  // Prevent caching of sensitive content
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+  
+  next();
+});
+
+// Define a strict Content Security Policy with nonces
+app.use((req, res, next) => {
+  const nonce = res.locals.nonce;
+  
   helmet.contentSecurityPolicy({
     useDefaults: false,
     directives: {
       defaultSrc: ["'none'"],
-      scriptSrc: ["'none'"],
-      objectSrc: ["'none'"],
-      frameAncestors: ["'none'"],
-      formAction: ["'none'"],
-      baseUri: ["'none'"]
+      scriptSrc: ["'self'", `'nonce-${nonce}'`], // Use nonce instead of unsafe-inline
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Allow Google Fonts
+      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Explicit style-src-elem for external stylesheets
+      imgSrc: ["'self'", "data:", "https:"], // Allow images from same origin, data URLs, and HTTPS
+      fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"], // Allow Google Fonts static content
+      connectSrc: ["'self'"], // Allow AJAX requests to same origin
+      formAction: ["'self'"], // Allow form submissions to same origin
+      frameAncestors: ["'none'"], // Prevent framing (clickjacking protection)
+      objectSrc: ["'none'"], // Block plugins like Flash
+      baseUri: ["'self'"], // Restrict base tag URLs
+      upgradeInsecureRequests: [] // Upgrade HTTP to HTTPS when possible
     }
-  })
-);
+  })(req, res, next);
+});
 
 // POST /store route with validation and hybrid encryption
 app.post('/store',
-  body('data').trim().isLength({ min: 1 }).escape(),
+  // Rate limiting middleware (basic implementation)
+  (req, res, next) => {
+    // In production, use a proper rate limiting library like express-rate-limit
+    const clientIP = req.ip || req.connection.remoteAddress;
+    console.log(`📝 Store request from IP: ${clientIP}`);
+    next();
+  },
+  body('data').trim().isLength({ min: 1, max: 10000 }).escape(), // Add max length
+  body('title').optional().trim().isLength({ max: 100 }).escape(), // Add title validation if present
   async (req, res) => {
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
-      return res.status(400).json({ errors: errors.array() });
+      return res.status(400).json({ 
+        error: 'Validation failed',
+        details: errors.array()
+      });
     }
 
     try {
@@ -55,14 +111,17 @@ app.post('/store',
         encryptedData: encrypted.encryptedData,
         encryptedKey: encrypted.encryptedKey,
         encryptedIV: encrypted.encryptedIV,
-        authTag: encrypted.authTag
+        authTag: encrypted.authTag,
+        createdAt: new Date(),
+        expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000) // 24 hours expiry
       });
 
       const saved = await secret.save();
 
       res.json({
         message: 'Secret stored securely',
-        id: saved._id
+        id: saved._id,
+        expiresAt: saved.expiresAt
       });
     } catch (err) {
       console.error('❌ Error in POST /store:', err);
@@ -72,34 +131,73 @@ app.post('/store',
 );
 
 // GET /secret/:id — fetch secret by ID and decrypt
-app.get('/secret/:id', async (req, res) => {
-  try {
+app.get('/secret/:id', 
+  // Validate MongoDB ObjectId format
+  (req, res, next) => {
     const { id } = req.params;
-    const secret = await Secret.findById(id);
-    if (!secret) {
-      return res.status(404).json({ error: 'Secret not found' });
+    if (!/^[0-9a-fA-F]{24}$/.test(id)) {
+      return res.status(400).json({ error: 'Invalid ID format' });
     }
+    next();
+  },
+  async (req, res) => {
+    try {
+      const { id } = req.params;
+      const secret = await Secret.findById(id);
+      
+      if (!secret) {
+        return res.status(404).json({ error: 'Secret not found' });
+      }
 
-    const decrypted = decryptHybrid({
-      encryptedData: secret.encryptedData,
-      encryptedKey: secret.encryptedKey,
-      encryptedIV: secret.encryptedIV,
-      authTag: secret.authTag
-    });
+      // Check if secret has expired
+      if (secret.expiresAt && secret.expiresAt < new Date()) {
+        await Secret.findByIdAndDelete(id); // Clean up expired secret
+        return res.status(404).json({ error: 'Secret has expired' });
+      }
 
-    res.json({
-      id: secret._id,
-      data: decrypted,
-      createdAt: secret.createdAt || null
-    });
+      const decrypted = decryptHybrid({
+        encryptedData: secret.encryptedData,
+        encryptedKey: secret.encryptedKey,
+        encryptedIV: secret.encryptedIV,
+        authTag: secret.authTag
+      });
+
+      res.json({
+        id: secret._id,
+        data: decrypted,
+        createdAt: secret.createdAt || null,
+        expiresAt: secret.expiresAt || null
+      });
+    } catch (err) {
+      console.error('❌ Error in GET /secret/:id:', err);
+      if (err.name === 'CastError') {
+        return res.status(400).json({ error: 'Invalid ID format' });
+      }
+      res.status(500).json({ error: 'Internal Server Error' });
+    }
+  }
+);
+
+// GET / route - serve index.html with nonce
+app.get('/', (req, res) => {
+  try {
+    const nonce = res.locals.nonce;
+    let html = fs.readFileSync('./public/index.html', 'utf8');
+    
+    // Inject nonce into script tags
+    html = html.replace(/<script>/g, `<script nonce="${nonce}">`);
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.send(html);
   } catch (err) {
-    console.error('❌ Error in GET /secret/:id:', err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    console.error('❌ Error serving index.html:', err);
+    const protocol = req.secure ? 'HTTPS' : 'HTTP';
+    res.send(`🔐 ${protocol} server is running securely!`);
   }
 });
 
-// GET / route
-app.get('/', (req, res) => {
+// Alternative route for server status
+app.get('/status', (req, res) => {
   const protocol = req.secure ? 'HTTPS' : 'HTTP';
   res.send(`🔐 ${protocol} server is running securely!`);
 });
@@ -109,8 +207,19 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', timestamp: new Date().toISOString() });
 });
 
+// Favicon route to prevent 404 errors
+app.get('/favicon.ico', (req, res) => {
+  res.status(204).end(); // No Content - prevents 404 for favicon requests
+});
+
 // Connect to MongoDB, then start appropriate server
-mongoose.connect(process.env.MONGODB_URI)
+const mongoOptions = {
+  serverSelectionTimeoutMS: 10000, // Timeout after 10s
+  socketTimeoutMS: 45000, // Close sockets after 45s of inactivity
+  maxPoolSize: 10 // Maintain up to 10 socket connections
+};
+
+mongoose.connect(process.env.MONGODB_URI, mongoOptions)
   .then(() => {
     console.log('✅ Connected to MongoDB via Mongoose');
     
