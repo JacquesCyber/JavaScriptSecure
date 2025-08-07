@@ -69,15 +69,20 @@ app.use((req, res, next) => {
     directives: {
       defaultSrc: ["'none'"],
       scriptSrc: ["'self'", `'nonce-${nonce}'`], // Use nonce instead of unsafe-inline
-      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Allow Google Fonts
-      styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Explicit style-src-elem for external stylesheets
-      imgSrc: ["'self'", "data:", "https:"], // Allow images from same origin, data URLs, and HTTPS
+      styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"], // Keep unsafe-inline for dynamic styles
+      styleSrcElem: ["'self'", "https://fonts.googleapis.com"], // External stylesheets only from self and Google Fonts
+      imgSrc: ["'self'", "data:"], // Removed wildcard https: - only allow self and data URLs
       fontSrc: ["'self'", "https://fonts.gstatic.com", "data:"], // Allow Google Fonts static content
       connectSrc: ["'self'"], // Allow AJAX requests to same origin
       formAction: ["'self'"], // Allow form submissions to same origin
       frameAncestors: ["'none'"], // Prevent framing (clickjacking protection)
+      frameSrc: ["'none'"], // Block all frames
       objectSrc: ["'none'"], // Block plugins like Flash
       baseUri: ["'self'"], // Restrict base tag URLs
+      manifestSrc: ["'self'"], // Allow web app manifests from same origin
+      mediaSrc: ["'none'"], // Block audio/video unless needed
+      workerSrc: ["'none'"], // Block web workers unless needed
+      childSrc: ["'none'"], // Block child contexts (frames, workers)
       upgradeInsecureRequests: [] // Upgrade HTTP to HTTPS when possible
     }
   })(req, res, next);
@@ -187,6 +192,9 @@ app.get('/', (req, res) => {
     // Inject nonce into script tags
     html = html.replace(/<script>/g, `<script nonce="${nonce}">`);
     
+    // Inject nonce into style tags (if any)
+    html = html.replace(/<style>/g, `<style nonce="${nonce}">`);
+    
     res.setHeader('Content-Type', 'text/html');
     res.send(html);
   } catch (err) {
@@ -210,6 +218,12 @@ app.get('/health', (req, res) => {
 // Favicon route to prevent 404 errors
 app.get('/favicon.ico', (req, res) => {
   res.status(204).end(); // No Content - prevents 404 for favicon requests
+});
+
+// Robots.txt route
+app.get('/robots.txt', (req, res) => {
+  res.setHeader('Content-Type', 'text/plain');
+  res.send('User-agent: *\nDisallow: /secret/\nDisallow: /store\nDisallow: /health');
 });
 
 // Connect to MongoDB, then start appropriate server
