@@ -83,7 +83,7 @@ jobs:
         rules_file_name: '.zap/rules-full.tsv'
         cmd_options: '-a'
         fail_action: false  # Don't fail on low priority issues
-        allow_issue_writing: true
+        allow_issue_writing: false  # Disable built-in artifact upload
       continue-on-error: true
 
     - name: Upload ZAP Reports
