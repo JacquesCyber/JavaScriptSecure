@@ -92,7 +92,6 @@ app.use((req, res, next) => {
 app.post('/store',
   // Rate limiting middleware (basic implementation)
   (req, res, next) => {
-    // In production, use a proper rate limiting library like express-rate-limit
     const clientIP = req.ip || req.connection.remoteAddress;
     console.log(`📝 Store request from IP: ${clientIP}`);
     next();
