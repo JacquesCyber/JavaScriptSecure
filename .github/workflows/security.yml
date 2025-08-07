@@ -32,6 +32,13 @@ jobs:
         npx eslint . --config eslint.config.security.js
       continue-on-error: false
 
+    - name: Generate Temporary RSA Keys for Testing
+      run: |
+        # Generate temporary RSA keys for CI/CD testing
+        openssl genrsa -out private.pem 2048
+        openssl rsa -in private.pem -pubout -out public.pem
+        echo "✅ Generated temporary RSA keys for testing"
+
     - name: Start Application
       run: |
         # Start the application in background (without MongoDB for security scanning)

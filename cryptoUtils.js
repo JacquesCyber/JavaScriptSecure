@@ -6,12 +6,35 @@ import { fileURLToPath } from 'url';
 // Get __dirname equivalent in ES modules
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Construct absolute paths
-const publicKey = fs.readFileSync(path.join(__dirname, 'public.pem'), 'utf8');
-const privateKey = fs.readFileSync(path.join(__dirname, 'private.pem'), 'utf8');
+// Lazy load RSA keys - only when needed and if they exist
+let publicKey = null;
+let privateKey = null;
+
+function loadKeys() {
+  if (publicKey && privateKey) return true;
+  
+  const publicKeyPath = path.join(__dirname, 'public.pem');
+  const privateKeyPath = path.join(__dirname, 'private.pem');
+  
+  try {
+    if (fs.existsSync(publicKeyPath) && fs.existsSync(privateKeyPath)) {
+      publicKey = fs.readFileSync(publicKeyPath, 'utf8');
+      privateKey = fs.readFileSync(privateKeyPath, 'utf8');
+      return true;
+    }
+  } catch (error) {
+    console.warn('⚠️ RSA keys not available:', error.message);
+  }
+  
+  return false;
+}
 
 // AES + RSA Hybrid Encryption
 export function encryptHybrid(data) {
+  if (!loadKeys()) {
+    throw new Error('Encryption keys not available - cannot encrypt data');
+  }
+  
   const aesKey = crypto.randomBytes(32); // 256-bit key
   const iv = crypto.randomBytes(16);     // 128-bit IV
   const cipher = crypto.createCipheriv('aes-256-gcm', aesKey, iv);
@@ -34,6 +57,10 @@ export function encryptHybrid(data) {
 }
 
 export function decryptHybrid({ encryptedData, encryptedKey, encryptedIV, authTag }) {
+  if (!loadKeys()) {
+    throw new Error('Encryption keys not available - cannot decrypt data');
+  }
+  
   const aesKey = crypto.privateDecrypt(privateKey, Buffer.from(encryptedKey, 'base64'));
   const iv = crypto.privateDecrypt(privateKey, Buffer.from(encryptedIV, 'base64'));
   const decipher = crypto.createDecipheriv('aes-256-gcm', aesKey, iv);
