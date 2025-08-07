@@ -1,10 +1,14 @@
-# ZAP Rules for Full Scan (Reports all but doesn't fail CI/CD)
-# This file allows low priority issues for reporting purposes
+# ZAP Rules for Full Scan (More permissive, allows low priority issues)
+# Format: RULE_ID	ACTION
 
-# Allow all Low priority issues but report them
-*	LOW	WARN
-
-# Still fail on Medium+ in full scan for completeness
-*	MEDIUM	FAIL
-*	HIGH	FAIL
-*	CRITICAL	FAIL
+# Ignore Low Priority Alerts for Full Scan
+10021	IGNORE	# X-Content-Type-Options Header Missing
+10037	IGNORE	# Server Leaks Information via "X-Powered-By" HTTP Response Header Field  
+10049	IGNORE	# Non-Storable Content
+10063	IGNORE	# Permissions Policy Header Not Set
+10109	IGNORE	# Modern Web Application
+90004	IGNORE	# Insufficient Site Isolation Against Spectre Vulnerability
+90005	IGNORE	# Sec-Fetch-Dest Header is Missing
+10036	IGNORE	# Server Leaks Version Information via "Server" HTTP Response Header Field
+10050	IGNORE	# Retrieved from Cache
+10051	IGNORE	# Relative Path Confusion

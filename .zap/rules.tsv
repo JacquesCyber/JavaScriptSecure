@@ -1,40 +1,25 @@
-# ZAP Rules for Baseline Scan (Fails CI/CD on Medium+ vulnerabilities)
-# Format: RULE_ID	THRESHOLD	[IGNORE/FAIL/WARN/INFO]
+# ZAP Rules for Baseline Scan (Ignores Low priority alerts)
+# Format: RULE_ID	THRESHOLD	ACTION
 
-# CSP Rules - Fail on Medium+
-10055	MEDIUM	FAIL	# CSP violations
-10063	MEDIUM	FAIL	# CSP missing
-10202	MEDIUM	FAIL	# Absence of Anti-CSRF Tokens
+# Ignore Low Priority Alerts (these WARN-level issues should not fail the scan)
+10021	IGNORE	# X-Content-Type-Options Header Missing
+10037	IGNORE	# Server Leaks Information via "X-Powered-By" HTTP Response Header Field  
+10049	IGNORE	# Non-Storable Content
+10063	IGNORE	# Permissions Policy Header Not Set
+10109	IGNORE	# Modern Web Application
+90004	IGNORE	# Insufficient Site Isolation Against Spectre Vulnerability
+90005	IGNORE	# Sec-Fetch-Dest Header is Missing
 
-# XSS Rules - Fail on Medium+
-40012	MEDIUM	FAIL	# Cross Site Scripting (Reflected)
-40014	MEDIUM	FAIL	# Cross Site Scripting (Persistent)
-40016	MEDIUM	FAIL	# Cross Site Scripting (Persistent) - Prime
-40017	MEDIUM	FAIL	# Cross Site Scripting (Persistent) - Spider
-
-# Injection Rules - Fail on Medium+
-40018	MEDIUM	FAIL	# SQL Injection
-40019	MEDIUM	FAIL	# SQL Injection - MySQL
-40020	MEDIUM	FAIL	# SQL Injection - Hypersonic SQL
-40021	MEDIUM	FAIL	# SQL Injection - Oracle
-40022	MEDIUM	FAIL	# SQL Injection - PostgreSQL
-
-# Authentication & Session Rules - Fail on Medium+
-10054	MEDIUM	FAIL	# Cookie Without Secure Flag
-10055	MEDIUM	FAIL	# Cookie Without HttpOnly Flag
-
-# Information Disclosure - Allow Low/Informational
-10021	LOW	IGNORE	# X-Content-Type-Options Header Missing
-10037	LOW	IGNORE	# Server Leaks Information via "X-Powered-By" HTTP Response Header Field
-10049	LOW	IGNORE	# Storable and Cacheable Content
-10050	LOW	IGNORE	# Retrieved from Cache
-10051	LOW	IGNORE	# Relative Path Confusion
-10063	LOW	IGNORE	# Permissions Policy Header Not Set
-10109	LOW	IGNORE	# Modern Web Application
-
-# Server Information - Allow Low  
-10036	LOW	IGNORE	# Server Leaks Version Information via "Server" HTTP Response Header Field
-
-# Modern Browser Security - Allow Low
-90004	LOW	IGNORE	# Insufficient Site Isolation Against Spectre Vulnerability
-90005	LOW	IGNORE	# Sec-Fetch-Dest Header is Missing
+# Fail on Medium+ Security Issues
+10054	FAIL	# Cookie Without Secure Flag
+10055	FAIL	# CSP violations/missing
+10202	FAIL	# Absence of Anti-CSRF Tokens
+40012	FAIL	# Cross Site Scripting (Reflected)
+40014	FAIL	# Cross Site Scripting (Persistent)
+40016	FAIL	# Cross Site Scripting (Persistent) - Prime
+40017	FAIL	# Cross Site Scripting (Persistent) - Spider
+40018	FAIL	# SQL Injection
+40019	FAIL	# SQL Injection - MySQL
+40020	FAIL	# SQL Injection - Hypersonic SQL
+40021	FAIL	# SQL Injection - Oracle
+40022	FAIL	# SQL Injection - PostgreSQL
