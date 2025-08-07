@@ -77,6 +77,7 @@ jobs:
           cmd_options: '-a'
           fail_action: false  # Don't fail on warnings - focus on medium/high issues
           allow_issue_writing: false
+        continue-on-error: true  # Don't let artifact errors stop the pipeline
           
       - name: Run OWASP ZAP Full Scan (Low Priority)
         uses: zaproxy/action-full-scan@v0.8.0
