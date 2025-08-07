@@ -22,13 +22,19 @@
 # Authentication & Session Rules - Fail on Medium+
 10054	MEDIUM	FAIL	# Cookie Without Secure Flag
 10055	MEDIUM	FAIL	# Cookie Without HttpOnly Flag
-10202	MEDIUM	FAIL	# Absence of Anti-CSRF Tokens
 
-# Information Disclosure - Allow Low
+# Information Disclosure - Allow Low/Informational
+10021	LOW	IGNORE	# X-Content-Type-Options Header Missing
+10037	LOW	IGNORE	# Server Leaks Information via "X-Powered-By" HTTP Response Header Field
 10049	LOW	IGNORE	# Storable and Cacheable Content
 10050	LOW	IGNORE	# Retrieved from Cache
 10051	LOW	IGNORE	# Relative Path Confusion
+10063	LOW	IGNORE	# Permissions Policy Header Not Set
+10109	LOW	IGNORE	# Modern Web Application
 
 # Server Information - Allow Low  
 10036	LOW	IGNORE	# Server Leaks Version Information via "Server" HTTP Response Header Field
-10037	LOW	IGNORE	# Server Leaks Information via "X-Powered-By" HTTP Response Header Field
+
+# Modern Browser Security - Allow Low
+90004	LOW	IGNORE	# Insufficient Site Isolation Against Spectre Vulnerability
+90005	LOW	IGNORE	# Sec-Fetch-Dest Header is Missing

@@ -90,7 +90,7 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: zap-reports
+        name: security-reports-${{ github.run_number }}
         path: |
           report_html.html
           report_json.json
@@ -119,5 +119,5 @@ jobs:
       uses: actions/upload-artifact@v4
       if: always()
       with:
-        name: npm-audit-report
+        name: npm-audit-report-${{ github.run_number }}
         path: audit-report.json
