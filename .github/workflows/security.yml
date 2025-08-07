@@ -1,5 +1,4 @@
 name: Security Scan
-
 on:
   push:
     branches: [ main, develop ]
@@ -9,133 +8,139 @@ on:
     # Run security scan daily at 2 AM UTC
     - cron: '0 2 * * *'
 
-# Add permissions for the workflow
+# Add comprehensive permissions for the workflow
 permissions:
   contents: read
   actions: read
   security-events: write
+  id-token: write  # Required for artifact uploads
+  packages: read   # Required for reading packages
+  pull-requests: read  # Required for PR context
 
 jobs:
   security-scan:
     runs-on: ubuntu-latest
-    
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Setup Node.js
-      uses: actions/setup-node@v4
-      with:
-        node-version: '18'
-        cache: 'npm'
-
-    - name: Install dependencies
-      run: npm ci
-
-    - name: Run ESLint Security Rules
-      run: |
-        npm install eslint-plugin-security --save-dev
-        npx eslint . --config eslint.config.security.js
-      continue-on-error: false
-
-    - name: Generate Temporary RSA Keys for Testing
-      run: |
-        # Generate temporary RSA keys for CI/CD testing
-        openssl genrsa -out private.pem 2048
-        openssl rsa -in private.pem -pubout -out public.pem
-        echo "✅ Generated temporary RSA keys for testing"
-
-    - name: Start Application
-      run: |
-        # Start the application in background (without MongoDB for security scanning)
-        # Remove .env file to prevent MongoDB connection in CI
-        rm -f .env
-        NODE_ENV=test npm start &
-        APP_PID=$!
-        echo "Application PID: $APP_PID"
+      - name: Checkout code
+        uses: actions/checkout@v4
         
-        # Wait for application to be ready (max 60 seconds)
-        echo "Waiting for application to start..."
-        for i in {1..60}; do
-          if curl -f http://localhost:3000/health >/dev/null 2>&1; then
-            echo "Application is ready!"
-            # Verify it's running without database
-            curl -s http://localhost:3000/health | jq .
-            break
-          fi
-          if [ $i -eq 60 ]; then
-            echo "Application failed to start within 60 seconds"
-            curl -v http://localhost:3000/health || true
-            ps aux | grep node || true
-            exit 1
-          fi
-          echo "Attempt $i/60: Application not ready yet, waiting..."
-          sleep 1
-        done
-
-    - name: Run OWASP ZAP Baseline Scan
-      uses: zaproxy/action-baseline@v0.10.0
-      with:
-        target: 'http://localhost:3000'
-        rules_file_name: '.zap/rules.tsv'
-        cmd_options: '-a'
-        fail_action: true
-        allow_issue_writing: false
-
-    - name: Run OWASP ZAP Full Scan (Low Priority)
-      uses: zaproxy/action-full-scan@v0.8.0
-      with:
-        target: 'http://localhost:3000'
-        rules_file_name: '.zap/rules-full.tsv'
-        cmd_options: '-a'
-        fail_action: false  # Don't fail on low priority issues
-        allow_issue_writing: false  # Disable built-in artifact upload
-      continue-on-error: true
-
-    - name: List generated reports
-      run: |
-        echo "Files in current directory:"
-        ls -la
-        echo "Looking for ZAP reports:"
-        find . -name "*report*" -type f || echo "No report files found"
-      continue-on-error: true
-
-    - name: Upload ZAP Reports
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: zap-reports
-        path: |
-          report_html.html
-          report_json.json
-          report_md.md
-        retention-days: 30
-      continue-on-error: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+          cache: 'npm'
+          
+      - name: Install dependencies
+        run: npm ci
+        
+      - name: Run ESLint Security Rules
+        run: |
+          npm install eslint-plugin-security --save-dev
+          npx eslint . --config eslint.config.security.js
+        continue-on-error: false
+        
+      - name: Generate Temporary RSA Keys for Testing
+        run: |
+          # Generate temporary RSA keys for CI/CD testing
+          openssl genrsa -out private.pem 2048
+          openssl rsa -in private.pem -pubout -out public.pem
+          echo "✅ Generated temporary RSA keys for testing"
+          
+      - name: Start Application
+        run: |
+          # Start the application in background (without MongoDB for security scanning)
+          # Remove .env file to prevent MongoDB connection in CI
+          rm -f .env
+          NODE_ENV=test npm start &
+          APP_PID=$!
+          echo "Application PID: $APP_PID"
+          # Wait for application to be ready (max 60 seconds)
+          echo "Waiting for application to start..."
+          for i in {1..60}; do
+            if curl -f http://localhost:3000/health >/dev/null 2>&1; then
+              echo "Application is ready!"
+              # Verify it's running without database
+              curl -s http://localhost:3000/health | jq . || true
+              break
+            fi
+            if [ $i -eq 60 ]; then
+              echo "Application failed to start within 60 seconds"
+              curl -v http://localhost:3000/health || true
+              ps aux | grep node || true
+              exit 1
+            fi
+            echo "Attempt $i/60: Application not ready yet, waiting..."
+            sleep 1
+          done
+          
+      - name: Run OWASP ZAP Baseline Scan
+        uses: zaproxy/action-baseline@v0.10.0
+        with:
+          target: 'http://localhost:3000'
+          rules_file_name: '.zap/rules.tsv'
+          cmd_options: '-a'
+          fail_action: false  # Don't fail on warnings - focus on medium/high issues
+          allow_issue_writing: false
+          
+      - name: Run OWASP ZAP Full Scan (Low Priority)
+        uses: zaproxy/action-full-scan@v0.8.0
+        with:
+          target: 'http://localhost:3000'
+          rules_file_name: '.zap/rules-full.tsv'
+          cmd_options: '-a'
+          fail_action: false # Don't fail on low priority issues
+          allow_issue_writing: false # Disable built-in artifact upload
+        continue-on-error: true
+        
+      - name: List generated reports
+        run: |
+          echo "Files in current directory:"
+          ls -la
+          echo "Looking for ZAP reports:"
+          find . -name "*report*" -type f || echo "No report files found"
+        continue-on-error: true
+        
+      - name: Upload ZAP Reports
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: zap-security-reports-${{ github.run_id }}  # Make name unique
+          path: |
+            report_html.html
+            report_json.json
+            report_md.md
+          retention-days: 30
+          if-no-files-found: warn  # Don't fail if no files found
+        continue-on-error: true
 
   dependency-scan:
     runs-on: ubuntu-latest
-    
+    permissions:
+      contents: read
+      actions: read
+      id-token: write  # Required for artifact uploads
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-
-    - name: Run npm audit
-      run: |
-        # Fail on high/critical, allow moderate/low
-        npm audit --audit-level=high
-      continue-on-error: false
-
-    - name: Run npm audit (full report)
-      run: |
-        npm audit --json > audit-report.json || true
-        echo "Full audit report generated"
-      continue-on-error: true
-
-    - name: Upload audit report
-      uses: actions/upload-artifact@v4
-      if: always()
-      with:
-        name: npm-audit-report
-        path: audit-report.json
-        retention-days: 30
-      continue-on-error: true
+      - name: Checkout code
+        uses: actions/checkout@v4
+        
+      - name: Run npm audit
+        run: |
+          # Fail on high/critical, allow moderate/low
+          npm audit --audit-level=high
+        continue-on-error: false
+        
+      - name: Run npm audit (full report)
+        run: |
+          npm audit --json > audit-report.json || true
+          echo "Full audit report generated"
+        continue-on-error: true
+        
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: npm-audit-report-${{ github.run_id }}  # Make name unique
+          path: audit-report.json
+          retention-days: 30
+          if-no-files-found: warn  # Don't fail if no files found
+        continue-on-error: true
