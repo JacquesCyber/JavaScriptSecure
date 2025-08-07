@@ -48,7 +48,7 @@ The CI/CD pipeline will **fail** on Medium+ vulnerabilities but **allow** Low vu
 
 ```bash
 # Run security linting
-npm run lint:security
+npx eslint . --config eslint.config.security.js
 
 # Run dependency audit (fails on high+)
 npm audit --audit-level=high
