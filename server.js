@@ -100,6 +100,14 @@ app.post('/store',
   body('data').trim().isLength({ min: 1, max: 10000 }).escape(), // Add max length
   body('title').optional().trim().isLength({ max: 100 }).escape(), // Add title validation if present
   async (req, res) => {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ 
+        error: 'Service Unavailable',
+        message: 'Database connection not available'
+      });
+    }
+
     const errors = validationResult(req);
     if (!errors.isEmpty()) {
       return res.status(400).json({ 
@@ -146,6 +154,14 @@ app.get('/secret/:id',
     next();
   },
   async (req, res) => {
+    // Check if MongoDB is connected
+    if (mongoose.connection.readyState !== 1) {
+      return res.status(503).json({ 
+        error: 'Service Unavailable',
+        message: 'Database connection not available'
+      });
+    }
+
     try {
       const { id } = req.params;
       const secret = await Secret.findById(id);
@@ -212,7 +228,13 @@ app.get('/status', (req, res) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ status: 'ok', timestamp: new Date().toISOString() });
+  const health = {
+    status: 'ok',
+    timestamp: new Date().toISOString(),
+    database: mongoose.connection.readyState === 1 ? 'connected' : 'disconnected',
+    environment: process.env.NODE_ENV || 'development'
+  };
+  res.json(health);
 });
 
 // Favicon route to prevent 404 errors
@@ -273,36 +295,51 @@ const mongoOptions = {
   maxPoolSize: 10 // Maintain up to 10 socket connections
 };
 
-mongoose.connect(process.env.MONGODB_URI, mongoOptions)
-  .then(() => {
-    console.log('✅ Connected to MongoDB via Mongoose');
-    
-    // Choose server type based on environment
-    if (process.env.NODE_ENV === 'test') {
-      // HTTP server for testing/CI/CD
-      http.createServer(app).listen(port, '0.0.0.0', () => {
-        console.log(`✅ HTTP server running at http://0.0.0.0:${port} (TEST MODE)`);
+// Function to start the server
+function startServer() {
+  // Choose server type based on environment
+  if (process.env.NODE_ENV === 'test') {
+    // HTTP server for testing/CI/CD
+    http.createServer(app).listen(port, '0.0.0.0', () => {
+      console.log(`✅ HTTP server running at http://0.0.0.0:${port} (TEST MODE)`);
+    });
+  } else {
+    // HTTPS server for production
+    try {
+      const key = fs.readFileSync('./key.pem');
+      const cert = fs.readFileSync('./cert.pem');
+      
+      https.createServer({ key, cert }, app).listen(port, '0.0.0.0', () => {
+        console.log(`✅ HTTPS server running at https://0.0.0.0:${port} (PRODUCTION MODE)`);
       });
-    } else {
-      // HTTPS server for production
-      try {
-        const key = fs.readFileSync('./key.pem');
-        const cert = fs.readFileSync('./cert.pem');
-        
-        https.createServer({ key, cert }, app).listen(port, '0.0.0.0', () => {
-          console.log(`✅ HTTPS server running at https://0.0.0.0:${port} (PRODUCTION MODE)`);
-        });
-      } catch (err) {
-        console.error('❌ Could not load SSL certificates. Starting HTTP server instead.');
-        console.error('💡 For HTTPS, ensure key.pem and cert.pem exist in the project root.');
-        
-        http.createServer(app).listen(port, '0.0.0.0', () => {
-          console.log(`✅ HTTP server running at http://0.0.0.0:${port} (FALLBACK MODE)`);
-        });
-      }
+    } catch (err) {
+      console.error('❌ Could not load SSL certificates. Starting HTTP server instead.');
+      console.error('💡 For HTTPS, ensure key.pem and cert.pem exist in the project root.');
+      
+      http.createServer(app).listen(port, '0.0.0.0', () => {
+        console.log(`✅ HTTP server running at http://0.0.0.0:${port} (FALLBACK MODE)`);
+      });
     }
-  })
-  .catch((err) => {
-    console.error('❌ Mongoose connection error:', err);
-    process.exit(1);
-  }); 
+  }
+}
+
+// Try to connect to MongoDB, but start server regardless for CI/CD testing
+if (process.env.MONGODB_URI) {
+  mongoose.connect(process.env.MONGODB_URI, mongoOptions)
+    .then(() => {
+      console.log('✅ Connected to MongoDB via Mongoose');
+      startServer();
+    })
+    .catch((err) => {
+      console.error('❌ Mongoose connection error:', err);
+      if (process.env.NODE_ENV === 'test') {
+        console.log('⚠️ Starting server without MongoDB for testing');
+        startServer();
+      } else {
+        process.exit(1);
+      }
+    });
+} else {
+  console.log('⚠️ No MongoDB URI provided, starting server without database');
+  startServer();
+} 

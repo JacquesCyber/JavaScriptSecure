@@ -34,12 +34,31 @@ jobs:
 
     - name: Start Application
       run: |
+        # Start the application in background (without MongoDB for security scanning)
+        # Remove .env file to prevent MongoDB connection in CI
+        rm -f .env
         NODE_ENV=test npm start &
-        sleep 10
-      env:
-        MONGODB_URI: ${{ secrets.MONGODB_URI_TEST }}
-        ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
-        ENCRYPTION_IV: ${{ secrets.ENCRYPTION_IV }}
+        APP_PID=$!
+        echo "Application PID: $APP_PID"
+        
+        # Wait for application to be ready (max 60 seconds)
+        echo "Waiting for application to start..."
+        for i in {1..60}; do
+          if curl -f http://localhost:3000/health >/dev/null 2>&1; then
+            echo "Application is ready!"
+            # Verify it's running without database
+            curl -s http://localhost:3000/health | jq .
+            break
+          fi
+          if [ $i -eq 60 ]; then
+            echo "Application failed to start within 60 seconds"
+            curl -v http://localhost:3000/health || true
+            ps aux | grep node || true
+            exit 1
+          fi
+          echo "Attempt $i/60: Application not ready yet, waiting..."
+          sleep 1
+        done
 
     - name: Run OWASP ZAP Baseline Scan
       uses: zaproxy/action-baseline@v0.10.0
