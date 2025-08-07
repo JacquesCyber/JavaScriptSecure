@@ -7,6 +7,7 @@ import dotenv from 'dotenv';
 import Secret from './models/Secret.js';
 import { body, validationResult } from 'express-validator';
 import { encryptHybrid, decryptHybrid } from './cryptoUtils.js';
+import helmet from 'helmet';
 
 dotenv.config();
 
@@ -18,6 +19,24 @@ app.use(express.json());
 
 // Serve static files from the 'public' directory
 app.use(express.static('public'));
+
+// Set security-related HTTP headers
+app.use(helmet());
+
+// Define a strict Content Security Policy
+app.use(
+  helmet.contentSecurityPolicy({
+    useDefaults: false,
+    directives: {
+      defaultSrc: ["'none'"],
+      scriptSrc: ["'none'"],
+      objectSrc: ["'none'"],
+      frameAncestors: ["'none'"],
+      formAction: ["'none'"],
+      baseUri: ["'none'"]
+    }
+  })
+);
 
 // POST /store route with validation and hybrid encryption
 app.post('/store',
@@ -123,4 +142,4 @@ mongoose.connect(process.env.MONGODB_URI)
   .catch((err) => {
     console.error('❌ Mongoose connection error:', err);
     process.exit(1);
-  });
+  }); 
