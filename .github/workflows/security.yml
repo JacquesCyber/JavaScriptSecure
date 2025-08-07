@@ -101,7 +101,7 @@ jobs:
         continue-on-error: true
         
       - name: Upload ZAP Reports
-        uses: actions/upload-artifact@v4.4.3  # Use specific latest version
+        uses: actions/upload-artifact@v4.6.2  # Latest version
         if: always()
         with:
           name: zap-security-reports-${{ github.run_id }}  # Make name unique
