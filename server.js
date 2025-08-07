@@ -226,6 +226,46 @@ app.get('/robots.txt', (req, res) => {
   res.send('User-agent: *\nDisallow: /secret/\nDisallow: /store\nDisallow: /health');
 });
 
+// Sitemap.xml route (to prevent 404 and ensure CSP)
+app.get('/sitemap.xml', (req, res) => {
+  res.setHeader('Content-Type', 'application/xml');
+  res.status(404).send('<?xml version="1.0" encoding="UTF-8"?>\n<!-- Sitemap not available -->');
+});
+
+// Handle GET requests to /store (POST-only endpoint)
+app.get('/store', (req, res) => {
+  res.status(405).json({ 
+    error: 'Method Not Allowed',
+    message: 'This endpoint only accepts POST requests',
+    allowedMethods: ['POST']
+  });
+});
+
+// Handle GET requests to /secret/ (without ID)
+app.get('/secret/', (req, res) => {
+  res.status(400).json({ 
+    error: 'Bad Request',
+    message: 'Secret ID is required. Use /secret/{id}'
+  });
+});
+
+// Handle GET requests to /secret (without trailing slash)
+app.get('/secret', (req, res) => {
+  res.status(400).json({ 
+    error: 'Bad Request',
+    message: 'Secret ID is required. Use /secret/{id}'
+  });
+});
+
+// 404 handler for all other routes (MUST be last)
+app.use((req, res) => {
+  res.status(404).json({
+    error: 'Not Found',
+    message: 'The requested resource was not found',
+    path: req.originalUrl
+  });
+});
+
 // Connect to MongoDB, then start appropriate server
 const mongoOptions = {
   serverSelectionTimeoutMS: 10000, // Timeout after 10s
