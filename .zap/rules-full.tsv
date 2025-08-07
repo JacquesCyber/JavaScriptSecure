@@ -1,0 +1,10 @@
+# ZAP Rules for Full Scan (Reports all but doesn't fail CI/CD)
+# This file allows low priority issues for reporting purposes
+
+# Allow all Low priority issues but report them
+*	LOW	WARN
+
+# Still fail on Medium+ in full scan for completeness
+*	MEDIUM	FAIL
+*	HIGH	FAIL
+*	CRITICAL	FAIL

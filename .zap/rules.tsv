@@ -1,0 +1,34 @@
+# ZAP Rules for Baseline Scan (Fails CI/CD on Medium+ vulnerabilities)
+# Format: RULE_ID	THRESHOLD	[IGNORE/FAIL/WARN/INFO]
+
+# CSP Rules - Fail on Medium+
+10055	MEDIUM	FAIL	# CSP violations
+10063	MEDIUM	FAIL	# CSP missing
+10202	MEDIUM	FAIL	# Absence of Anti-CSRF Tokens
+
+# XSS Rules - Fail on Medium+
+40012	MEDIUM	FAIL	# Cross Site Scripting (Reflected)
+40014	MEDIUM	FAIL	# Cross Site Scripting (Persistent)
+40016	MEDIUM	FAIL	# Cross Site Scripting (Persistent) - Prime
+40017	MEDIUM	FAIL	# Cross Site Scripting (Persistent) - Spider
+
+# Injection Rules - Fail on Medium+
+40018	MEDIUM	FAIL	# SQL Injection
+40019	MEDIUM	FAIL	# SQL Injection - MySQL
+40020	MEDIUM	FAIL	# SQL Injection - Hypersonic SQL
+40021	MEDIUM	FAIL	# SQL Injection - Oracle
+40022	MEDIUM	FAIL	# SQL Injection - PostgreSQL
+
+# Authentication & Session Rules - Fail on Medium+
+10054	MEDIUM	FAIL	# Cookie Without Secure Flag
+10055	MEDIUM	FAIL	# Cookie Without HttpOnly Flag
+10202	MEDIUM	FAIL	# Absence of Anti-CSRF Tokens
+
+# Information Disclosure - Allow Low
+10049	LOW	IGNORE	# Storable and Cacheable Content
+10050	LOW	IGNORE	# Retrieved from Cache
+10051	LOW	IGNORE	# Relative Path Confusion
+
+# Server Information - Allow Low  
+10036	LOW	IGNORE	# Server Leaks Version Information via "Server" HTTP Response Header Field
+10037	LOW	IGNORE	# Server Leaks Information via "X-Powered-By" HTTP Response Header Field
