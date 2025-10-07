@@ -16,3 +16,7 @@ yarn-error.log*
 
 # Environment config (optional)
 .env
+
+# Security keys (never commit these!)
+keys/
+*.pem

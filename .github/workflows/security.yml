@@ -32,14 +32,15 @@ jobs:
       - name: Run ESLint Security Rules
         run: |
           npm install eslint-plugin-security --save-dev
-          npx eslint . --config eslint.config.security.js
+          npx eslint src/ --config eslint.config.security.js
         continue-on-error: false
         
       - name: Generate Temporary RSA Keys for Testing
         run: |
           # Generate temporary RSA keys for CI/CD testing
-          openssl genrsa -out private.pem 2048
-          openssl rsa -in private.pem -pubout -out public.pem
+          mkdir -p keys
+          openssl genrsa -out keys/private.pem 2048
+          openssl rsa -in keys/private.pem -pubout -out keys/public.pem
           echo "✅ Generated temporary RSA keys for testing"
           
       - name: Start Application
@@ -73,7 +74,7 @@ jobs:
         uses: zaproxy/action-baseline@v0.10.0
         with:
           target: 'http://localhost:3000'
-          rules_file_name: '.zap/rules.tsv'
+          rules_file_name: '.zap/baseline-rules.tsv'
           cmd_options: '-a'
           fail_action: false  # Don't fail on warnings - focus on medium/high issues
           allow_issue_writing: false
@@ -83,7 +84,7 @@ jobs:
         uses: zaproxy/action-full-scan@v0.8.0
         with:
           target: 'http://localhost:3000'
-          rules_file_name: '.zap/rules-full.tsv'
+          rules_file_name: '.zap/full-scan-rules.tsv'
           cmd_options: '-a'
           fail_action: false # Don't fail on low priority issues
           allow_issue_writing: false # Disable built-in artifact upload

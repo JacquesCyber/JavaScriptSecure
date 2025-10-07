@@ -13,8 +13,8 @@ let privateKey = null;
 function loadKeys() {
   if (publicKey && privateKey) return true;
   
-  const publicKeyPath = path.join(__dirname, 'public.pem');
-  const privateKeyPath = path.join(__dirname, 'private.pem');
+  const publicKeyPath = path.join(__dirname, '../../keys/public.pem');
+  const privateKeyPath = path.join(__dirname, '../../keys/private.pem');
   
   try {
     if (fs.existsSync(publicKeyPath) && fs.existsSync(privateKeyPath)) {
