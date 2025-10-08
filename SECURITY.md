@@ -1,9 +1,5 @@
 # Security Policy
 
-## Vulnerability Reporting
-
-If you discover a security vulnerability, please send an email to [your-email@example.com]. All security vulnerabilities will be promptly addressed.
-
 ## Security Standards
 
 This project maintains the following security standards:

@@ -1,3 +1,17 @@
+/*
+The server.js file is the entry point of the application. 
+It sets up and starts the HTTP or HTTPS server based on the environment and available SSL certificates. 
+It also handles database connection initialization and graceful shutdown of the server.
+✅ SSL : Once run in production mode (npm run dev:https) all traffic is encrypted via HTTPS TLS version 1.3. Certs are stored in the keys/ directory.
+Note: Certificates are self-signed for development purposes. In a real production environment, use certificates from a trusted CA (cost money).
+Key Features:
+- Automatic HTTPS Detection: The server checks for the presence of SSL certificate files and the environment to decide whether to start an HTTPS or HTTP server.
+- Environment Awareness: In production, it attempts to start an HTTPS server if certificates are available; otherwise, it falls back to HTTP in development or testing environments.
+- Graceful Shutdown: Listens for termination signals (SIGINT, SIGTERM) to allow for clean shutdowns.
+- Database Connection: Initializes the database connection before starting the server, ensuring that the application is ready to handle requests.
+- Informative Logging: Provides clear console messages about the server status, access URLs, and instructions for handling self-signed certificates in development.
+*/
+
 import app from './app.js';
 import https from 'https';
 import http from 'http';
