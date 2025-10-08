@@ -1,3 +1,11 @@
+/*
+This module handles secure session management and JWT token operations.
+It provides functions to create, verify, and destroy sessions, as well as
+generate and validate JWT access and refresh tokens.
+Sessions ensure stateful user interactions, while JWTs enable stateless authentication.
+This ensures robust security for user authentication and session handling.
+✅ CSRF, ✅ XSS, ✅ Session Fixation, ✅ Secure Cookies, ✅ Token Expiry, ✅ HttpOnly Cookies
+*/
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 

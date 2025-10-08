@@ -3,6 +3,8 @@ import dotenv from 'dotenv';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
 
+import cors from 'cors';
+
 // Import middleware
 import { setupSecurity } from './middleware/security.js';
 
@@ -20,9 +22,30 @@ dotenv.config();
 const app = express();
 
 // Basic middleware
-app.use(express.json({ limit: '10mb' })); // Add size limit for security
-app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(express.json({ limit: '100kb' })); // Lowered size limit for DoS protection
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(cookieParser());
+
+// Secure CORS configuration
+const allowedOrigins = [
+  'http://localhost:3000',
+  // Add production domains here, e.g. 'https://yourdomain.com'
+];
+app.use(cors({
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1) {
+      return callback(null, true);
+    } else {
+      return callback(new Error('Not allowed by CORS'));
+    }
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Set-Cookie']
+}));
 
 // Session middleware (before security setup)
 app.use(session(sessionConfig));
