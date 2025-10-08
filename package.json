@@ -18,15 +18,15 @@
   },
   "scripts": {
     "dev": "nodemon src/server.js",
-    "dev:https": "NODE_ENV=production nodemon src/server.js",
+    "dev:https": "cross-env NODE_ENV=production nodemon src/server.js",
     "start": "node src/server.js",
-    "start:https": "NODE_ENV=production node src/server.js",
-    "prod": "NODE_ENV=production node src/server.js",
-    "test": "NODE_ENV=test node src/server.js",
+    "start:https": "cross-env NODE_ENV=production node src/server.js",
+    "prod": "cross-env NODE_ENV=production node src/server.js",
+    "test": "cross-env NODE_ENV=test node src/server.js",
     "test:coverage": "echo 'No tests configured yet - install jest or mocha for testing'",
     "lint": "eslint src/ --config eslint.config.js",
     "lint:security": "eslint src/ --config eslint.config.security.js",
-    "test:server": "NODE_ENV=test node src/server.js",
+    "test:server": "cross-env NODE_ENV=test node src/server.js",
     "cert:generate": "cd scripts && ./generate-cert.sh",
     "health": "curl -f http://localhost:3000/health || exit 1"
   }
