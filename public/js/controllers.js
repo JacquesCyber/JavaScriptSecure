@@ -355,6 +355,7 @@ export class ValidatorController extends PageController {
     // Validator-specific event listeners
   }
 
+  // Load and display transactions
   loadTransactions() {
     const container = document.getElementById('transactions-list');
     if (!container) return;
