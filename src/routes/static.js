@@ -1,6 +1,81 @@
 import express from 'express';
+import fs from 'fs';
+import path from 'path';
 
 const router = express.Router();
+
+// Serve main app.js (now the enterprise version)
+router.get('/app.js', (req, res) => {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'app.js');
+    const content = fs.readFileSync(filePath, 'utf8');
+    
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.setHeader('Pragma', 'no-cache');
+    res.setHeader('Expires', '0');
+    res.send(content);
+  } catch (error) {
+    console.error('Error serving app.js:', error);
+    res.status(404).send('// App.js not found');
+  }
+});
+
+// Serve JS modules with security validation
+router.get('/js/:module', (req, res) => {
+  try {
+    const moduleName = req.params.module;
+    
+    // Security: Only allow specific modules
+    const allowedModules = ['controllers.js', 'utils.js', 'services.js'];
+    if (!allowedModules.includes(moduleName)) {
+      return res.status(403).send('// Module not allowed');
+    }
+    
+    const filePath = path.join(process.cwd(), 'public', 'js', moduleName);
+    
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send('// Module not found');
+    }
+    
+    const content = fs.readFileSync(filePath, 'utf8');
+    
+    res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes cache
+    res.send(content);
+  } catch (error) {
+    console.error('Error serving JS module:', error);
+    res.status(500).send('// Error loading module');
+  }
+});
+
+// Serve app.js with proper headers
+router.get('/templates/:template', (req, res) => {
+  try {
+    const templateName = req.params.template;
+    
+    // Security: Only allow alphanumeric template names
+    if (!/^[a-zA-Z0-9-_]+\.html$/.test(templateName)) {
+      return res.status(400).send('Invalid template name');
+    }
+    
+    const filePath = path.join(process.cwd(), 'public', 'templates', templateName);
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send('Template not found');
+    }
+    
+    const content = fs.readFileSync(filePath, 'utf8');
+    
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes cache
+    res.send(content);
+  } catch (error) {
+    console.error('Error serving template:', error);
+    res.status(500).send('Error loading template');
+  }
+});
 
 // Favicon handler
 router.get('/favicon.ico', (req, res) => {

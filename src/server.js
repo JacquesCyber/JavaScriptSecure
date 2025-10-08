@@ -12,9 +12,11 @@ async function startServer() {
     await connectDatabase();
     
     // Determine if we should use HTTPS
+    const certPath = './keys/cert.pem';
+    const keyPath = './keys/key.pem';
     const useHttps = process.env.NODE_ENV === 'production' && 
-                     fs.existsSync('./keys/cert.pem') && 
-                     fs.existsSync('./keys/key.pem');
+                     fs.existsSync(certPath) && 
+                     fs.existsSync(keyPath);
 
     if (useHttps) {
       // HTTPS server for production
@@ -26,13 +28,20 @@ async function startServer() {
       const server = https.createServer(options, app);
       server.listen(port, () => {
         console.log(`🔒 HTTPS server running at https://localhost:${port}`);
+        console.log(`📱 Access your secure app at: https://localhost:${port}`);
+        console.log(`⚠️  If browser blocks self-signed certificate:`);
+        console.log(`   • Click "Advanced" → "Proceed to localhost (unsafe)"`);
+        console.log(`   • Or run: npm run cert:generate to create a better certificate`);
+        console.log(`   • Or use HTTP mode: npm run dev`);
       });
     } else {
       // HTTP server for development/testing
       const server = http.createServer(app);
       server.listen(port, '0.0.0.0', () => {
         const mode = process.env.NODE_ENV || 'development';
-        console.log(`🚀 HTTP server running at http://0.0.0.0:${port} (${mode.toUpperCase()} MODE)`);
+        console.log(`🚀 HTTP server running at http://localhost:${port} (${mode.toUpperCase()} MODE)`);
+        console.log(`📱 Access your app at: http://localhost:${port}`);
+        console.log(`🌐 Server bound to 0.0.0.0:${port} (accessible from network)`);
       });
     }
   } catch (error) {

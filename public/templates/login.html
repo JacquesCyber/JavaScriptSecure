@@ -1,0 +1,32 @@
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card border-success shadow-lg">
+      <div class="card-header bg-success text-white text-center">
+        <h2 class="mb-0">🔑 Sign In</h2>
+      </div>
+      <div class="card-body p-4">
+        <form id="login-form" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label for="loginEmail" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="loginEmail" name="email" required>
+            <div class="invalid-feedback">Please provide a valid email.</div>
+          </div>
+          <div class="mb-3">
+            <label for="loginPassword" class="form-label">Password</label>
+            <input type="password" class="form-control" id="loginPassword" name="password" required>
+            <div class="invalid-feedback">Please provide your password.</div>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="remember">
+            <label class="form-check-label" for="remember">Remember me</label>
+          </div>
+          <button type="submit" class="btn btn-success w-100 mb-3">Sign In</button>
+        </form>
+        <div class="text-center">
+          <p class="mb-2"><a href="#" class="text-success">Forgot Password?</a></p>
+          <p class="mb-0">Don't have an account? <a href="#" data-page="register" class="text-success">Create One</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

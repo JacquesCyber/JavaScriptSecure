@@ -3,6 +3,7 @@
   "dependencies": {
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
+    "express-rate-limit": "^8.1.0",
     "express-validator": "^7.2.1",
     "helmet": "^8.1.0",
     "mongoose": "^8.17.0"
@@ -16,10 +17,15 @@
   },
   "scripts": {
     "dev": "nodemon src/server.js",
+    "dev:https": "NODE_ENV=production nodemon src/server.js",
     "start": "node src/server.js",
+    "start:https": "NODE_ENV=production node src/server.js",
+    "prod": "NODE_ENV=production node src/server.js",
     "test": "NODE_ENV=test node src/server.js",
     "lint": "eslint src/ --config eslint.config.js",
     "lint:security": "eslint src/ --config eslint.config.security.js",
-    "test:server": "NODE_ENV=test node src/server.js"
+    "test:server": "NODE_ENV=test node src/server.js",
+    "cert:generate": "cd scripts && ./generate-cert.sh",
+    "health": "curl -f http://localhost:3000/health || exit 1"
   }
 }

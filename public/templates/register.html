@@ -1,0 +1,43 @@
+<div class="row justify-content-center">
+  <div class="col-md-6">
+    <div class="card border-primary shadow-lg">
+      <div class="card-header bg-primary text-white text-center">
+        <h2 class="mb-0">🔐 Create Account</h2>
+      </div>
+      <div class="card-body p-4">
+        <form id="register-form" class="needs-validation" novalidate>
+          <div class="mb-3">
+            <label for="fullName" class="form-label">Full Name</label>
+            <input type="text" class="form-control" id="fullName" name="fullName" required>
+            <div class="invalid-feedback">Please provide a valid name.</div>
+          </div>
+          <div class="mb-3">
+            <label for="email" class="form-label">Email Address</label>
+            <input type="email" class="form-control" id="email" name="email" required>
+            <div class="invalid-feedback">Please provide a valid email.</div>
+          </div>
+          <div class="mb-3">
+            <label for="password" class="form-label">Password</label>
+            <input type="password" class="form-control" id="password" name="password" minlength="8" required>
+            <div class="invalid-feedback">Password must be at least 8 characters.</div>
+          </div>
+          <div class="mb-3">
+            <label for="confirmPassword" class="form-label">Confirm Password</label>
+            <input type="password" class="form-control" id="confirmPassword" name="confirmPassword" required>
+            <div class="invalid-feedback">Passwords must match.</div>
+          </div>
+          <div class="mb-3 form-check">
+            <input type="checkbox" class="form-check-input" id="terms" required>
+            <label class="form-check-label" for="terms">
+              I agree to the <a href="#" class="text-primary">Terms of Service</a>
+            </label>
+          </div>
+          <button type="submit" class="btn btn-primary w-100 mb-3">Create Account</button>
+        </form>
+        <div class="text-center">
+          <p class="mb-0">Already have an account? <a href="#" data-page="login" class="text-primary">Sign In</a></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

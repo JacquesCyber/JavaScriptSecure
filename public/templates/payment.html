@@ -1,0 +1,108 @@
+<div class="row justify-content-center">
+  <div class="col-md-8">
+    <div class="card border-warning shadow-lg">
+      <div class="card-header bg-warning text-dark text-center">
+        <h2 class="mb-0">💳 Payment Processor</h2>
+      </div>
+      <div class="card-body p-4">
+        <form id="payment-form" class="needs-validation" novalidate>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="amount" class="form-label">Amount ($)</label>
+                <input type="number" class="form-control" id="amount" name="amount" min="0.01" step="0.01" required>
+                <div class="invalid-feedback">Please enter a valid amount.</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="payment-method" class="form-label">Payment Method</label>
+                <select class="form-select" id="payment-method" name="method" required>
+                  <option value="">Select method...</option>
+                  <option value="card">Credit/Debit Card</option>
+                  <option value="paypal">PayPal</option>
+                  <option value="bank">Bank Transfer</option>
+                </select>
+                <div class="invalid-feedback">Please select a payment method.</div>
+              </div>
+            </div>
+          </div>
+          
+          <div id="card-details" style="display: none;">
+            <div class="row">
+              <div class="col-md-12">
+                <div class="mb-3">
+                  <label for="card-number" class="form-label">Card Number</label>
+                  <input type="text" class="form-control" id="card-number" name="cardNumber" placeholder="1234 5678 9012 3456">
+                </div>
+              </div>
+            </div>
+            <div class="row">
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="expiry-month" class="form-label">Month</label>
+                  <select class="form-select" id="expiry-month" name="expiryMonth">
+                    <option value="">MM</option>
+                    <option value="01">01</option>
+                    <option value="02">02</option>
+                    <option value="03">03</option>
+                    <option value="04">04</option>
+                    <option value="05">05</option>
+                    <option value="06">06</option>
+                    <option value="07">07</option>
+                    <option value="08">08</option>
+                    <option value="09">09</option>
+                    <option value="10">10</option>
+                    <option value="11">11</option>
+                    <option value="12">12</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="expiry-year" class="form-label">Year</label>
+                  <select class="form-select" id="expiry-year" name="expiryYear">
+                    <option value="">YYYY</option>
+                    <option value="2025">2025</option>
+                    <option value="2026">2026</option>
+                    <option value="2027">2027</option>
+                    <option value="2028">2028</option>
+                    <option value="2029">2029</option>
+                    <option value="2030">2030</option>
+                  </select>
+                </div>
+              </div>
+              <div class="col-md-4">
+                <div class="mb-3">
+                  <label for="cvv" class="form-label">CVV</label>
+                  <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123" maxlength="4">
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <div class="mb-3">
+            <label for="description" class="form-label">Description (Optional)</label>
+            <textarea class="form-control" id="description" name="description" rows="3" placeholder="What is this payment for?"></textarea>
+          </div>
+          
+          <div class="row">
+            <div class="col-md-6">
+              <button type="submit" class="btn btn-warning w-100">🔒 Process Payment</button>
+            </div>
+            <div class="col-md-6">
+              <a href="#" data-page="dashboard" class="btn btn-outline-secondary w-100">Cancel</a>
+            </div>
+          </div>
+        </form>
+        
+        <div class="mt-4 text-center">
+          <small class="text-muted">
+            🔒 Your payment information is encrypted and secure<br>
+            💳 We support Visa, MasterCard, American Express
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
