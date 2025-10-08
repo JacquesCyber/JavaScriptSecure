@@ -1,6 +1,8 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { UserService } from '../services/user.js';
+import { TokenManager, SessionManager } from '../auth/session.js';
+import { authenticate, authorize } from '../middleware/auth.js';
 
 const router = express.Router();
 
@@ -79,7 +81,46 @@ router.post('/login', loginValidation, async (req, res) => {
     const { email, password } = req.body;
     const result = await UserService.loginUser(email, password);
     
-    res.json(result);
+    if (result.success) {
+      // Create secure session
+      await SessionManager.createSession(req, result.user);
+      
+      // Generate JWT tokens
+      const accessToken = TokenManager.generateAccessToken(result.user);
+      const refreshToken = TokenManager.generateRefreshToken(result.user);
+      
+      // Set HTTP-only cookies
+      res.cookie('accessToken', accessToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 15 * 60 * 1000 // 15 minutes
+      });
+      
+      res.cookie('refreshToken', refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'strict',
+        maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
+      });
+      
+      console.log('✅ User logged in with secure session:', result.user.email);
+      
+      // Return success without sensitive data
+      res.json({
+        success: true,
+        message: 'Login successful',
+        user: {
+          id: result.user._id,
+          email: result.user.email,
+          fullName: result.user.fullName,
+          role: result.user.role || 'user'
+        },
+        sessionId: req.session.id
+      });
+    } else {
+      res.status(401).json(result);
+    }
   } catch (error) {
     console.error('❌ Error in POST /api/users/login:', error);
     
@@ -103,6 +144,100 @@ router.get('/stats', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Failed to get user statistics'
+    });
+  }
+});
+
+// POST /api/users/logout - Secure logout
+router.post('/logout', authenticate, async (req, res) => {
+  try {
+    // Destroy session
+    await SessionManager.destroySession(req);
+    
+    // Clear cookies
+    res.clearCookie('accessToken');
+    res.clearCookie('refreshToken');
+    res.clearCookie('secureSessionId');
+    
+    console.log('✅ User logged out successfully');
+    
+    res.json({
+      success: true,
+      message: 'Logout successful'
+    });
+  } catch (error) {
+    console.error('❌ Error during logout:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Logout failed'
+    });
+  }
+});
+
+// GET /api/users/session - Check session status
+router.get('/session', authenticate, (req, res) => {
+  res.json({
+    success: true,
+    authenticated: true,
+    user: {
+      id: req.user.userId,
+      email: req.user.email,
+      role: req.user.role
+    },
+    session: {
+      id: req.session?.id,
+      lastActivity: req.session?.lastActivity
+    }
+  });
+});
+
+// POST /api/users/refresh - Refresh access token
+router.post('/refresh', async (req, res) => {
+  try {
+    const refreshToken = req.cookies?.refreshToken;
+    
+    if (!refreshToken) {
+      return res.status(401).json({
+        error: true,
+        message: 'Refresh token required'
+      });
+    }
+    
+    // Verify refresh token
+    const decoded = TokenManager.verifyToken(refreshToken);
+    
+    if (decoded.type !== 'refresh') {
+      return res.status(401).json({
+        error: true,
+        message: 'Invalid refresh token'
+      });
+    }
+    
+    // Generate new access token
+    const newAccessToken = TokenManager.generateAccessToken({
+      _id: decoded.userId,
+      email: decoded.email,
+      role: decoded.role
+    });
+    
+    // Set new access token cookie
+    res.cookie('accessToken', newAccessToken, {
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: 'strict',
+      maxAge: 15 * 60 * 1000 // 15 minutes
+    });
+    
+    res.json({
+      success: true,
+      message: 'Token refreshed successfully'
+    });
+    
+  } catch (error) {
+    console.error('❌ Token refresh failed:', error);
+    res.status(401).json({
+      error: true,
+      message: 'Token refresh failed'
     });
   }
 });

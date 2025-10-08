@@ -1,8 +1,13 @@
 import express from 'express';
 import dotenv from 'dotenv';
+import session from 'express-session';
+import cookieParser from 'cookie-parser';
 
 // Import middleware
 import { setupSecurity } from './middleware/security.js';
+
+// Import session configuration
+import { sessionConfig } from './auth/session.js';
 
 // Import routes
 import secretRoutes from './routes/secret.js';
@@ -15,7 +20,12 @@ dotenv.config();
 const app = express();
 
 // Basic middleware
-app.use(express.json());
+app.use(express.json({ limit: '10mb' })); // Add size limit for security
+app.use(express.urlencoded({ extended: true, limit: '10mb' }));
+app.use(cookieParser());
+
+// Session middleware (before security setup)
+app.use(session(sessionConfig));
 
 // Serve static files from the 'public' directory (except index.html)
 app.use(express.static('public', { index: false }));
