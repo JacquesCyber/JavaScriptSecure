@@ -1,3 +1,10 @@
+/*
+This module provides hybrid encryption and decryption using AES for data. The AES key and IV are securely exchanged using RSA.
+It lazily loads RSA keys from the filesystem only when needed, allowing the application to start even if keys are missing.
+This is modern best practice for securely handling sensitive data in a web application. 
+It uses AES-256-GCM for authenticated encryption and RSA-OAEP for key exchange ensuring confidentiality and integrity.
+✅ Data in transit and at rest is protected.
+*/
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
