@@ -29,6 +29,59 @@ function loadKeys() {
   return false;
 }
 
+// Generate RSA key pair and save to files
+export function generateKeys() {
+  const keysDir = path.join(__dirname, '../../keys');
+  const publicKeyPath = path.join(keysDir, 'public.pem');
+  const privateKeyPath = path.join(keysDir, 'private.pem');
+  
+  // Create keys directory if it doesn't exist
+  if (!fs.existsSync(keysDir)) {
+    fs.mkdirSync(keysDir, { recursive: true });
+  }
+  
+  // Check if keys already exist
+  if (fs.existsSync(publicKeyPath) && fs.existsSync(privateKeyPath)) {
+    console.log('⚠️  Keys already exist. Skipping generation.');
+    console.log('   Delete existing keys first if you want to regenerate them.');
+    return false;
+  }
+  
+  console.log('🔑 Generating RSA key pair...');
+  
+  // Generate 4096-bit RSA key pair
+  const { publicKey: pubKey, privateKey: privKey } = crypto.generateKeyPairSync('rsa', {
+    modulusLength: 4096,
+    publicKeyEncoding: {
+      type: 'spki',
+      format: 'pem'
+    },
+    privateKeyEncoding: {
+      type: 'pkcs8',
+      format: 'pem'
+    }
+  });
+  
+  // Save keys to files
+  fs.writeFileSync(publicKeyPath, pubKey);
+  fs.writeFileSync(privateKeyPath, privKey);
+  
+  // Set restrictive permissions on private key (Unix-like systems)
+  if (process.platform !== 'win32') {
+    fs.chmodSync(privateKeyPath, 0o600);
+  }
+  
+  console.log('✅ RSA keys generated successfully!');
+  console.log(`   Public key:  ${publicKeyPath}`);
+  console.log(`   Private key: ${privateKeyPath}`);
+  
+  // Load the newly generated keys into memory
+  publicKey = pubKey;
+  privateKey = privKey;
+  
+  return true;
+}
+
 // AES + RSA Hybrid Encryption
 export function encryptHybrid(data) {
   if (!loadKeys()) {
