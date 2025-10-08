@@ -38,7 +38,7 @@ export const securityConfig = {
     useDefaults: false,
     directives: {
       defaultSrc: ["'none'"],
-      scriptSrc: ["'self'", "'nonce-{nonce}'", "https://cdn.jsdelivr.net"], // Will be replaced with actual nonce
+      scriptSrc: ["'self'", "'nonce-{nonce}'", "https://cdn.jsdelivr.net", "https://cdnjs.cloudflare.com"], // Will be replaced with actual nonce
       styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       styleSrcElem: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com", "https://cdnjs.cloudflare.com"],
       imgSrc: ["'self'", "data:"],

@@ -1,3 +1,5 @@
+/* eslint-env browser, es6 */
+/* global document, window, sessionStorage, localStorage */
 // Enterprise-Grade SPA with Best Practices
 import { 
   RegisterController, 
@@ -15,14 +17,24 @@ class SecureApp {
     this.templateCache = new Map();
     this.controllers = new Map();
     
+    // Page security configuration
+    this.pageConfig = {
+      'register': { requiresAuth: false, allowedRoles: [] },
+      'login': { requiresAuth: false, allowedRoles: [] },
+      'dashboard': { requiresAuth: true, allowedRoles: ['user', 'admin'] },
+      'payment': { requiresAuth: true, allowedRoles: ['user', 'admin'] },
+      'validator': { requiresAuth: true, allowedRoles: ['admin'] }
+    };
+    
     this.init();
   }
 
   init() {
+    this.loadUserFromSession(); // Load user from session storage
     this.initializeControllers();
     this.setupRouter();
     this.setupGlobalEventListeners();
-    this.loadPage(this.getPageFromHash() || 'register');
+    this.loadPage(this.getPageFromHash() || this.getDefaultPage());
   }
 
   initializeControllers() {
@@ -40,7 +52,14 @@ class SecureApp {
   }
 
   getPageFromHash() {
-    return window.location.hash.slice(1) || 'register';
+    const requestedPage = window.location.hash.slice(1) || 'register';
+    if (!this.isValidPage(requestedPage)) {
+      return this.getDefaultPage();
+    }
+    if (!this.hasPageAccess(requestedPage)) {
+      return this.getDefaultPage();
+    }
+    return requestedPage;
   }
 
   setupGlobalEventListeners() {
@@ -54,6 +73,13 @@ class SecureApp {
         e.preventDefault();
         const page = e.target.getAttribute('data-page');
         this.navigateTo(page);
+      }
+      
+      // Handle logout button clicks
+      if (e.target.id === 'logout-btn' || e.target.closest('#logout-btn')) {
+        e.preventDefault();
+        console.log('Logout button clicked via event delegation!');
+        this.logout();
       }
     });
 
@@ -72,6 +98,14 @@ class SecureApp {
   }
 
   navigateTo(page) {
+    if (!this.isValidPage(page)) {
+      this.showNotification('❌ Invalid page requested', 'error');
+      return;
+    }
+    if (!this.hasPageAccess(page)) {
+      this.showNotification('❌ Access denied. Please log in.', 'error');
+      page = this.isAuthenticated() ? this.currentPage : 'login';
+    }
     window.location.hash = page;
     this.loadPage(page);
   }
@@ -92,6 +126,21 @@ class SecureApp {
         link.classList.add('active');
       }
     });
+
+    const isAuth = this.isAuthenticated();
+    const navRegister = document.getElementById('nav-register');
+    const navLogin = document.getElementById('nav-login');
+    const navDashboard = document.getElementById('nav-dashboard');
+    const navPayment = document.getElementById('nav-payment');
+    const navValidator = document.getElementById('nav-validator');
+    const navLogout = document.getElementById('nav-logout');
+    
+    if (navRegister) navRegister.style.display = !isAuth ? 'block' : 'none';
+    if (navLogin) navLogin.style.display = !isAuth ? 'block' : 'none';
+    if (navDashboard) navDashboard.style.display = isAuth ? 'block' : 'none';
+    if (navPayment) navPayment.style.display = isAuth ? 'block' : 'none';
+    if (navValidator) navValidator.style.display = isAuth && this.hasRequiredRole(['admin']) ? 'block' : 'none';
+    if (navLogout) navLogout.style.display = isAuth ? 'block' : 'none';
   }
 
   async renderPage(page) {
@@ -236,6 +285,83 @@ class SecureApp {
 
   getValidatorTemplate() {
     return `<!-- Existing validator template content as fallback -->`;
+  }
+
+  // Security Methods
+  isValidPage(page) {
+    return Object.prototype.hasOwnProperty.call(this.pageConfig, page);
+  }
+
+  hasPageAccess(page) {
+    const config = this.pageConfig[page];
+    if (!config) return false;
+    if (config.requiresAuth && !this.isAuthenticated()) return false;
+    if (config.allowedRoles.length > 0 && !this.hasRequiredRole(config.allowedRoles)) return false;
+    return true;
+  }
+
+  isAuthenticated() {
+    return this.user !== null && this.user.isAuthenticated === true;
+  }
+
+  hasRequiredRole(allowedRoles) {
+    if (!this.user || !this.user.role) return false;
+    return allowedRoles.includes(this.user.role);
+  }
+
+  getDefaultPage() {
+    return this.isAuthenticated() ? 'dashboard' : 'login';
+  }
+
+  // User Management Methods
+  setUser(userData) {
+    this.user = { ...userData, isAuthenticated: true };
+    sessionStorage.setItem('user', JSON.stringify(this.user));
+    this.updateNavigation();
+  }
+
+  logout() {
+    console.log('🚪 Logout initiated...');
+    
+    // Clear user data
+    this.user = null;
+    
+    // Clear session storage
+    try {
+      sessionStorage.removeItem('user');
+      localStorage.removeItem('transactions'); // Clear any cached data
+      console.log('✅ Session data cleared');
+    } catch (error) {
+      console.warn('Error clearing storage:', error);
+    }
+    
+    // Update navigation immediately to hide authenticated elements
+    this.updateNavigation();
+    console.log('✅ Navigation updated');
+    
+    // Show success message
+    this.showNotification('✅ Successfully logged out', 'success');
+    
+    // Force redirect to login page
+    setTimeout(() => {
+      console.log('🔄 Redirecting to login page...');
+      window.location.hash = 'login';
+      this.currentPage = 'login';
+      this.loadPage('login');
+    }, 800);
+  }
+
+  loadUserFromSession() {
+    try {
+      const savedUser = sessionStorage.getItem('user');
+      if (savedUser) {
+        this.user = JSON.parse(savedUser);
+      }
+    } catch (error) {
+      console.error('Error loading user from session:', error);
+      sessionStorage.removeItem('user');
+      this.user = null;
+    }
   }
 }
 

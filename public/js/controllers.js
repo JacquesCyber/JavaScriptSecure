@@ -1,3 +1,5 @@
+/* eslint-env browser, es6 */
+/* global document, localStorage */
 // Page Controllers - Best Practice Separation
 export class PageController {
   constructor(app) {
@@ -123,9 +125,10 @@ export class RegisterController extends PageController {
     try {
       // Show loading state
       const submitBtn = form.querySelector('button[type="submit"]');
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Creating Account...';
-      submitBtn.disabled = true;
+      if (submitBtn) {
+        submitBtn.textContent = 'Creating Account...';
+        submitBtn.disabled = true;
+      }
       
       console.log('🚀 Starting registration process...');
       console.log('📤 Form data:', data);
@@ -161,7 +164,7 @@ export class RegisterController extends PageController {
       // Restore button state
       const submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn) {
-        submitBtn.textContent = originalText;
+        submitBtn.textContent = 'Create Account';
         submitBtn.disabled = false;
       }
     }
@@ -191,9 +194,10 @@ export class LoginController extends PageController {
     try {
       // Show loading state
       const submitBtn = form.querySelector('button[type="submit"]');
-      const originalText = submitBtn.textContent;
-      submitBtn.textContent = 'Signing in...';
-      submitBtn.disabled = true;
+      if (submitBtn) {
+        submitBtn.textContent = 'Signing in...';
+        submitBtn.disabled = true;
+      }
       
       // Submit to MongoDB via API
       const response = await fetch('/api/users/login', {
@@ -210,14 +214,13 @@ export class LoginController extends PageController {
       const result = await response.json();
       
       if (result.success) {
-        // Store user data
-        this.app.user = {
+        this.app.setUser({
           id: result.user._id,
           fullName: result.user.fullName,
           email: result.user.email,
+          role: 'user',
           loginTime: new Date().toLocaleString()
-        };
-        
+        });
         this.app.showNotification('✅ Welcome back, ' + result.user.fullName + '!', 'success');
         setTimeout(() => this.app.navigateTo('dashboard'), 1500);
       } else {
@@ -231,7 +234,7 @@ export class LoginController extends PageController {
       // Restore button state
       const submitBtn = form.querySelector('button[type="submit"]');
       if (submitBtn) {
-        submitBtn.textContent = originalText;
+        submitBtn.textContent = 'Sign In';
         submitBtn.disabled = false;
       }
     }
@@ -240,8 +243,8 @@ export class LoginController extends PageController {
 
 // Dashboard Page Controller
 export class DashboardController extends PageController {
-  async render(data = {}) {
-    const userName = this.app.user?.name || 'User';
+  async render() {
+    const userName = this.app.user?.fullName || 'User';
     const loginTime = this.app.user?.loginTime || new Date().toLocaleString();
     
     const content = await super.render('dashboard', { 
@@ -262,7 +265,7 @@ export class DashboardController extends PageController {
     const loginTimeEl = document.getElementById('login-time');
     
     if (userNameEl && this.app.user) {
-      userNameEl.textContent = this.app.user.name;
+      userNameEl.textContent = this.app.user.fullName;
     }
     
     if (loginTimeEl && this.app.user) {
