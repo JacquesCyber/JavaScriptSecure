@@ -38,7 +38,8 @@ app.use(cors({
     if (allowedOrigins.indexOf(origin) !== -1) {
       return callback(null, true);
     } else {
-      return callback(new Error('Not allowed by CORS'));
+      // Block CORS for disallowed origins, but do not throw error (prevents 500)
+      return callback(null, false);
     }
   },
   credentials: true,
