@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 
 // Import middleware
 import { setupSecurity } from './middleware/security.js';
+import { generalLimiter, apiLimiter } from './middleware/rateLimiting.js';
 
 // Import routes
 import secretRoutes from './routes/secret.js';
@@ -22,6 +23,10 @@ app.use(express.static('public', { index: false }));
 
 // Setup security middleware
 setupSecurity(app);
+
+// Rate limiting middleware
+app.use(generalLimiter);
+app.use('/api', apiLimiter);
 
 // Routes
 app.use('/', healthRoutes);

@@ -1,6 +1,7 @@
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { UserService } from '../services/user.js';
+import { authLimiter } from '../middleware/rateLimiting.js';
 
 const router = express.Router();
 
@@ -33,7 +34,7 @@ const loginValidation = [
 ];
 
 // POST /api/users/register
-router.post('/register', registerValidation, async (req, res) => {
+router.post('/register', authLimiter, registerValidation, async (req, res) => {
   console.log('📝 Registration request received:', req.body);
   
   const errors = validationResult(req);
@@ -65,7 +66,7 @@ router.post('/register', registerValidation, async (req, res) => {
 });
 
 // POST /api/users/login
-router.post('/login', loginValidation, async (req, res) => {
+router.post('/login', authLimiter, loginValidation, async (req, res) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     return res.status(400).json({
