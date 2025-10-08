@@ -1,6 +1,7 @@
 {
   "type": "module",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.2.1",
     "express": "^5.1.0",
     "express-rate-limit": "^8.1.0",
@@ -22,6 +23,7 @@
     "start:https": "NODE_ENV=production node src/server.js",
     "prod": "NODE_ENV=production node src/server.js",
     "test": "NODE_ENV=test node src/server.js",
+    "test:coverage": "echo 'No tests configured yet - install jest or mocha for testing'",
     "lint": "eslint src/ --config eslint.config.js",
     "lint:security": "eslint src/ --config eslint.config.security.js",
     "test:server": "NODE_ENV=test node src/server.js",

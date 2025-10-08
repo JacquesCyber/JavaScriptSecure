@@ -19,7 +19,24 @@
           <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" name="password" minlength="8" required>
-            <div class="invalid-feedback">Password must be at least 8 characters.</div>
+            <div class="password-requirements mt-2">
+              <small class="text-muted">Password must contain:</small>
+              <ul class="list-unstyled small mt-1">
+                <li id="req-length" class="text-danger">
+                  <i class="fas fa-times me-1"></i> At least 8 characters
+                </li>
+                <li id="req-lowercase" class="text-danger">
+                  <i class="fas fa-times me-1"></i> One lowercase letter
+                </li>
+                <li id="req-uppercase" class="text-danger">
+                  <i class="fas fa-times me-1"></i> One uppercase letter
+                </li>
+                <li id="req-number" class="text-danger">
+                  <i class="fas fa-times me-1"></i> One number
+                </li>
+              </ul>
+            </div>
+            <div class="invalid-feedback">Password does not meet requirements.</div>
           </div>
           <div class="mb-3">
             <label for="confirmPassword" class="form-label">Confirm Password</label>

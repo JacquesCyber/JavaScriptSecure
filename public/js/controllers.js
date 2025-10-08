@@ -41,12 +41,62 @@ export class RegisterController extends PageController {
     const form = document.getElementById('register-form');
     if (form) {
       form.addEventListener('submit', this.handleSubmit.bind(this));
+      
+      // Add real-time password validation
+      const passwordInput = document.getElementById('password');
+      if (passwordInput) {
+        passwordInput.addEventListener('input', this.validatePassword.bind(this));
+      }
     }
+  }
+
+  validatePassword(event) {
+    const password = event.target.value;
+    
+    // Password requirements
+    const requirements = {
+      'req-length': password.length >= 8,
+      'req-lowercase': /[a-z]/.test(password),
+      'req-uppercase': /[A-Z]/.test(password),
+      'req-number': /\d/.test(password)
+    };
+
+    // Update requirement indicators
+    Object.entries(requirements).forEach(([id, isValid]) => {
+      const element = document.getElementById(id);
+      if (element) {
+        const icon = element.querySelector('i');
+        if (isValid) {
+          element.className = 'text-success';
+          icon.className = 'fas fa-check me-1';
+        } else {
+          element.className = 'text-danger';
+          icon.className = 'fas fa-times me-1';
+        }
+      }
+    });
+
+    // Update input validation state
+    const allValid = Object.values(requirements).every(req => req);
+    const passwordInput = event.target;
+    
+    if (password.length > 0) {
+      if (allValid) {
+        passwordInput.classList.remove('is-invalid');
+        passwordInput.classList.add('is-valid');
+      } else {
+        passwordInput.classList.remove('is-valid');
+        passwordInput.classList.add('is-invalid');
+      }
+    }
+
+    return allValid;
   }
 
   async handleSubmit(event) {
     event.preventDefault();
-    const formData = new FormData(event.target);
+    const form = event.target;
+    const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
     // Validation
@@ -55,9 +105,66 @@ export class RegisterController extends PageController {
       return;
     }
 
-    // Simulate API call
-    this.app.showNotification('Account created successfully!', 'success');
-    setTimeout(() => this.app.navigateTo('login'), 1500);
+    // Check password requirements
+    const passwordRequirements = {
+      length: data.password.length >= 8,
+      lowercase: /[a-z]/.test(data.password),
+      uppercase: /[A-Z]/.test(data.password),
+      number: /\d/.test(data.password)
+    };
+
+    const allValid = Object.values(passwordRequirements).every(req => req);
+    
+    if (!allValid) {
+      this.app.showNotification('❌ Password does not meet security requirements. Please check the requirements below.', 'error');
+      return;
+    }
+
+    try {
+      // Show loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Creating Account...';
+      submitBtn.disabled = true;
+      
+      console.log('🚀 Starting registration process...');
+      console.log('📤 Form data:', data);
+      
+      // Submit to MongoDB via API
+      const response = await fetch('/api/users/register', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fullName: data.fullName,
+          email: data.email,
+          password: data.password
+        })
+      });
+      
+      console.log('📥 Response status:', response.status);
+      const result = await response.json();
+      console.log('📥 Response data:', result);
+      
+      if (result.success) {
+        this.app.showNotification('✅ Account created successfully! Welcome ' + result.user.fullName, 'success');
+        setTimeout(() => this.app.navigateTo('login'), 1500);
+      } else {
+        this.app.showNotification('❌ Registration failed: ' + result.message, 'error');
+      }
+      
+    } catch (error) {
+      console.error('❌ Registration error:', error);
+      this.app.showNotification('❌ Network error. Please try again.', 'error');
+    } finally {
+      // Restore button state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    }
   }
 }
 
@@ -77,18 +184,57 @@ export class LoginController extends PageController {
 
   async handleSubmit(event) {
     event.preventDefault();
-    const formData = new FormData(event.target);
+    const form = event.target;
+    const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
-    // Simulate authentication
-    this.app.user = { 
-      email: data.email, 
-      name: data.email.split('@')[0],
-      loginTime: new Date().toLocaleString()
-    };
-    
-    this.app.showNotification('Login successful!', 'success');
-    setTimeout(() => this.app.navigateTo('dashboard'), 1500);
+    try {
+      // Show loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      const originalText = submitBtn.textContent;
+      submitBtn.textContent = 'Signing in...';
+      submitBtn.disabled = true;
+      
+      // Submit to MongoDB via API
+      const response = await fetch('/api/users/login', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: data.email,
+          password: data.password
+        })
+      });
+      
+      const result = await response.json();
+      
+      if (result.success) {
+        // Store user data
+        this.app.user = {
+          id: result.user._id,
+          fullName: result.user.fullName,
+          email: result.user.email,
+          loginTime: new Date().toLocaleString()
+        };
+        
+        this.app.showNotification('✅ Welcome back, ' + result.user.fullName + '!', 'success');
+        setTimeout(() => this.app.navigateTo('dashboard'), 1500);
+      } else {
+        this.app.showNotification('❌ Login failed: ' + result.message, 'error');
+      }
+      
+    } catch (error) {
+      console.error('Login error:', error);
+      this.app.showNotification('❌ Network error. Please try again.', 'error');
+    } finally {
+      // Restore button state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.textContent = originalText;
+        submitBtn.disabled = false;
+      }
+    }
   }
 }
 
