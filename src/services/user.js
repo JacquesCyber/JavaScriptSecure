@@ -1,17 +1,40 @@
 import User from '../models/User.js';
 import bcrypt from 'bcrypt';
+import { encryptIdNumber } from '../utils/encryption.js';
 
 export class UserService {
   
   // Register new user
   static async registerUser(userData) {
     try {
-      const { fullName, email, password } = userData;
+      const { fullName, email, username, idNumber, accountNumber, bankCode, branchCode, password } = userData;
       
       // Check if user already exists
-      const existingUser = await User.findOne({ email: email.toLowerCase() });
+      // Encrypt the ID number for comparison (since it's stored encrypted)
+      const encryptedIdNumber = encryptIdNumber(idNumber);
+      
+      const existingUser = await User.findOne({
+        $or: [
+          { email: email.toLowerCase() },
+          { username: username.toLowerCase() },
+          { idNumber: encryptedIdNumber },
+          { accountNumber: accountNumber }
+        ]
+      });
+      
       if (existingUser) {
-        throw new Error('User already exists with this email');
+        if (existingUser.email === email.toLowerCase()) {
+          throw new Error('User already exists with this email');
+        }
+        if (existingUser.username === username.toLowerCase()) {
+          throw new Error('Username already taken');
+        }
+        if (existingUser.idNumber === encryptedIdNumber) {
+          throw new Error('ID number already registered');
+        }
+        if (existingUser.accountNumber === accountNumber) {
+          throw new Error('Account number already registered');
+        }
       }
       
       // Hash password
@@ -22,12 +45,19 @@ export class UserService {
       const user = new User({
         fullName,
         email: email.toLowerCase(),
-        password: hashedPassword
+        username: username.toLowerCase(),
+        idNumber,
+        accountNumber,
+        bankCode,
+        branchCode,
+        password: hashedPassword,
+        role: 'customer'
       });
       
       const savedUser = await user.save();
       
       // Return user without password
+      // eslint-disable-next-line no-unused-vars
       const { password: _, ...userWithoutPassword } = savedUser.toObject();
       
       return {
@@ -40,7 +70,18 @@ export class UserService {
       console.error('❌ Error registering user:', error);
       
       if (error.code === 11000) {
-        throw new Error('Email already exists');
+        if (error.keyPattern.email) {
+          throw new Error('Email already exists');
+        }
+        if (error.keyPattern.username) {
+          throw new Error('Username already taken');
+        }
+        if (error.keyPattern.idNumber) {
+          throw new Error('ID number already registered');
+        }
+        if (error.keyPattern.accountNumber) {
+          throw new Error('Account number already registered');
+        }
       }
       
       throw error;
@@ -48,18 +89,23 @@ export class UserService {
   }
   
   // Login user
-  static async loginUser(email, password) {
+  static async loginUser(username, accountNumber, password) {
     try {
-      // Find user by email
-      const user = await User.findOne({ email: email.toLowerCase() });
+      // Find user by username and account number
+      const user = await User.findOne({ 
+        username: username.toLowerCase(),
+        accountNumber: accountNumber,
+        isActive: true 
+      });
+      
       if (!user) {
-        throw new Error('Invalid email or password');
+        throw new Error('Invalid username, account number, or password');
       }
       
       // Check password
       const isPasswordValid = await bcrypt.compare(password, user.password);
       if (!isPasswordValid) {
-        throw new Error('Invalid email or password');
+        throw new Error('Invalid username, account number, or password');
       }
       
       // Update last login
@@ -67,6 +113,7 @@ export class UserService {
       await user.save();
       
       // Return user without password
+      // eslint-disable-next-line no-unused-vars
       const { password: _, ...userWithoutPassword } = user.toObject();
       
       return {

@@ -10,6 +10,8 @@ import secretRoutes from './routes/secret.js';
 import healthRoutes from './routes/health.js';
 import staticRoutes from './routes/static.js';
 import userRoutes from './routes/users.js';
+import paymentRoutes from './routes/payments.js';
+import staffRoutes from './routes/staff.js';
 
 dotenv.config();
 
@@ -32,6 +34,8 @@ app.use('/api', apiLimiter);
 app.use('/', healthRoutes);
 app.use('/', secretRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/staff', staffRoutes);
 app.use('/', staticRoutes);
 
 // 404 handler with CSP-compliant response

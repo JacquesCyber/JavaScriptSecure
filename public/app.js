@@ -1,5 +1,5 @@
 /* eslint-env browser, es6 */
-/* global document, window, sessionStorage, localStorage */
+/* global document, window, sessionStorage, localStorage, alert */
 // Enterprise-Grade SPA with Best Practices
 import { 
   RegisterController, 
@@ -361,6 +361,33 @@ class SecureApp {
       console.error('Error loading user from session:', error);
       sessionStorage.removeItem('user');
       this.user = null;
+    }
+  }
+
+  async viewTransaction(transactionId) {
+    try {
+      const response = await fetch(`/api/payments/${transactionId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        const payment = result.payment;
+        const details = `
+Transaction ID: ${payment.transactionId}
+Amount: ${payment.currency} ${payment.amount}
+Payment Method: ${payment.paymentMethod.type}
+Status: ${payment.status}
+Description: ${payment.description}
+Created: ${new Date(payment.createdAt).toLocaleString()}
+${payment.completedAt ? `Completed: ${new Date(payment.completedAt).toLocaleString()}` : ''}
+        `;
+        
+        alert(details);
+      } else {
+        this.showNotification('❌ Transaction not found', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Error viewing transaction:', error);
+      this.showNotification('❌ Failed to load transaction details', 'error');
     }
   }
 }

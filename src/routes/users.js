@@ -16,6 +16,36 @@ const registerValidation = [
     .isEmail()
     .normalizeEmail()
     .withMessage('Please provide a valid email'),
+  body('username')
+    .trim()
+    .isLength({ min: 3, max: 50 })
+    .withMessage('Username must be between 3 and 50 characters')
+    .matches(/^[a-zA-Z0-9_]+$/)
+    .withMessage('Username can only contain letters, numbers, and underscores'),
+  body('idNumber')
+    .trim()
+    .isLength({ min: 13, max: 13 })
+    .withMessage('ID number must be exactly 13 digits')
+    .isNumeric()
+    .withMessage('ID number must contain only numbers'),
+  body('accountNumber')
+    .trim()
+    .isLength({ min: 10, max: 12 })
+    .withMessage('Account number must be between 10-12 digits')
+    .isNumeric()
+    .withMessage('Account number must contain only numbers'),
+  body('bankCode')
+    .trim()
+    .isLength({ min: 6, max: 6 })
+    .withMessage('Bank code must be exactly 6 digits')
+    .isNumeric()
+    .withMessage('Bank code must contain only numbers'),
+  body('branchCode')
+    .trim()
+    .isLength({ min: 6, max: 6 })
+    .withMessage('Branch code must be exactly 6 digits')
+    .isNumeric()
+    .withMessage('Branch code must contain only numbers'),
   body('password')
     .isLength({ min: 8, max: 128 })
     .withMessage('Password must be between 8 and 128 characters')
@@ -24,10 +54,16 @@ const registerValidation = [
 ];
 
 const loginValidation = [
-  body('email')
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Please provide a valid email'),
+  body('username')
+    .trim()
+    .notEmpty()
+    .withMessage('Username is required'),
+  body('accountNumber')
+    .trim()
+    .isLength({ min: 10, max: 12 })
+    .withMessage('Account number must be between 10-12 digits')
+    .isNumeric()
+    .withMessage('Account number must contain only numbers'),
   body('password')
     .notEmpty()
     .withMessage('Password is required')
@@ -48,10 +84,19 @@ router.post('/register', authLimiter, registerValidation, async (req, res) => {
   }
 
   try {
-    const { fullName, email, password } = req.body;
+    const { fullName, email, username, idNumber, accountNumber, bankCode, branchCode, password } = req.body;
     console.log('✅ Validation passed, creating user...');
     
-    const result = await UserService.registerUser({ fullName, email, password });
+    const result = await UserService.registerUser({ 
+      fullName, 
+      email, 
+      username, 
+      idNumber, 
+      accountNumber, 
+      bankCode, 
+      branchCode, 
+      password 
+    });
     console.log('✅ User created successfully:', result.user.email);
     
     res.status(201).json(result);
@@ -77,8 +122,8 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
   }
 
   try {
-    const { email, password } = req.body;
-    const result = await UserService.loginUser(email, password);
+    const { username, accountNumber, password } = req.body;
+    const result = await UserService.loginUser(username, accountNumber, password);
     
     res.json(result);
   } catch (error) {

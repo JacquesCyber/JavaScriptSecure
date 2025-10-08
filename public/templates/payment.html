@@ -7,21 +7,43 @@
       <div class="card-body p-4">
         <form id="payment-form" class="needs-validation" novalidate>
           <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-4">
               <div class="mb-3">
-                <label for="amount" class="form-label">Amount ($)</label>
+                <label for="amount" class="form-label">Amount</label>
                 <input type="number" class="form-control" id="amount" name="amount" min="0.01" step="0.01" required>
                 <div class="invalid-feedback">Please enter a valid amount.</div>
               </div>
             </div>
-            <div class="col-md-6">
+            <div class="col-md-4">
+              <div class="mb-3">
+                <label for="currency" class="form-label">Currency</label>
+                <select class="form-select" id="currency" name="currency" required>
+                  <option value="ZAR">ZAR (South African Rand)</option>
+                  <option value="USD">USD (US Dollar)</option>
+                  <option value="EUR">EUR (Euro)</option>
+                  <option value="GBP">GBP (British Pound)</option>
+                  <option value="CAD">CAD (Canadian Dollar)</option>
+                  <option value="AUD">AUD (Australian Dollar)</option>
+                  <option value="JPY">JPY (Japanese Yen)</option>
+                  <option value="CHF">CHF (Swiss Franc)</option>
+                  <option value="CNY">CNY (Chinese Yuan)</option>
+                  <option value="INR">INR (Indian Rupee)</option>
+                  <option value="BRL">BRL (Brazilian Real)</option>
+                  <option value="MXN">MXN (Mexican Peso)</option>
+                </select>
+                <div class="invalid-feedback">Please select a currency.</div>
+              </div>
+            </div>
+            <div class="col-md-4">
               <div class="mb-3">
                 <label for="payment-method" class="form-label">Payment Method</label>
                 <select class="form-select" id="payment-method" name="method" required>
                   <option value="">Select method...</option>
                   <option value="card">Credit/Debit Card</option>
                   <option value="paypal">PayPal</option>
-                  <option value="bank">Bank Transfer</option>
+                  <option value="bank_transfer">Local Bank Transfer</option>
+                  <option value="swift">SWIFT International Transfer</option>
+                  <option value="eft">EFT (Electronic Funds Transfer)</option>
                 </select>
                 <div class="invalid-feedback">Please select a payment method.</div>
               </div>
@@ -78,6 +100,71 @@
                   <input type="text" class="form-control" id="cvv" name="cvv" placeholder="123" maxlength="4">
                 </div>
               </div>
+            </div>
+          </div>
+          
+          <!-- SWIFT Payment Details -->
+          <div id="swift-details" style="display: none;">
+            <div class="alert alert-info">
+              <h6><i class="fas fa-info-circle"></i> SWIFT International Transfer Details</h6>
+              <small>Please provide the beneficiary bank information for your international transfer.</small>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="beneficiaryName" class="form-label">Beneficiary Name</label>
+                  <input type="text" class="form-control" id="beneficiaryName" name="beneficiaryName" placeholder="Full name of recipient">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="swiftCode" class="form-label">SWIFT/BIC Code</label>
+                  <input type="text" class="form-control" id="swiftCode" name="swiftCode" placeholder="e.g., DEUTDEFF" maxlength="11">
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="bankName" class="form-label">Bank Name</label>
+                  <input type="text" class="form-control" id="bankName" name="bankName" placeholder="Recipient bank name">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="bankCountry" class="form-label">Bank Country</label>
+                  <input type="text" class="form-control" id="bankCountry" name="bankCountry" placeholder="e.g., Germany">
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="beneficiaryAccount" class="form-label">Beneficiary Account/IBAN</label>
+                  <input type="text" class="form-control" id="beneficiaryAccount" name="beneficiaryAccount" placeholder="Account number or IBAN">
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="purpose" class="form-label">Transfer Purpose</label>
+                  <select class="form-select" id="purpose" name="purpose">
+                    <option value="family_support">Family Support</option>
+                    <option value="business_payment">Business Payment</option>
+                    <option value="education">Education</option>
+                    <option value="medical">Medical</option>
+                    <option value="investment">Investment</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+            
+            <div class="mb-3">
+              <label for="reference" class="form-label">Reference (Optional)</label>
+              <input type="text" class="form-control" id="reference" name="reference" placeholder="Payment reference">
             </div>
           </div>
           

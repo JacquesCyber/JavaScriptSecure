@@ -1,5 +1,5 @@
 /* eslint-env browser, es6 */
-/* global document, localStorage */
+/* global document, localStorage, alert */
 // Page Controllers - Best Practice Separation
 export class PageController {
   constructor(app) {
@@ -142,6 +142,11 @@ export class RegisterController extends PageController {
         body: JSON.stringify({
           fullName: data.fullName,
           email: data.email,
+          username: data.username,
+          idNumber: data.idNumber,
+          accountNumber: data.accountNumber,
+          bankCode: data.bankCode,
+          branchCode: data.branchCode,
           password: data.password
         })
       });
@@ -206,7 +211,8 @@ export class LoginController extends PageController {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          email: data.email,
+          username: data.username,
+          accountNumber: data.accountNumber,
           password: data.password
         })
       });
@@ -304,39 +310,201 @@ export class PaymentController extends PageController {
     
     if (methodSelect && cardDetails) {
       methodSelect.addEventListener('change', (e) => {
-        cardDetails.style.display = e.target.value === 'card' ? 'block' : 'none';
+        const selectedMethod = e.target.value;
+        cardDetails.style.display = selectedMethod === 'card' ? 'block' : 'none';
+        
+        // Show/hide SWIFT details
+        const swiftDetails = document.getElementById('swift-details');
+        if (swiftDetails) {
+          swiftDetails.style.display = selectedMethod === 'swift' ? 'block' : 'none';
+        }
       });
     }
   }
 
   async handleSubmit(event) {
     event.preventDefault();
-    const formData = new FormData(event.target);
+    const form = event.target;
+    const formData = new FormData(form);
     const data = Object.fromEntries(formData.entries());
     
-    this.app.showNotification('Processing payment...', 'info');
+    // Validate payment data
+    if (!this.validatePaymentData(data)) {
+      return;
+    }
     
-    // Simulate payment processing
-    setTimeout(() => {
-      this.app.showNotification('Payment processed successfully!', 'success');
-      this.generateTransaction(data);
-      setTimeout(() => this.app.navigateTo('validator'), 2000);
-    }, 2000);
+    try {
+      // Show loading state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.textContent = 'Processing Payment...';
+        submitBtn.disabled = true;
+      }
+      
+      this.app.showNotification('Processing payment...', 'info');
+      
+      console.log('💳 Starting payment process...');
+      console.log('📤 Payment data:', data);
+      
+      // Prepare payment data for API
+      const paymentData = {
+        amount: parseFloat(data.amount),
+        currency: 'USD',
+        description: data.description || 'Payment transaction',
+        paymentMethod: {
+          type: data.method,
+          ...this.preparePaymentMethodData(data)
+        }
+      };
+      
+      // Submit to MongoDB via API
+      const response = await fetch('/api/payments/process', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(paymentData)
+      });
+      
+      console.log('📥 Payment response status:', response.status);
+      const result = await response.json();
+      console.log('📥 Payment response data:', result);
+      
+      if (result.success) {
+        this.app.showNotification('✅ Payment processed successfully!', 'success');
+        // Store transaction ID for later reference
+        if (result.payment && result.payment.transactionId) {
+          localStorage.setItem('lastTransactionId', result.payment.transactionId);
+        }
+        setTimeout(() => this.app.navigateTo('validator'), 2000);
+      } else {
+        this.app.showNotification('❌ Payment failed: ' + result.message, 'error');
+      }
+      
+    } catch (error) {
+      console.error('❌ Payment error:', error);
+      this.app.showNotification('❌ Network error. Please try again.', 'error');
+    } finally {
+      // Restore button state
+      const submitBtn = form.querySelector('button[type="submit"]');
+      if (submitBtn) {
+        submitBtn.textContent = 'Process Payment';
+        submitBtn.disabled = false;
+      }
+    }
   }
 
-  generateTransaction(paymentData) {
-    const transaction = {
-      id: 'TXN' + Date.now(),
-      amount: paymentData.amount,
-      method: paymentData.method,
-      timestamp: new Date().toISOString(),
-      status: 'completed',
-      description: paymentData.description || 'Payment transaction'
-    };
+  validatePaymentData(data) {
+    const errors = [];
+
+    // Validate amount
+    if (!data.amount || isNaN(data.amount) || parseFloat(data.amount) <= 0) {
+      errors.push('Please enter a valid payment amount');
+    }
+
+    // Validate payment method
+    if (!data.method) {
+      errors.push('Please select a payment method');
+    }
+
+    // Validate card details if card is selected
+    if (data.method === 'card') {
+      if (!data.cardNumber || data.cardNumber.replace(/\s/g, '').length < 13) {
+        errors.push('Please enter a valid card number');
+      }
+      if (!data.expiryDate || !/^\d{2}\/\d{2}$/.test(data.expiryDate)) {
+        errors.push('Please enter a valid expiry date (MM/YY)');
+      }
+      if (!data.cvv || data.cvv.length < 3) {
+        errors.push('Please enter a valid CVV');
+      }
+    }
+
+    // Validate PayPal email if PayPal is selected
+    if (data.method === 'paypal') {
+      if (!data.paypalEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(data.paypalEmail)) {
+        errors.push('Please enter a valid PayPal email');
+      }
+    }
+
+    // Validate SWIFT details if SWIFT is selected
+    if (data.method === 'swift') {
+      if (!data.beneficiaryName || data.beneficiaryName.trim().length === 0) {
+        errors.push('Please enter beneficiary name');
+      }
+      if (!data.swiftCode || !/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(data.swiftCode)) {
+        errors.push('Please enter a valid SWIFT/BIC code');
+      }
+      if (!data.bankName || data.bankName.trim().length === 0) {
+        errors.push('Please enter bank name');
+      }
+      if (!data.bankCountry || data.bankCountry.trim().length === 0) {
+        errors.push('Please enter bank country');
+      }
+      if (!data.beneficiaryAccount || data.beneficiaryAccount.trim().length === 0) {
+        errors.push('Please enter beneficiary account/IBAN');
+      }
+    }
+
+    // Show errors if any
+    if (errors.length > 0) {
+      this.app.showNotification('❌ ' + errors.join(', '), 'error');
+      return false;
+    }
+
+    return true;
+  }
+
+  preparePaymentMethodData(data) {
+    const methodData = {};
+
+    switch (data.method) {
+      case 'card': {
+        // Extract last 4 digits and card brand
+        const cardNumber = data.cardNumber.replace(/\s/g, '');
+        methodData.cardDetails = {
+          lastFour: cardNumber.slice(-4),
+          brand: this.detectCardBrand(cardNumber),
+          expiryMonth: parseInt(data.expiryDate.split('/')[0]),
+          expiryYear: parseInt('20' + data.expiryDate.split('/')[1])
+        };
+        break;
+      }
+      case 'paypal':
+        methodData.paypalEmail = data.paypalEmail;
+        break;
+      case 'bank_transfer':
+        methodData.bankDetails = {
+          accountType: data.accountType || 'checking',
+          routingNumber: data.routingNumber,
+          accountLastFour: data.accountLastFour
+        };
+        break;
+      case 'swift':
+        methodData.swiftDetails = {
+          beneficiaryName: data.beneficiaryName,
+          beneficiaryAccount: data.beneficiaryAccount,
+          swiftCode: data.swiftCode,
+          bankName: data.bankName,
+          bankCountry: data.bankCountry,
+          purpose: data.purpose || 'other',
+          reference: data.reference
+        };
+        break;
+    }
+
+    return methodData;
+  }
+
+  detectCardBrand(cardNumber) {
+    const cleanNumber = cardNumber.replace(/\s/g, '');
     
-    const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-    transactions.push(transaction);
-    localStorage.setItem('transactions', JSON.stringify(transactions));
+    if (/^4/.test(cleanNumber)) return 'visa';
+    if (/^5[1-5]/.test(cleanNumber)) return 'mastercard';
+    if (/^3[47]/.test(cleanNumber)) return 'amex';
+    if (/^6(?:011|5)/.test(cleanNumber)) return 'discover';
+    
+    return 'unknown';
   }
 }
 
@@ -358,78 +526,147 @@ export class ValidatorController extends PageController {
     // Validator-specific event listeners
   }
 
-  // Load and display transactions
-  loadTransactions() {
+  // Load and display transactions from MongoDB
+  async loadTransactions() {
     const container = document.getElementById('transactions-list');
     if (!container) return;
 
-    const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-    
-    if (transactions.length === 0) {
-      container.innerHTML = '<p class="text-muted text-center">No transactions found.</p>';
-      return;
-    }
+    try {
+      // Show loading state
+      container.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
-    container.innerHTML = transactions.map(txn => `
-      <div class="card mb-3">
-        <div class="card-body">
-          <div class="row align-items-center">
-            <div class="col-md-2">
-              <strong>ID:</strong><br>
-              <small class="text-muted">${txn.id}</small>
+      // Fetch transactions from API
+      const response = await fetch('/api/payments/history?limit=50');
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to load transactions');
+      }
+
+      const transactions = result.payments;
+      
+      if (transactions.length === 0) {
+        container.innerHTML = '<p class="text-muted text-center">No transactions found.</p>';
+        return;
+      }
+
+      container.innerHTML = transactions.map(txn => `
+        <div class="card mb-3">
+          <div class="card-body">
+            <div class="row align-items-center">
+              <div class="col-md-2">
+                <strong>Transaction ID:</strong><br>
+                <small class="text-muted">${txn.transactionId}</small>
+              </div>
+              <div class="col-md-2">
+                <strong>Amount:</strong><br>
+                <span class="h5 text-success">${txn.currency} ${txn.amount.toFixed(2)}</span>
+              </div>
+              <div class="col-md-2">
+                <strong>Method:</strong><br>
+                <span class="badge bg-primary">${txn.paymentMethod.type}</span>
+              </div>
+              <div class="col-md-3">
+                <strong>Date:</strong><br>
+                <small>${new Date(txn.createdAt).toLocaleString()}</small>
+              </div>
+              <div class="col-md-2">
+                <strong>Status:</strong><br>
+                <span class="badge ${this.getStatusBadgeClass(txn.status)}">${txn.status}</span>
+              </div>
+              <div class="col-md-1 text-end">
+                <button class="btn btn-sm btn-outline-info" onclick="window.SecureApp.viewTransaction('${txn.transactionId}')" title="View Details">
+                  👁️
+                </button>
+              </div>
             </div>
-            <div class="col-md-2">
-              <strong>Amount:</strong><br>
-              <span class="h5 text-success">$${txn.amount}</span>
-            </div>
-            <div class="col-md-2">
-              <strong>Method:</strong><br>
-              <span class="badge bg-primary">${txn.method}</span>
-            </div>
-            <div class="col-md-3">
-              <strong>Date:</strong><br>
-              <small>${new Date(txn.timestamp).toLocaleString()}</small>
-            </div>
-            <div class="col-md-2">
-              <strong>Status:</strong><br>
-              <span class="badge bg-success">${txn.status}</span>
-            </div>
-            <div class="col-md-1 text-end">
-              <button class="btn btn-sm btn-outline-danger" onclick="this.deleteTransaction('${txn.id}')">
-                🗑️
-              </button>
-            </div>
-          </div>
-          ${txn.description ? `
             <div class="row mt-2">
               <div class="col-12">
                 <small class="text-muted"><strong>Description:</strong> ${txn.description}</small>
+                ${txn.paymentMethod.cardDetails && txn.paymentMethod.cardDetails.maskedNumber ? `
+                  <br><small class="text-muted"><strong>Card:</strong> ${txn.paymentMethod.cardDetails.maskedNumber}</small>
+                ` : ''}
               </div>
             </div>
-          ` : ''}
+          </div>
         </div>
-      </div>
-    `).join('');
+      `).join('');
+      
+    } catch (error) {
+      console.error('❌ Error loading transactions:', error);
+      container.innerHTML = '<p class="text-danger text-center">Failed to load transactions. Please try again.</p>';
+    }
   }
 
-  updateStats() {
-    const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-    const totalAmount = transactions.reduce((sum, txn) => sum + parseFloat(txn.amount || 0), 0);
-    
-    const totalTxnEl = document.getElementById('total-transactions');
-    const totalAmountEl = document.getElementById('total-amount');
-    
-    if (totalTxnEl) totalTxnEl.textContent = transactions.length;
-    if (totalAmountEl) totalAmountEl.textContent = `$${totalAmount.toFixed(2)}`;
+  async updateStats() {
+    try {
+      // Fetch payment statistics from API
+      const response = await fetch('/api/payments/stats');
+      const result = await response.json();
+      
+      if (!result.success) {
+        throw new Error(result.message || 'Failed to load statistics');
+      }
+
+      const stats = result.stats;
+      
+      const totalTxnEl = document.getElementById('total-transactions');
+      const totalAmountEl = document.getElementById('total-amount');
+      const successfulTxnEl = document.getElementById('successful-transactions');
+      const failedTxnEl = document.getElementById('failed-transactions');
+      
+      if (totalTxnEl) totalTxnEl.textContent = stats.totalPayments || 0;
+      if (totalAmountEl) totalAmountEl.textContent = `$${(stats.successfulAmount || 0).toFixed(2)}`;
+      if (successfulTxnEl) successfulTxnEl.textContent = stats.successfulPayments || 0;
+      if (failedTxnEl) failedTxnEl.textContent = stats.failedPayments || 0;
+      
+    } catch (error) {
+      console.error('❌ Error loading payment stats:', error);
+      // Fallback to default values
+      const totalTxnEl = document.getElementById('total-transactions');
+      const totalAmountEl = document.getElementById('total-amount');
+      
+      if (totalTxnEl) totalTxnEl.textContent = '0';
+      if (totalAmountEl) totalAmountEl.textContent = '$0.00';
+    }
   }
 
-  deleteTransaction(txnId) {
-    const transactions = JSON.parse(localStorage.getItem('transactions') || '[]');
-    const filtered = transactions.filter(txn => txn.id !== txnId);
-    localStorage.setItem('transactions', JSON.stringify(filtered));
-    
-    this.loadTransactions();
-    this.updateStats();
-    this.app.showNotification('Transaction deleted', 'info');
+  getStatusBadgeClass(status) {
+    const statusClasses = {
+      'completed': 'bg-success',
+      'pending': 'bg-warning',
+      'processing': 'bg-info',
+      'failed': 'bg-danger',
+      'cancelled': 'bg-secondary',
+      'refunded': 'bg-dark'
+    };
+    return statusClasses[status] || 'bg-secondary';
+  }
+
+  async viewTransaction(transactionId) {
+    try {
+      const response = await fetch(`/api/payments/${transactionId}`);
+      const result = await response.json();
+      
+      if (result.success) {
+        const payment = result.payment;
+        const details = `
+Transaction ID: ${payment.transactionId}
+Amount: ${payment.currency} ${payment.amount}
+Payment Method: ${payment.paymentMethod.type}
+Status: ${payment.status}
+Description: ${payment.description}
+Created: ${new Date(payment.createdAt).toLocaleString()}
+${payment.completedAt ? `Completed: ${new Date(payment.completedAt).toLocaleString()}` : ''}
+        `;
+        
+        alert(details);
+      } else {
+        this.app.showNotification('❌ Transaction not found', 'error');
+      }
+    } catch (error) {
+      console.error('❌ Error viewing transaction:', error);
+      this.app.showNotification('❌ Failed to load transaction details', 'error');
+    }
   }
 }
