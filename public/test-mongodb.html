@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MongoDB Test - Secret Storage</title>
+  <link href="/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body { background: #1a1a1a; color: white; }
+    .test-container { max-width: 600px; margin: 50px auto; padding: 30px; }
+    .result-box { background: #2a2a2a; border: 1px solid #444; border-radius: 8px; padding: 20px; margin-top: 20px; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="test-container">
+      <h1 class="text-center text-primary mb-4">🔐 MongoDB Test - Secret Storage</h1>
+      
+      <div class="card bg-dark border-primary">
+        <div class="card-header">
+          <h5>Test Secret Storage (saves to MongoDB)</h5>
+        </div>
+        <div class="card-body">
+          <form id="secretForm">
+            <div class="mb-3">
+              <label for="title" class="form-label">Secret Title (optional)</label>
+              <input type="text" class="form-control" id="title" placeholder="My Secret Document">
+            </div>
+            
+            <div class="mb-3">
+              <label for="data" class="form-label">Secret Data <span class="text-danger">*</span></label>
+              <textarea 
+                class="form-control" 
+                id="data" 
+                rows="4" 
+                placeholder="Enter your secret data here..."
+                required
+                minlength="1"
+                maxlength="10000"
+              ></textarea>
+              <div class="form-text">Will be encrypted and stored in MongoDB</div>
+            </div>
+            
+            <button type="submit" class="btn btn-primary w-100">
+              💾 Store Secret in MongoDB
+            </button>
+          </form>
+        </div>
+      </div>
+      
+      <div id="result" class="result-box" style="display: none;">
+        <h6>Result:</h6>
+        <pre id="resultContent"></pre>
+      </div>
+      
+      <div class="mt-4 text-center">
+        <a href="/" class="btn btn-outline-light">← Back to Main App</a>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('secretForm').addEventListener('submit', async (e) => {
+      e.preventDefault();
+      
+      const title = document.getElementById('title').value;
+      const data = document.getElementById('data').value;
+      const resultDiv = document.getElementById('result');
+      const resultContent = document.getElementById('resultContent');
+      
+      try {
+        resultDiv.style.display = 'block';
+        resultContent.textContent = 'Submitting to MongoDB...';
+        
+        const response = await fetch('/store', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ title, data })
+        });
+        
+        const result = await response.json();
+        
+        if (response.ok) {
+          resultContent.innerHTML = `✅ SUCCESS!\n\n${JSON.stringify(result, null, 2)}`;
+          document.getElementById('secretForm').reset();
+        } else {
+          resultContent.innerHTML = `❌ ERROR!\n\n${JSON.stringify(result, null, 2)}`;
+        }
+      } catch (error) {
+        resultContent.innerHTML = `❌ NETWORK ERROR!\n\n${error.message}`;
+      }
+    });
+  </script>
+</body>
+</html>
