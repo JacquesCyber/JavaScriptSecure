@@ -9,6 +9,7 @@ import cors from 'cors';
 import { setupSecurity } from './middleware/security.js';
 import { generalLimiter, apiLimiter } from './middleware/rateLimiting.js';
 import { regexValidator, sanitizeInput } from './middleware/validation.js';
+import { sanitizeInput as enhancedSanitizeInput, cspSanitize, sanitizationLimiter } from './middleware/sanitization.js';
 
 // Import session configuration
 import { sessionConfig } from './auth/session.js';
@@ -21,6 +22,7 @@ import userRoutes from './routes/users.js';
 import paymentRoutes from './routes/payments.js';
 import staffRoutes from './routes/staff.js';
 import validationTestRoutes from './routes/validation-test.js';
+import testRoutes from './routes/test.js';
 
 dotenv.config();
 
@@ -69,8 +71,14 @@ app.use('/api', apiLimiter);
 // Defense in Depth: Input validation and sanitization
 // Layer 1: Regex whitelist validation (blocks malformed input)
 app.use(regexValidator);
-// Layer 2: Input sanitization (cleans remaining input)
+// Layer 2: Enhanced input sanitization (XSS & NoSQL injection protection)
+app.use(enhancedSanitizeInput);
+// Layer 3: Legacy sanitization (backup)
 app.use(sanitizeInput);
+// Layer 4: Additional security headers
+app.use(cspSanitize);
+// Layer 5: Sanitization rate limiting
+app.use(sanitizationLimiter);
 
 // Routes
 app.use('/', healthRoutes);
@@ -79,6 +87,7 @@ app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api', validationTestRoutes);
+app.use('/api', testRoutes);
 app.use('/', staticRoutes);
 
 // 404 handler with CSP-compliant response
