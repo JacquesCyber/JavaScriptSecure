@@ -2,8 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
-import pkg from 'lusca';
-const { csrf } = pkg;
+
+import csurf from 'csurf';
 
 import cors from 'cors';
 
@@ -67,8 +67,24 @@ app.use(cors({
 // Session middleware (before security setup)
 app.use(session(secureSessionConfig));
 
-// CSRF protection
-app.use(csrf());
+// CSRF protection (use csurf, after cookie/session middleware, before routes)
+app.use(csurf({ cookie: true }));
+
+// Expose CSRF token to views/APIs
+app.use((req, res, next) => {
+  if (req.csrfToken) {
+    res.locals.csrfToken = req.csrfToken();
+  }
+  next();
+});
+
+// CSRF error handler
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+  next(err);
+});
 
 // Serve static files from the 'public' directory (except index.html)
 app.use(express.static('public', { index: false }));
