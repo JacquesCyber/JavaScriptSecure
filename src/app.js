@@ -31,7 +31,6 @@ import staticRoutes from './routes/static.js';
 import userRoutes from './routes/users.js';
 import paymentRoutes from './routes/payments.js';
 import staffRoutes from './routes/staff.js';
-import validationTestRoutes from './routes/validation-test.js';
 import testRoutes from './routes/test.js';
 
 dotenv.config();
@@ -99,7 +98,6 @@ app.use('/', secretRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/staff', staffRoutes);
-app.use('/api', validationTestRoutes);
 app.use('/api', testRoutes);
 app.use('/', staticRoutes);
 
