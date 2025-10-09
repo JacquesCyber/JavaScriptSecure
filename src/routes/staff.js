@@ -65,15 +65,14 @@ router.get('/payments', extractStaffId, async (req, res) => {
 
     // Build filter object
     const filter = {};
-    
-    if (status) filter.status = status;
-    if (currency) filter.currency = currency;
-    if (provider) filter.provider = provider;
-    
+    if (status && typeof status === 'string') filter.status = { $eq: status };
+    if (currency && typeof currency === 'string') filter.currency = { $eq: currency };
+    if (provider && typeof provider === 'string') filter.provider = { $eq: provider };
+
     if (startDate || endDate) {
       filter.createdAt = {};
-      if (startDate) filter.createdAt.$gte = new Date(startDate);
-      if (endDate) filter.createdAt.$lte = new Date(endDate);
+      if (startDate && !isNaN(Date.parse(startDate))) filter.createdAt.$gte = new Date(startDate);
+      if (endDate && !isNaN(Date.parse(endDate))) filter.createdAt.$lte = new Date(endDate);
     }
 
     // Import Payment model

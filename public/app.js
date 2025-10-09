@@ -238,13 +238,23 @@ class SecureApp {
     }, 3000);
   }
 
+   // Helper: escape output to prevent HTML injection/XSS
+  static escapeHtml(str) {
+    return String(str)
+      .replace(/&/g, "&amp;")
+      .replace(/</g, "&lt;")
+      .replace(/>/g, "&gt;")
+      .replace(/"/g, "&quot;")
+      .replace(/'/g, "&#039;");
+  }
+
   getLoadingTemplate() {
     return `
       <div class="text-center">
         <div class="spinner-border text-primary" role="status">
           <span class="visually-hidden">Loading...</span>
         </div>
-        <p class="mt-2 text-light">Loading ${this.currentPage}...</p>
+        <p class="mt-2 text-light">Loading${SecureApp.escapeHtml(this.currentPage)}...</p>
       </div>
     `;
   }
