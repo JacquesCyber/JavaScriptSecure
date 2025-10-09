@@ -72,7 +72,7 @@ router.get('/templates/:template', (req, res) => {
     // Resolve symlinks and canonicalize path
     try {
       filePath = fs.realpathSync(filePath);
-    } catch (e) {
+    } catch {
       return res.status(400).send('Template not found');
     }
 
