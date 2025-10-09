@@ -37,31 +37,36 @@ function sanitizeObject(obj, depth = 0) {
 
   const sanitized = {};
   let hasInjectionAttempt = false;
-  
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      const originalKey = key;
-      let sanitizedKey = key;
-      
-      // Remove dangerous MongoDB operators from keys
-      if (key.startsWith('$') || key.includes('.')) {
-        sanitizedKey = key.replace(/^\$/, '_').replace(/\./g, '_');
-        hasInjectionAttempt = true;
-        console.warn(`🚨 MongoDB injection attempt blocked in key: "${originalKey}" -> "${sanitizedKey}"`);
-      }
-      
-      // Limit key length to prevent memory exhaustion
-      if (sanitizedKey.length > 100) {
-        sanitizedKey = sanitizedKey.substring(0, 100);
-        console.warn(`⚠️ Long key truncated: "${originalKey}"`);
-      }
-      
-      // Skip password fields from HTML sanitization but still trim
-      if (sanitizedKey.toLowerCase().includes('password')) {
-        sanitized[sanitizedKey] = typeof obj[key] === 'string' ? obj[key].trim() : obj[key];
-      } else {
-        sanitized[sanitizedKey] = sanitizeObject(obj[key], depth + 1);
-      }
+  // Whitelist of allowed keys (add all expected keys for your app)
+  const allowedKeys = [
+    'name', 'email', 'username', 'password', 'role', 'id', 'accountNumber', 'bankCode', 'branchCode', 'amount', 'currency', 'ipAddress', 'userAgent', 'type', 'cardDetails', 'lastFour', 'createdAt', 'updatedAt', 'isActive', 'status', 'template', 'title', 'description', 'fullName', 'token', 'sessionId', 'userId', 'swiftCode', 'reference', 'paymentMethod', 'permissions', 'fields', 'value', 'key', 'data', 'message', 'code', 'recent', 'active', 'total', 'lastLogin', 'emailVerified', 'phone', 'address', 'city', 'country', 'zip', 'state', 'notes', 'meta', 'tags', 'options', 'settings', 'profile', 'avatar', 'url', 'file', 'filename', 'path', 'templateName', 'module', 'templateId', 'templateType', 'templateContent', 'templateData', 'templateFields', 'templateValues', 'templateOptions', 'templateSettings', 'templateMeta', 'templateTags', 'templateNotes', 'templateProfile', 'templateAvatar', 'templateUrl', 'templateFile', 'templateFilename', 'templatePath', 'templateModule', 'templateReference', 'templateSwiftCode', 'templateAccountNumber', 'templateBankCode', 'templateBranchCode', 'templateAmount', 'templateCurrency', 'templateIpAddress', 'templateUserAgent', 'templateType', 'templateCardDetails', 'templateLastFour', 'templateCreatedAt', 'templateUpdatedAt', 'templateIsActive', 'templateStatus', 'templateRole', 'templatePermissions', 'templateFields', 'templateValue', 'templateKey', 'templateData', 'templateMessage', 'templateCode', 'templateRecent', 'templateActive', 'templateTotal', 'templateLastLogin', 'templateEmailVerified', 'templatePhone', 'templateAddress', 'templateCity', 'templateCountry', 'templateZip', 'templateState', 'templateNotes', 'templateMeta', 'templateTags', 'templateOptions', 'templateSettings', 'templateProfile', 'templateAvatar', 'templateUrl', 'templateFile', 'templateFilename', 'templatePath', 'templateModule'
+    // Add or remove keys as needed for your application
+  ];
+  for (const key of Object.keys(obj)) {
+    if (!allowedKeys.includes(key)) {
+      hasInjectionAttempt = true;
+      console.warn(`🚨 Blocked non-whitelisted key: "${key}"`);
+      continue;
+    }
+    const originalKey = key;
+    let sanitizedKey = key;
+    // Remove dangerous MongoDB operators from keys
+    if (key.startsWith('$') || key.includes('.')) {
+      sanitizedKey = key.replace(/^4/, '_').replace(/\./g, '_');
+      hasInjectionAttempt = true;
+      console.warn(`🚨 MongoDB injection attempt blocked in key: "${originalKey}" -> "${sanitizedKey}"`);
+    }
+    // Limit key length to prevent memory exhaustion
+    if (sanitizedKey.length > 100) {
+      sanitizedKey = sanitizedKey.substring(0, 100);
+      console.warn(`⚠️ Long key truncated: "${originalKey}"`);
+    }
+    // Skip password fields from HTML sanitization but still trim
+    if (sanitizedKey.toLowerCase().includes('password')) {
+      const value = obj[key];
+      sanitized[sanitizedKey] = typeof value === 'string' ? value.trim() : value;
+    } else {
+      sanitized[sanitizedKey] = sanitizeObject(obj[key], depth + 1);
     }
   }
   
@@ -101,8 +106,11 @@ export const sanitizeInput = (req, res, next) => {
   if (req.query && typeof req.query === 'object') {
     try {
       const sanitizedQuery = sanitizeObject(req.query);
+      // Only assign whitelisted keys
       for (const key of Object.keys(req.query)) {
-        delete req.query[key];
+        if (!sanitizedQuery.hasOwnProperty(key)) {
+          delete req.query[key];
+        }
       }
       for (const key of Object.keys(sanitizedQuery)) {
         req.query[key] = sanitizedQuery[key];
