@@ -1,6 +1,56 @@
 /* eslint-env browser, es6 */
 /* global document, localStorage, alert */
 // Page Controllers - Best Practice Separation
+
+// Helper function to get CSRF token
+function getCsrfToken() {
+  // Primary: Get from meta tag (injected by server)
+  const metaTag = document.querySelector('meta[name="csrf-token"]');
+  if (metaTag && metaTag.content) {
+    console.log('✅ CSRF token from meta tag:', metaTag.content.substring(0, 10) + '...');
+    return metaTag.content;
+  }
+  
+  // Fallback: try cookies (for other implementations)
+  const match = document.cookie.match(/_csrf=([^;]+)/);
+  if (match) {
+    console.log('✅ CSRF token from _csrf cookie');
+    return decodeURIComponent(match[1]);
+  }
+  
+  // Also try XSRF-TOKEN as fallback
+  const xsrfMatch = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
+  if (xsrfMatch) {
+    console.log('✅ CSRF token from XSRF-TOKEN cookie');
+    return decodeURIComponent(xsrfMatch[1]);
+  }
+  
+  console.error('❌ No CSRF token found in meta tag or cookies!');
+  return '';
+}
+
+// Helper function to get headers with CSRF token
+function getHeadersWithCsrf(additionalHeaders = {}) {
+  const csrfToken = getCsrfToken();
+  const headers = {
+    'Content-Type': 'application/json',
+    ...additionalHeaders
+  };
+  
+  if (csrfToken) {
+    console.log('🔒 Including CSRF token in headers:', csrfToken.substring(0, 10) + '...');
+    // Add CSRF token in all common header formats that csurf checks
+    headers['csrf-token'] = csrfToken;
+    headers['xsrf-token'] = csrfToken;
+    headers['x-csrf-token'] = csrfToken;
+    headers['x-xsrf-token'] = csrfToken;
+  } else {
+    console.warn('⚠️ No CSRF token available - request will likely fail!');
+  }
+  
+  return headers;
+}
+
 export class PageController {
   constructor(app) {
     this.app = app;
@@ -136,9 +186,8 @@ export class RegisterController extends PageController {
       // Submit to MongoDB via API
       const response = await fetch('/api/users/register', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getHeadersWithCsrf(),
+        credentials: 'same-origin',
         body: JSON.stringify({
           fullName: data.fullName,
           email: data.email,
@@ -205,11 +254,16 @@ export class LoginController extends PageController {
       }
       
       // Submit to MongoDB via API
+      console.log('🔐 Login data being sent:', {
+        username: data.username,
+        accountNumber: data.accountNumber,
+        accountNumberType: typeof data.accountNumber
+      });
+      
       const response = await fetch('/api/users/login', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getHeadersWithCsrf(),
+        credentials: 'same-origin',
         body: JSON.stringify({
           username: data.username,
           accountNumber: data.accountNumber,
@@ -218,6 +272,8 @@ export class LoginController extends PageController {
       });
       
       const result = await response.json();
+      console.log('📥 Login response:', result);
+      console.log('Response status:', response.status);
       
       if (result.success) {
         this.app.setUser({
@@ -231,7 +287,10 @@ export class LoginController extends PageController {
         this.app.showNotification('✅ Welcome back, ' + result.user.fullName + '!', 'success');
         setTimeout(() => this.app.navigateTo('dashboard'), 1500);
       } else {
-        this.app.showNotification('❌ Login failed: ' + result.message, 'error');
+        // Handle both 'message' and 'error' properties in the response
+        const errorMessage = result.message || result.error || 'Unknown error occurred';
+        console.error('❌ Login failed with message:', errorMessage);
+        this.app.showNotification('❌ Login failed: ' + errorMessage, 'error');
       }
       
     } catch (error) {
@@ -393,9 +452,8 @@ export class PaymentController extends PageController {
       // Submit to MongoDB via API
       const response = await fetch('/api/payments/process', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: getHeadersWithCsrf(),
+        credentials: 'same-origin',
         body: JSON.stringify(paymentData)
       });
       

@@ -60,7 +60,16 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'Accept',
+    'csrf-token',
+    'xsrf-token',
+    'x-csrf-token',
+    'x-xsrf-token'
+  ],
   exposedHeaders: ['Set-Cookie']
 }));
 
@@ -76,14 +85,6 @@ app.use((req, res, next) => {
     res.locals.csrfToken = req.csrfToken();
   }
   next();
-});
-
-// CSRF error handler
-app.use((err, req, res, next) => {
-  if (err.code === 'EBADCSRFTOKEN') {
-    return res.status(403).json({ error: 'Invalid CSRF token' });
-  }
-  next(err);
 });
 
 // Serve static files from the 'public' directory (except index.html)
@@ -116,6 +117,22 @@ app.use('/api/payments', paymentRoutes);
 app.use('/api/staff', staffRoutes);
 app.use('/api', testRoutes);
 app.use('/', staticRoutes);
+
+// CSRF error handler (must be after routes)
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    console.error('❌ CSRF token validation failed');
+    console.error('Request headers:', {
+      'csrf-token': req.headers['csrf-token'],
+      'x-csrf-token': req.headers['x-csrf-token'],
+      'xsrf-token': req.headers['xsrf-token'],
+      'x-xsrf-token': req.headers['x-xsrf-token']
+    });
+    console.error('Cookies:', Object.keys(req.cookies || {}));
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+  next(err);
+});
 
 // 404 handler with CSP-compliant response
 app.use((req, res) => {

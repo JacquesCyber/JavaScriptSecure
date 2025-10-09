@@ -125,6 +125,14 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
 
   try {
     const { username, accountNumber, password } = req.body;
+    console.log('📝 Login attempt for username:', username, 'with account number type:', typeof accountNumber);
+    console.log('🍪 Cookies:', Object.keys(req.cookies || {}).join(', '));
+    console.log('🔒 CSRF headers:', {
+      'csrf-token': req.headers['csrf-token'],
+      'x-csrf-token': req.headers['x-csrf-token'],
+      'xsrf-token': req.headers['xsrf-token'],
+      'x-xsrf-token': req.headers['x-xsrf-token']
+    });
     const result = await UserService.loginUser(username, accountNumber, password);
     
     if (result.success) {
@@ -172,10 +180,18 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
     }
   } catch (error) {
     console.error('❌ Error in POST /api/users/login:', error);
+    console.error('Error details:', {
+      name: error.name,
+      message: error.message,
+      stack: error.stack?.split('\n')[0]
+    });
+    
+    // Ensure we always send a proper error message
+    const errorMessage = error.message || error.toString() || 'Login failed';
     
     res.status(401).json({
       success: false,
-      message: error.message || 'Login failed'
+      message: errorMessage
     });
   }
 });
