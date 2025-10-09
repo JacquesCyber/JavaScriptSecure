@@ -1,4 +1,5 @@
 import { body } from 'express-validator';
+import { sanitizeInput as sanitize } from './sanitation.js';
 
 // Regex patterns for different input types - Security-focused whitelist approach
 export const patterns = {
@@ -10,7 +11,6 @@ export const patterns = {
   // Security-focused patterns - Anti-injection measures
   alphanumeric: /^[a-zA-Z0-9]+$/,
   safeText: /^[a-zA-Z0-9\s.,!?-]{1,200}$/,
-  noScript: /^(?!.*<script)(?!.*javascript:)(?!.*on\w+\s*=)(?!.*data:)(?!.*vbscript:).*$/i,
   noHtml: /^[^<>]*$/,
   
   // Business-specific patterns
@@ -114,9 +114,28 @@ function validateField(value, rules) {
     errors.push('Invalid format');
   }
   
-  // Anti-script check (always applied when specified)
-  if (rules.noScript && !patterns.noScript.test(stringValue)) {
-    errors.push('Potentially dangerous content detected');
+  // Anti-script check using efficient substring search instead of complex regex
+  // This prevents ReDoS attacks while maintaining security
+  if (rules.noScript) {
+    const lowerValue = stringValue.toLowerCase();
+    const dangerousPatterns = [
+      '<script',
+      'javascript:',
+      'on=',        // Catches onclick=, onload=, etc.
+      'onerror=',
+      'onload=',
+      'data:text/html',
+      'vbscript:',
+      'eval(',
+      'expression('
+    ];
+    
+    for (const pattern of dangerousPatterns) {
+      if (lowerValue.includes(pattern)) {
+        errors.push('Potentially dangerous content detected');
+        break; // Stop checking once we find one
+      }
+    }
   }
   
   // HTML injection check
@@ -142,7 +161,7 @@ function logValidationAttempt(req, hasErrors, errors = {}) {
   }
 }
 
-// Main regex validation middleware - First line of defense
+// Main regex validation middleware - LAYER 1: First line of defense
 export const regexValidator = (req, res, next) => {
   // Only validate POST, PUT, PATCH requests with body data
   if (!['POST', 'PUT', 'PATCH'].includes(req.method)) {
@@ -188,66 +207,16 @@ export const regexValidator = (req, res, next) => {
       message: 'Input validation failed',
       details: errors,
       timestamp: new Date().toISOString(),
-      security: 'Request blocked by regex whitelist validation'
+      security: 'Request blocked by regex whitelist validation (Layer 1)'
     });
   }
   
   next();
 };
 
-// Input sanitization middleware - Second line of defense
-export const sanitizeInput = (req, res, next) => {
-  // Custom MongoDB sanitization to prevent NoSQL injection
-  try {
-    // Sanitize request body
-    if (req.body && typeof req.body === 'object') {
-      sanitizeObject(req.body);
-    }
-    
-    // Sanitize query parameters
-    if (req.query && typeof req.query === 'object') {
-      sanitizeObject(req.query);
-    }
-    
-    console.log(`🧹 Input sanitized for ${req.method} ${req.path}`);
-    next();
-  } catch (error) {
-    console.error('❌ Sanitization error:', error);
-    next();
-  }
-};
-
-// Recursive object sanitization for NoSQL injection prevention
-function sanitizeObject(obj) {
-  if (!obj || typeof obj !== 'object') return;
-  
-  for (const key in obj) {
-    if (Object.prototype.hasOwnProperty.call(obj, key)) {
-      // Remove dangerous MongoDB operators
-      if (key.startsWith('$') || key.includes('.')) {
-        delete obj[key];
-        continue;
-      }
-      
-      if (typeof obj[key] === 'object' && obj[key] !== null) {
-        // Recursively sanitize nested objects
-        sanitizeObject(obj[key]);
-      } else if (typeof obj[key] === 'string') {
-        // Remove potential script tags and dangerous patterns
-        obj[key] = obj[key]
-          .replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '')
-          .replace(/javascript:/gi, '')
-          .replace(/on\w+\s*=/gi, '')
-          .replace(/data:/gi, '')
-          .replace(/vbscript:/gi, '')
-          .replace(/eval\s*\(/gi, '')
-          .replace(/expression\s*\(/gi, '')
-          .trim();
-      }
-    }
-  }
-}
-
+// LAYER 2: Sanitization is handled by importing from sanitation.js
+// This ensures single source of truth and no duplicate code
+export const sanitizeInputMiddleware = sanitize;
 
 // Legacy validation setup for backward compatibility
 export function setupValidation(app) {
