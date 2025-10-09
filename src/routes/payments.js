@@ -78,10 +78,11 @@ const paymentValidation = [
     .isLength({ min: 1, max: 100 })
     .withMessage('Beneficiary name is required for SWIFT payments'),
   body('paymentMethod.swiftDetails.swiftCode')
-    .if(body('paymentMethod.type').equals('swift'))
-    .trim()
-    .matches(/^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/)
-    .withMessage('Invalid SWIFT code format'),
+  .if(body('paymentMethod.type').equals('swift'))
+  .trim()
+  .isLength({ min: 8, max: 11 })
+  .matches(/^[A-Z0-9]+$/)
+  .withMessage('Invalid SWIFT code format'),
   body('paymentMethod.swiftDetails.beneficiaryAccount')
     .if(body('paymentMethod.type').equals('swift'))
     .trim()

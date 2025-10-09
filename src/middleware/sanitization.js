@@ -100,7 +100,13 @@ export const sanitizeInput = (req, res, next) => {
   // Sanitize query parameters
   if (req.query && typeof req.query === 'object') {
     try {
-      req.query = sanitizeObject(req.query);
+      const sanitizedQuery = sanitizeObject(req.query);
+      for (const key of Object.keys(req.query)) {
+        delete req.query[key];
+      }
+      for (const key of Object.keys(sanitizedQuery)) {
+        req.query[key] = sanitizedQuery[key];
+      }
     } catch (error) {
       console.error('❌ Query sanitization error:', error);
     }

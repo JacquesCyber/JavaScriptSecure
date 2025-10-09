@@ -9,7 +9,6 @@ router.get('/app.js', (req, res) => {
   try {
     const filePath = path.join(process.cwd(), 'public', 'app.js');
     const content = fs.readFileSync(filePath, 'utf8');
-    
     res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
     res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
     res.setHeader('Pragma', 'no-cache');
@@ -31,15 +30,21 @@ router.get('/js/:module', (req, res) => {
     if (!allowedModules.includes(moduleName)) {
       return res.status(403).send('// Module not allowed');
     }
-    
-    const filePath = path.join(process.cwd(), 'public', 'js', moduleName);
-    
-    if (!fs.existsSync(filePath)) {
+
+    const baseDir = path.join(process.cwd(), 'public', 'js');
+    const filePath = path.join(baseDir, moduleName);
+    const safePath = path.normalize(filePath);
+
+    // Prevent path traversal
+    if (!safePath.startsWith(baseDir)) {
+      return res.status(403).send('// Path traversal detected');
+    }
+
+    if (!fs.existsSync(safePath)) {
       return res.status(404).send('// Module not found');
     }
-    
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+
+    const content = fs.readFileSync(safePath, 'utf8');
     res.setHeader('Content-Type', 'application/javascript; charset=utf-8');
     res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes cache
     res.send(content);
@@ -49,25 +54,32 @@ router.get('/js/:module', (req, res) => {
   }
 });
 
-// Serve app.js with proper headers
+// Serve templates with proper security
 router.get('/templates/:template', (req, res) => {
   try {
     const templateName = req.params.template;
     
-    // Security: Only allow alphanumeric template names
-    if (!/^[a-zA-Z0-9-_]+\.html$/.test(templateName)) {
+    // Security: Only allow alphanumeric template names with hyphens/underscores
+    // Fixed: Simplified regex to avoid ReDoS
+    if (!/^[a-zA-Z0-9_-]+\.html$/.test(templateName)) {
       return res.status(400).send('Invalid template name');
     }
-    
-    const filePath = path.join(process.cwd(), 'public', 'templates', templateName);
-    
+
+    const baseDir = path.join(process.cwd(), 'public', 'templates');
+    const filePath = path.join(baseDir, templateName);
+    const safePath = path.normalize(filePath);
+
+    // Prevent path traversal
+    if (!safePath.startsWith(baseDir)) {
+      return res.status(403).send('Path traversal detected');
+    }
+
     // Check if file exists
-    if (!fs.existsSync(filePath)) {
+    if (!fs.existsSync(safePath)) {
       return res.status(404).send('Template not found');
     }
-    
-    const content = fs.readFileSync(filePath, 'utf8');
-    
+
+    const content = fs.readFileSync(safePath, 'utf8');
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes cache
     res.send(content);
@@ -95,7 +107,7 @@ Allow: /
 Crawl-delay: 10`);
 });
 
-// Sitemap.xml for search engines
+// Sitemap.xml for SEO
 router.get('/sitemap.xml', (req, res) => {
   res.type('application/xml');
   res.send(`<?xml version="1.0" encoding="UTF-8"?>

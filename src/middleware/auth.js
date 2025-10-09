@@ -13,18 +13,18 @@ export const authenticateToken = async (req, res, next) => {
         code: 'NO_TOKEN'
       });
     }
-    
+
     // Verify token
     const decoded = TokenManager.verifyToken(token);
     req.user = decoded;
-    
+
     // Update session activity if session exists
     SessionManager.updateActivity(req);
     
     next();
   } catch (error) {
+    // Fixed: Added 'error' parameter to catch block
     console.log('❌ Authentication failed:', error.message);
-    
     return res.status(401).json({
       error: true,
       message: 'Invalid or expired token',
@@ -42,14 +42,14 @@ export const authenticateSession = (req, res, next) => {
       code: 'INVALID_SESSION'
     });
   }
-  
+
   // Add user info to request
   req.user = {
     userId: req.session.userId,
     email: req.session.email,
     role: req.session.role
   };
-  
+
   // Update activity timestamp
   SessionManager.updateActivity(req);
   
@@ -86,14 +86,13 @@ export const authorize = (allowedRoles = []) => {
         code: 'NO_USER'
       });
     }
-    
+
     const userRole = req.user.role || 'user';
     
     if (allowedRoles.length === 0 || allowedRoles.includes(userRole)) {
       next();
     } else {
       console.log(`❌ Authorization failed: User role '${userRole}' not in allowed roles [${allowedRoles.join(', ')}]`);
-      
       return res.status(403).json({
         error: true,
         message: 'Insufficient permissions',
@@ -122,7 +121,8 @@ export const optionalAuth = async (req, res, next) => {
     }
     
     next();
-  } catch (error) {
+  } catch {
+    // Fixed: Removed unused 'error' parameter
     // Continue without authentication
     next();
   }

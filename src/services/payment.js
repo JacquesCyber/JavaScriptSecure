@@ -449,8 +449,13 @@ export class PaymentService {
       cancelled: 'Payment was cancelled',
       refunded: 'Payment has been refunded'
     };
-
-    return messages[status] || 'Unknown payment status';
+    const allowed = [
+      'pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded'
+    ];
+    if (allowed.includes(status)) {
+      return messages[status];
+    }
+    return 'Unknown payment status';
   }
 }
 

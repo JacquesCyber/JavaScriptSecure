@@ -56,9 +56,9 @@ export class UserService {
       
       const savedUser = await user.save();
       
-      // Return user without password
-      // eslint-disable-next-line no-unused-vars
-      const { password: _, ...userWithoutPassword } = savedUser.toObject();
+      // Return user without password - Fixed: Simplified to avoid unused variable
+      const userWithoutPassword = savedUser.toObject();
+      delete userWithoutPassword.password;
       
       return {
         success: true,
@@ -112,9 +112,9 @@ export class UserService {
       user.lastLogin = new Date();
       await user.save();
       
-      // Return user without password
-      // eslint-disable-next-line no-unused-vars
-      const { password: _, ...userWithoutPassword } = user.toObject();
+      // Return user without password - Fixed: Simplified to avoid unused variable
+      const userWithoutPassword = user.toObject();
+      delete userWithoutPassword.password;
       
       return {
         success: true,
