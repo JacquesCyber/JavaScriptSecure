@@ -131,7 +131,11 @@ export class PaymentService {
         validated.paypalEmail = this.validatePayPalEmail(method.paypalEmail);
         break;
       case 'bank_transfer':
+      case 'eft':
         validated.bankDetails = this.validateBankDetails(method.bankDetails);
+        break;
+      case 'swift':
+        validated.swiftDetails = this.validateSwiftDetails(method.swiftDetails);
         break;
       default:
         throw new Error('Unsupported payment method');
@@ -262,6 +266,64 @@ export class PaymentService {
         throw new Error('Account last four must be exactly 4 digits');
       }
       validated.accountLastFour = bankDetails.accountLastFour;
+    }
+
+    return validated;
+  }
+
+  /**
+   * Validate SWIFT transfer details
+   * @param {Object} swiftDetails - SWIFT payment information
+   * @returns {Object} Validated SWIFT details
+   */
+  static validateSwiftDetails(swiftDetails) {
+    if (!swiftDetails) {
+      throw new Error('SWIFT details are required');
+    }
+
+    const validated = {};
+
+    // Validate beneficiary name
+    if (!swiftDetails.beneficiaryName || swiftDetails.beneficiaryName.trim().length === 0) {
+      throw new Error('Beneficiary name is required');
+    }
+    validated.beneficiaryName = swiftDetails.beneficiaryName.trim();
+
+    // Validate SWIFT code (8 or 11 characters)
+    if (!swiftDetails.swiftCode || !/^[A-Z0-9]{8,11}$/.test(swiftDetails.swiftCode)) {
+      throw new Error('Invalid SWIFT code format (must be 8-11 alphanumeric characters)');
+    }
+    validated.swiftCode = swiftDetails.swiftCode;
+
+    // Validate beneficiary account/IBAN
+    if (!swiftDetails.beneficiaryAccount || swiftDetails.beneficiaryAccount.trim().length === 0) {
+      throw new Error('Beneficiary account/IBAN is required');
+    }
+    validated.beneficiaryAccount = swiftDetails.beneficiaryAccount.trim();
+
+    // Validate bank name
+    if (!swiftDetails.bankName || swiftDetails.bankName.trim().length === 0) {
+      throw new Error('Bank name is required');
+    }
+    validated.bankName = swiftDetails.bankName.trim();
+
+    // Validate bank country
+    if (!swiftDetails.bankCountry || swiftDetails.bankCountry.trim().length < 2) {
+      throw new Error('Bank country is required');
+    }
+    validated.bankCountry = swiftDetails.bankCountry.trim();
+
+    // Optional: purpose of payment
+    if (swiftDetails.purpose) {
+      const validPurposes = ['family_support', 'education', 'medical', 'business', 'investment', 'other'];
+      if (validPurposes.includes(swiftDetails.purpose)) {
+        validated.purpose = swiftDetails.purpose;
+      }
+    }
+
+    // Optional: payment reference
+    if (swiftDetails.reference) {
+      validated.reference = swiftDetails.reference.trim();
     }
 
     return validated;

@@ -29,16 +29,28 @@ function sanitizeObject(obj, depth = 0) {
   let hasInjectionAttempt = false;
 
   const allowedKeys = new Set([
-    'name','email','username','password','role','id','accountNumber',
-    'bankCode','branchCode','amount','currency','ipAddress','userAgent',
-    'type','cardDetails','lastFour','createdAt','updatedAt','isActive',
-    'status','template','title','description','fullName','token',
-    'sessionId','userId','swiftCode','reference','paymentMethod',
-    'permissions','fields','value','key','data','message','code',
+    // User fields
+    'name','email','username','password','role','id','fullName','idNumber',
+    // Account fields
+    'accountNumber','bankCode','branchCode',
+    // Payment fields
+    'amount','currency','description','userId','paymentMethod','provider',
+    // Payment method nested objects
+    'type','cardDetails','paypalEmail','bankDetails','swiftDetails',
+    // Card details
+    'lastFour','brand','expiryMonth','expiryYear',
+    // Bank details
+    'accountType',
+    // SWIFT details
+    'beneficiaryName','beneficiaryAccount','swiftCode','bankName','bankCountry','purpose','reference',
+    // System fields
+    'ipAddress','userAgent','createdAt','updatedAt','isActive','status',
+    'token','sessionId','permissions','fields','value','key','data','message','code',
     'recent','active','total','lastLogin','emailVerified','phone',
     'address','city','country','zip','state','notes','meta','tags',
-    'options','settings','profile','avatar','url','file','filename',
-    'path','templateName','module','templateId','templateType',
+    'options','settings','profile','avatar','url','file','filename','path',
+    // Template fields
+    'template','title','templateName','module','templateId','templateType',
     'templateContent','templateData','templateFields','templateValues',
     'templateOptions','templateSettings','templateMeta','templateTags',
     'templateNotes','templateProfile','templateAvatar','templateUrl',

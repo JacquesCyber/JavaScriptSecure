@@ -22,7 +22,7 @@ Additional security headers are set to protect against common vulnerabilities:
 Rate Limiting
 Rate limiting configurations are provided to mitigate brute-force and DDoS attacks:
 - General rate limit: 100 requests per 15 minutes per IP
-- API-specific rate limit: 10 requests per 15 minutes per IP
+- API-specific rate limit: 100 requests per 15 minutes per IP
 
 Environment Awareness
 The configuration adapts based on the environment (development vs production):
@@ -99,7 +99,7 @@ export const securityConfig = {
     },
     api: {
       windowMs: 15 * 60 * 1000, // 15 minutes
-      max: 10, // limit each IP to 10 API requests per windowMs
+      max: 100, // limit each IP to 100 API requests per windowMs (increased for normal usage)
       message: 'Too many API requests from this IP, please try again later.'
     }
   }

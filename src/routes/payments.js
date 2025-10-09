@@ -18,87 +18,92 @@ const paymentValidation = [
     .isIn(['ZAR', 'USD', 'EUR', 'GBP', 'CAD', 'AUD', 'JPY', 'CHF', 'CNY', 'INR', 'BRL', 'MXN'])
     .withMessage('Invalid currency'),
   body('description')
+    .optional({ checkFalsy: true })
     .trim()
     .isLength({ min: 1, max: 500 })
-    .withMessage('Description must be between 1 and 500 characters')
-    .escape(),
+    .withMessage('Description must be between 1 and 500 characters'),
   body('paymentMethod.type')
     .isIn(['card', 'paypal', 'bank_transfer', 'swift', 'eft'])
     .withMessage('Invalid payment method type'),
-  body('paymentMethod.cardDetails.lastFour')
-    .if(body('paymentMethod.type').equals('card'))
-    .isLength({ min: 4, max: 4 })
-    .isNumeric()
-    .withMessage('Card last four digits must be exactly 4 digits'),
-  body('paymentMethod.cardDetails.brand')
-    .if(body('paymentMethod.type').equals('card'))
-    .optional()
-    .isIn(['visa', 'mastercard', 'amex', 'discover'])
-    .withMessage('Invalid card brand'),
-  body('paymentMethod.paypalEmail')
-    .if(body('paymentMethod.type').equals('paypal'))
-    .isEmail()
-    .normalizeEmail()
-    .withMessage('Invalid PayPal email format'),
-  body('paymentMethod.bankDetails.bankCode')
-    .if(body('paymentMethod.type').equals('bank_transfer'))
-    .isLength({ min: 6, max: 6 })
-    .isNumeric()
-    .withMessage('Bank code must be exactly 6 digits'),
-  body('paymentMethod.bankDetails.branchCode')
-    .if(body('paymentMethod.type').equals('bank_transfer'))
-    .isLength({ min: 6, max: 6 })
-    .isNumeric()
-    .withMessage('Branch code must be exactly 6 digits'),
-  body('paymentMethod.bankDetails.accountNumber')
-    .if(body('paymentMethod.type').equals('bank_transfer'))
-    .isLength({ min: 10, max: 12 })
-    .isNumeric()
-    .withMessage('Account number must be between 10-12 digits'),
-  // EFT validation
-  body('paymentMethod.bankDetails.bankCode')
-    .if(body('paymentMethod.type').equals('eft'))
-    .isLength({ min: 6, max: 6 })
-    .isNumeric()
-    .withMessage('Bank code must be exactly 6 digits for EFT'),
-  body('paymentMethod.bankDetails.branchCode')
-    .if(body('paymentMethod.type').equals('eft'))
-    .isLength({ min: 6, max: 6 })
-    .isNumeric()
-    .withMessage('Branch code must be exactly 6 digits for EFT'),
-  body('paymentMethod.bankDetails.accountNumber')
-    .if(body('paymentMethod.type').equals('eft'))
-    .isLength({ min: 10, max: 12 })
-    .isNumeric()
-    .withMessage('Account number must be between 10-12 digits for EFT'),
-  // SWIFT payment validation
-  body('paymentMethod.swiftDetails.beneficiaryName')
-    .if(body('paymentMethod.type').equals('swift'))
-    .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Beneficiary name is required for SWIFT payments'),
-  body('paymentMethod.swiftDetails.swiftCode')
-  .if(body('paymentMethod.type').equals('swift'))
-  .trim()
-  .isLength({ min: 8, max: 11 })
-  .matches(/^[A-Z0-9]+$/)
-  .withMessage('Invalid SWIFT code format'),
-  body('paymentMethod.swiftDetails.beneficiaryAccount')
-    .if(body('paymentMethod.type').equals('swift'))
-    .trim()
-    .isLength({ min: 8, max: 34 })
-    .matches(/^[A-Z0-9]+$/)
-    .withMessage('Invalid beneficiary account format'),
-  body('paymentMethod.swiftDetails.bankName')
-    .if(body('paymentMethod.type').equals('swift'))
-    .trim()
-    .isLength({ min: 1, max: 100 })
-    .withMessage('Bank name is required for SWIFT payments'),
-  body('paymentMethod.swiftDetails.bankCountry')
-    .if(body('paymentMethod.type').equals('swift'))
-    .trim()
-    .isLength({ min: 2, max: 50 })
-    .withMessage('Bank country is required for SWIFT payments')
+  // Card validation - only for card payments
+  body('paymentMethod').custom((value, { req }) => {
+    const type = value?.type;
+    
+    if (type === 'card') {
+      if (!value.cardDetails?.lastFour) {
+        throw new Error('Card last four digits are required');
+      }
+      if (!/^\d{4}$/.test(value.cardDetails.lastFour)) {
+        throw new Error('Card last four digits must be exactly 4 digits');
+      }
+      // Validate expiry month (01-12)
+      if (!value.cardDetails?.expiryMonth || value.cardDetails.expiryMonth < 1 || value.cardDetails.expiryMonth > 12) {
+        throw new Error('Invalid expiry month (must be 1-12)');
+      }
+      // Validate expiry year (4 digits, 2020-2099)
+      if (!value.cardDetails?.expiryYear || value.cardDetails.expiryYear < 2020 || value.cardDetails.expiryYear > 2099) {
+        throw new Error('Invalid expiry year (must be 2020-2099)');
+      }
+      // Check if card is expired
+      const currentDate = new Date();
+      const currentYear = currentDate.getFullYear();
+      const currentMonth = currentDate.getMonth() + 1;
+      if (value.cardDetails.expiryYear < currentYear || 
+          (value.cardDetails.expiryYear === currentYear && value.cardDetails.expiryMonth < currentMonth)) {
+        throw new Error('Card has expired');
+      }
+    }
+    
+    if (type === 'paypal') {
+      if (!value.paypalEmail) {
+        throw new Error('PayPal email is required');
+      }
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.paypalEmail)) {
+        throw new Error('Invalid PayPal email format');
+      }
+    }
+    
+    if (type === 'bank_transfer' || type === 'eft') {
+      if (!value.bankDetails?.bankCode) {
+        throw new Error('Bank code is required');
+      }
+      if (!/^\d{6}$/.test(value.bankDetails.bankCode)) {
+        throw new Error('Bank code must be exactly 6 digits');
+      }
+      if (!value.bankDetails?.branchCode) {
+        throw new Error('Branch code is required');
+      }
+      if (!/^\d{6}$/.test(value.bankDetails.branchCode)) {
+        throw new Error('Branch code must be exactly 6 digits');
+      }
+      if (!value.bankDetails?.accountNumber) {
+        throw new Error('Account number is required');
+      }
+      if (!/^\d{10,12}$/.test(value.bankDetails.accountNumber)) {
+        throw new Error('Account number must be between 10-12 digits');
+      }
+    }
+    
+    if (type === 'swift') {
+      if (!value.swiftDetails?.beneficiaryName || value.swiftDetails.beneficiaryName.trim().length === 0) {
+        throw new Error('Beneficiary name is required for SWIFT payments');
+      }
+      if (!value.swiftDetails?.swiftCode || !/^[A-Z0-9]{8,11}$/.test(value.swiftDetails.swiftCode)) {
+        throw new Error('Invalid SWIFT code format');
+      }
+      if (!value.swiftDetails?.beneficiaryAccount || !/^[A-Z0-9]{8,34}$/.test(value.swiftDetails.beneficiaryAccount)) {
+        throw new Error('Invalid beneficiary account format');
+      }
+      if (!value.swiftDetails?.bankName || value.swiftDetails.bankName.trim().length === 0) {
+        throw new Error('Bank name is required for SWIFT payments');
+      }
+      if (!value.swiftDetails?.bankCountry || value.swiftDetails.bankCountry.trim().length < 2) {
+        throw new Error('Bank country is required for SWIFT payments');
+      }
+    }
+    
+    return true;
+  })
 ];
 
 // Middleware to extract user ID from request body (for POST requests)
@@ -136,10 +141,15 @@ const extractUserIdFromQuery = (req, res, next) => {
 // POST /api/payments/process - Process a new payment
 router.post('/process', authLimiter, paymentValidation, extractUserIdFromBody, async (req, res) => {
   console.log('💳 Payment processing request received');
+  console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
   
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log('❌ Payment validation errors:', errors.array());
+    console.log('❌ Payment validation errors:', JSON.stringify(errors.array(), null, 2));
+    // Log each error with field and message
+    errors.array().forEach(err => {
+      console.log(`   - Field: ${err.path || err.param}, Message: ${err.msg}`);
+    });
     return res.status(400).json({
       success: false,
       message: 'Payment validation failed',

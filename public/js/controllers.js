@@ -437,7 +437,7 @@ export class PaymentController extends PageController {
       const paymentData = {
         amount: parseFloat(data.amount),
         currency: data.currency || 'ZAR', // Use selected currency, default to ZAR
-        description: data.description || 'Payment transaction',
+        description: (data.description && data.description.trim()) || 'Payment transaction',
         paymentMethod: {
           type: data.method,
           ...this.preparePaymentMethodData(data)
@@ -448,6 +448,8 @@ export class PaymentController extends PageController {
       if (this.app.user && this.app.user.id) {
         paymentData.userId = this.app.user.id;
       }
+      
+      console.log('📤 Final payment data being sent:', JSON.stringify(paymentData, null, 2));
       
       // Submit to MongoDB via API
       const response = await fetch('/api/payments/process', {
@@ -469,7 +471,16 @@ export class PaymentController extends PageController {
         }
         setTimeout(() => this.app.navigateTo('validator'), 2000);
       } else {
-        this.app.showNotification('❌ Payment failed: ' + result.message, 'error');
+        // Display detailed validation errors
+        let errorMessage = result.message || 'Payment failed';
+        if (result.errors && result.errors.length > 0) {
+          console.error('❌ Validation errors:', result.errors);
+          const errorDetails = result.errors.map(err => 
+            `${err.path || err.param}: ${err.msg}`
+          ).join(', ');
+          errorMessage += '. Details: ' + errorDetails;
+        }
+        this.app.showNotification('❌ ' + errorMessage, 'error');
       }
       
     } catch (error) {
@@ -503,8 +514,23 @@ export class PaymentController extends PageController {
       if (!data.cardNumber || data.cardNumber.replace(/\s/g, '').length < 13) {
         errors.push('Please enter a valid card number');
       }
-      if (!data.expiryDate || !/^\d{2}\/\d{2}$/.test(data.expiryDate)) {
-        errors.push('Please enter a valid expiry date (MM/YY)');
+      if (!data.expiryMonth || !/^\d{2}$/.test(data.expiryMonth)) {
+        errors.push('Please select expiry month (MM)');
+      }
+      if (!data.expiryYear || !/^\d{4}$/.test(data.expiryYear)) {
+        errors.push('Please select expiry year (YYYY)');
+      }
+      // Validate that the expiry date is not in the past
+      if (data.expiryMonth && data.expiryYear) {
+        const currentDate = new Date();
+        const currentYear = currentDate.getFullYear();
+        const currentMonth = currentDate.getMonth() + 1; // 0-indexed
+        const expiryYear = parseInt(data.expiryYear);
+        const expiryMonth = parseInt(data.expiryMonth);
+        
+        if (expiryYear < currentYear || (expiryYear === currentYear && expiryMonth < currentMonth)) {
+          errors.push('Card has expired. Please enter a valid expiry date');
+        }
       }
       if (!data.cvv || data.cvv.length < 3) {
         errors.push('Please enter a valid CVV');
@@ -577,13 +603,12 @@ export class PaymentController extends PageController {
 
     switch (data.method) {
       case 'card': {
-        // Extract last 4 digits and card brand
+        // Extract last 4 digits
         const cardNumber = data.cardNumber.replace(/\s/g, '');
         methodData.cardDetails = {
           lastFour: cardNumber.slice(-4),
-          brand: this.detectCardBrand(cardNumber),
-          expiryMonth: parseInt(data.expiryDate.split('/')[0]),
-          expiryYear: parseInt('20' + data.expiryDate.split('/')[1])
+          expiryMonth: parseInt(data.expiryMonth),
+          expiryYear: parseInt(data.expiryYear)
         };
         break;
       }
@@ -620,17 +645,6 @@ export class PaymentController extends PageController {
     }
 
     return methodData;
-  }
-
-  detectCardBrand(cardNumber) {
-    const cleanNumber = cardNumber.replace(/\s/g, '');
-    
-    if (/^4/.test(cleanNumber)) return 'visa';
-    if (/^5[1-5]/.test(cleanNumber)) return 'mastercard';
-    if (/^3[47]/.test(cleanNumber)) return 'amex';
-    if (/^6(?:011|5)/.test(cleanNumber)) return 'discover';
-    
-    return 'unknown';
   }
 }
 
@@ -754,7 +768,7 @@ export class ValidatorController extends PageController {
       
     } catch (error) {
       console.error('❌ Error loading transactions:', error);
-      container.innerHTML = '<p class="text-danger text-center">Failed to load transactions. Please try again.</p>';
+      container.innerHTML = '<p class="text-danger text-center">You have probably been rate limited. Please try again in 15 minutes(if you are a marker just restart the server).</p>';
     }
   }
 

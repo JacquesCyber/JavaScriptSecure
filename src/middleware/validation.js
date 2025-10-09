@@ -31,7 +31,9 @@ export const patterns = {
   cardBrand: /^(visa|mastercard|amex|discover)$/u,
   swiftCode: /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/u,
   cvv: /^[0-9]{3,4}$/u,
-  expiryDate: /^(0[1-9]|1[0-2])\/([0-9]{2})$/u
+  expiryDate: /^(0[1-9]|1[0-2])\/([0-9]{4})$/u,  // MM/YYYY format
+  expiryMonth: /^(0[1-9]|1[0-2])$/u,  // MM format (01-12)
+  expiryYear: /^(20[2-9][0-9])$/u  // YYYY format (2020-2099)
 };
 
 /* eslint-enable security/detect-unsafe-regex */
@@ -119,7 +121,12 @@ export const regexValidator = (req, res, next) => {
 
   for (const field of Object.keys(rules)) {
     if (Object.hasOwn(req.body, field)) {
-      const fieldErrors = validateField(req.body[field], rules[field]);
+      const value = req.body[field];
+      // Skip validation for optional fields that are empty/null/undefined
+      if (!rules[field].required && (!value || value.trim?.() === '')) {
+        continue;
+      }
+      const fieldErrors = validateField(value, rules[field]);
       if (fieldErrors.length > 0) {
         errors[field] = fieldErrors;
         hasErrors = true;
@@ -147,7 +154,22 @@ export const regexValidator = (req, res, next) => {
 export function sanitizeInput(req, res, next) {
   try {
     const allowedKeys = [
-      'name', 'email', 'username', 'password', 'role', 'id', 'accountNumber', 'bankCode', 'branchCode', 'amount', 'currency', 'userId', 'title', 'data'
+      // User fields
+      'name', 'email', 'username', 'password', 'role', 'id', 'fullName', 'idNumber',
+      // Account fields
+      'accountNumber', 'bankCode', 'branchCode', 
+      // Payment fields
+      'amount', 'currency', 'userId', 'description', 'paymentMethod', 'provider',
+      // Payment method nested fields
+      'type', 'cardDetails', 'paypalEmail', 'bankDetails', 'swiftDetails',
+      // Card details
+      'lastFour', 'brand', 'expiryMonth', 'expiryYear',
+      // Bank details
+      'accountType',
+      // SWIFT details  
+      'beneficiaryName', 'beneficiaryAccount', 'swiftCode', 'bankName', 'bankCountry', 'purpose', 'reference',
+      // Other
+      'title', 'data'
     ];
 
     const sanitize = (obj) => {
