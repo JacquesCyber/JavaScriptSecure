@@ -1,9 +1,13 @@
 import CryptoJS from 'crypto-js';
+import dotenv from 'dotenv';
 
 /**
  * Encryption utility for sensitive data using AES-256
  * Provides secure encryption/decryption for PII like ID numbers
  */
+
+// Load environment variables
+dotenv.config();
 
 // Get encryption key and IV from environment
 const ENCRYPTION_KEY = process.env.ENCRYPTION_KEY;

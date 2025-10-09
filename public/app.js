@@ -23,7 +23,7 @@ class SecureApp {
       'login': { requiresAuth: false, allowedRoles: [] },
       'dashboard': { requiresAuth: true, allowedRoles: ['user', 'admin'] },
       'payment': { requiresAuth: true, allowedRoles: ['user', 'admin'] },
-      'validator': { requiresAuth: true, allowedRoles: ['admin'] }
+      'validator': { requiresAuth: true, allowedRoles: ['user', 'admin'] }
     };
     
     this.init();

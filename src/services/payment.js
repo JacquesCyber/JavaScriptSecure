@@ -216,13 +216,36 @@ export class PaymentService {
     const validated = {};
 
     if (bankDetails.accountType) {
-      const validTypes = ['checking', 'savings'];
+      const validTypes = ['cheque', 'savings', 'transmission', 'business', 'checking']; // Support both SA and US formats
       if (!validTypes.includes(bankDetails.accountType)) {
         throw new Error('Invalid account type');
       }
       validated.accountType = bankDetails.accountType;
     }
 
+    // South African banking fields
+    if (bankDetails.bankCode) {
+      if (!/^\d{6}$/.test(bankDetails.bankCode)) {
+        throw new Error('Bank code must be 6 digits');
+      }
+      validated.bankCode = bankDetails.bankCode;
+    }
+
+    if (bankDetails.branchCode) {
+      if (!/^\d{6}$/.test(bankDetails.branchCode)) {
+        throw new Error('Branch code must be 6 digits');
+      }
+      validated.branchCode = bankDetails.branchCode;
+    }
+
+    if (bankDetails.accountNumber) {
+      if (!/^\d{10,12}$/.test(bankDetails.accountNumber)) {
+        throw new Error('Account number must be between 10-12 digits');
+      }
+      validated.accountNumber = bankDetails.accountNumber;
+    }
+
+    // Legacy US banking fields (for backward compatibility)
     if (bankDetails.routingNumber) {
       if (!/^\d{9}$/.test(bankDetails.routingNumber)) {
         throw new Error('Routing number must be 9 digits');

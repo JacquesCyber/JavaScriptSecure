@@ -103,6 +103,116 @@
             </div>
           </div>
           
+          <!-- PayPal Details -->
+          <div id="paypal-details" style="display: none;">
+            <div class="alert alert-warning">
+              <h6><i class="fab fa-paypal"></i> PayPal Payment Details</h6>
+              <small>Enter your PayPal email address for payment processing.</small>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="paypalEmail" class="form-label">PayPal Email Address</label>
+                  <input type="email" class="form-control" id="paypalEmail" name="paypalEmail" placeholder="your-email@example.com" required>
+                  <div class="form-text">The email address associated with your PayPal account</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Bank Transfer Details -->
+          <div id="bank-details" style="display: none;">
+            <div class="alert alert-info">
+              <h6><i class="fas fa-info-circle"></i> South African Bank Transfer Details</h6>
+              <small>Please provide your South African bank account information for the transfer.</small>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="bankCode" class="form-label">Bank Code</label>
+                  <input type="text" class="form-control" id="bankCode" name="bankCode" placeholder="6-digit bank code" maxlength="6">
+                  <div class="form-text">Your bank's 6-digit code (e.g., First National Bank: 250655)</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="branchCode" class="form-label">Branch Code</label>
+                  <input type="text" class="form-control" id="branchCode" name="branchCode" placeholder="6-digit branch code" maxlength="6">
+                  <div class="form-text">Your branch's 6-digit code</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="accountNumber" class="form-label">Account Number</label>
+                  <input type="text" class="form-control" id="accountNumber" name="accountNumber" placeholder="Your account number" maxlength="12">
+                  <div class="form-text">Your bank account number (10-12 digits)</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="accountType" class="form-label">Account Type</label>
+                  <select class="form-select" id="accountType" name="accountType">
+                    <option value="cheque">Cheque Account</option>
+                    <option value="savings">Savings Account</option>
+                    <option value="transmission">Transmission Account</option>
+                    <option value="business">Business Account</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- EFT Details -->
+          <div id="eft-details" style="display: none;">
+            <div class="alert alert-success">
+              <h6><i class="fas fa-university"></i> EFT (Electronic Funds Transfer) Details</h6>
+              <small>Provide your South African bank details for electronic funds transfer.</small>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="eftBankCode" class="form-label">Bank Code</label>
+                  <input type="text" class="form-control" id="eftBankCode" name="eftBankCode" placeholder="6-digit bank code" maxlength="6">
+                  <div class="form-text">Your bank's 6-digit code</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="eftBranchCode" class="form-label">Branch Code</label>
+                  <input type="text" class="form-control" id="eftBranchCode" name="eftBranchCode" placeholder="6-digit branch code" maxlength="6">
+                  <div class="form-text">Your branch's 6-digit code</div>
+                </div>
+              </div>
+            </div>
+            
+            <div class="row">
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="eftAccountNumber" class="form-label">Account Number</label>
+                  <input type="text" class="form-control" id="eftAccountNumber" name="eftAccountNumber" placeholder="Your account number" maxlength="12">
+                  <div class="form-text">Your bank account number (10-12 digits)</div>
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="mb-3">
+                  <label for="eftAccountType" class="form-label">Account Type</label>
+                  <select class="form-select" id="eftAccountType" name="eftAccountType">
+                    <option value="cheque">Cheque Account</option>
+                    <option value="savings">Savings Account</option>
+                    <option value="transmission">Transmission Account</option>
+                    <option value="business">Business Account</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+          
           <!-- SWIFT Payment Details -->
           <div id="swift-details" style="display: none;">
             <div class="alert alert-info">

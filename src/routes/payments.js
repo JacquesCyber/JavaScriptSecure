@@ -7,6 +7,9 @@ const router = express.Router();
 
 // Payment validation middleware
 const paymentValidation = [
+  body('userId')
+    .notEmpty()
+    .withMessage('User ID is required'),
   body('amount')
     .isFloat({ min: 0.01, max: 1000000 })
     .withMessage('Amount must be between $0.01 and $1,000,000'),
@@ -37,16 +40,37 @@ const paymentValidation = [
     .isEmail()
     .normalizeEmail()
     .withMessage('Invalid PayPal email format'),
-  body('paymentMethod.bankDetails.routingNumber')
+  body('paymentMethod.bankDetails.bankCode')
     .if(body('paymentMethod.type').equals('bank_transfer'))
-    .isLength({ min: 9, max: 9 })
+    .isLength({ min: 6, max: 6 })
     .isNumeric()
-    .withMessage('Routing number must be exactly 9 digits'),
-  body('paymentMethod.bankDetails.accountLastFour')
+    .withMessage('Bank code must be exactly 6 digits'),
+  body('paymentMethod.bankDetails.branchCode')
     .if(body('paymentMethod.type').equals('bank_transfer'))
-    .isLength({ min: 4, max: 4 })
+    .isLength({ min: 6, max: 6 })
     .isNumeric()
-    .withMessage('Account last four must be exactly 4 digits'),
+    .withMessage('Branch code must be exactly 6 digits'),
+  body('paymentMethod.bankDetails.accountNumber')
+    .if(body('paymentMethod.type').equals('bank_transfer'))
+    .isLength({ min: 10, max: 12 })
+    .isNumeric()
+    .withMessage('Account number must be between 10-12 digits'),
+  // EFT validation
+  body('paymentMethod.bankDetails.bankCode')
+    .if(body('paymentMethod.type').equals('eft'))
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('Bank code must be exactly 6 digits for EFT'),
+  body('paymentMethod.bankDetails.branchCode')
+    .if(body('paymentMethod.type').equals('eft'))
+    .isLength({ min: 6, max: 6 })
+    .isNumeric()
+    .withMessage('Branch code must be exactly 6 digits for EFT'),
+  body('paymentMethod.bankDetails.accountNumber')
+    .if(body('paymentMethod.type').equals('eft'))
+    .isLength({ min: 10, max: 12 })
+    .isNumeric()
+    .withMessage('Account number must be between 10-12 digits for EFT'),
   // SWIFT payment validation
   body('paymentMethod.swiftDetails.beneficiaryName')
     .if(body('paymentMethod.type').equals('swift'))
@@ -76,16 +100,40 @@ const paymentValidation = [
     .withMessage('Bank country is required for SWIFT payments')
 ];
 
-// Middleware to extract user ID (in real app, use JWT/session)
-const extractUserId = (req, res, next) => {
-  // For demo purposes, we'll use a mock user ID
-  // In production, extract from JWT token or session
-  req.userId = '507f1f77bcf86cd799439011'; // Mock user ID
+// Middleware to extract user ID from request body (for POST requests)
+const extractUserIdFromBody = (req, res, next) => {
+  // Extract userId from request body (sent by frontend)
+  const userId = req.body.userId;
+  
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: 'User ID is required for payment processing'
+    });
+  }
+  
+  req.userId = userId;
+  next();
+};
+
+// Middleware to extract user ID from query parameters (for GET requests)
+const extractUserIdFromQuery = (req, res, next) => {
+  // Extract userId from query parameters (sent by frontend)
+  const userId = req.query.userId;
+  
+  if (!userId) {
+    return res.status(400).json({
+      success: false,
+      message: 'User ID is required'
+    });
+  }
+  
+  req.userId = userId;
   next();
 };
 
 // POST /api/payments/process - Process a new payment
-router.post('/process', authLimiter, paymentValidation, extractUserId, async (req, res) => {
+router.post('/process', authLimiter, paymentValidation, extractUserIdFromBody, async (req, res) => {
   console.log('💳 Payment processing request received');
   
   const errors = validationResult(req);
@@ -127,7 +175,7 @@ router.post('/process', authLimiter, paymentValidation, extractUserId, async (re
 });
 
 // GET /api/payments/history - Get user payment history
-router.get('/history', extractUserId, async (req, res) => {
+router.get('/history', extractUserIdFromQuery, async (req, res) => {
   try {
     const userId = req.userId;
     const limit = parseInt(req.query.limit) || 50;
@@ -162,7 +210,7 @@ router.get('/history', extractUserId, async (req, res) => {
 });
 
 // GET /api/payments/stats - Get user payment statistics
-router.get('/stats', extractUserId, async (req, res) => {
+router.get('/stats', extractUserIdFromQuery, async (req, res) => {
   try {
     const userId = req.userId;
     const stats = await PaymentService.getUserPaymentStats(userId);
@@ -181,7 +229,7 @@ router.get('/stats', extractUserId, async (req, res) => {
 });
 
 // GET /api/payments/:transactionId - Get specific payment details
-router.get('/:transactionId', extractUserId, async (req, res) => {
+router.get('/:transactionId', extractUserIdFromQuery, async (req, res) => {
   try {
     const { transactionId } = req.params;
     const userId = req.userId;

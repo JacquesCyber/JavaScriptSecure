@@ -46,12 +46,41 @@ const paymentMethodSchema = new mongoose.Schema({
       message: 'Invalid PayPal email format'
     }
   },
-  // For bank transfers
+  // For bank transfers (South African format)
   bankDetails: {
     accountType: {
       type: String,
-      enum: ['checking', 'savings']
+      enum: ['cheque', 'savings', 'transmission', 'business', 'checking'] // Keep 'checking' for backward compatibility
     },
+    // South African banking fields
+    bankCode: {
+      type: String,
+      validate: {
+        validator: function(v) {
+          return !v || /^\d{6}$/.test(v);
+        },
+        message: 'Bank code must be exactly 6 digits'
+      }
+    },
+    branchCode: {
+      type: String,
+      validate: {
+        validator: function(v) {
+          return !v || /^\d{6}$/.test(v);
+        },
+        message: 'Branch code must be exactly 6 digits'
+      }
+    },
+    accountNumber: {
+      type: String,
+      validate: {
+        validator: function(v) {
+          return !v || /^\d{10,12}$/.test(v);
+        },
+        message: 'Account number must be between 10-12 digits'
+      }
+    },
+    // Legacy US banking fields (for backward compatibility)
     routingNumber: {
       type: String,
       validate: {
@@ -222,10 +251,13 @@ const paymentSchema = new mongoose.Schema({
     required: true,
     validate: {
       validator: function(v) {
-        // Basic IP validation (IPv4 and IPv6)
+        // More flexible IP validation (IPv4, IPv6, and localhost formats)
         const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
         const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
-        return ipv4Regex.test(v) || ipv6Regex.test(v);
+        const ipv6ShortRegex = /^::1$|^::ffff:(\d{1,3}\.){3}\d{1,3}$/;
+        const localhostRegex = /^::1$|^127\.0\.0\.1$/;
+        
+        return ipv4Regex.test(v) || ipv6Regex.test(v) || ipv6ShortRegex.test(v) || localhostRegex.test(v);
       },
       message: 'Invalid IP address format'
     }
@@ -357,7 +389,7 @@ paymentSchema.statics.getUserPayments = function(userId, limit = 50, skip = 0) {
 
 paymentSchema.statics.getPaymentStats = function(userId) {
   return this.aggregate([
-    { $match: { userId: mongoose.Types.ObjectId(userId) } },
+    { $match: { userId: new mongoose.Types.ObjectId(userId) } },
     {
       $group: {
         _id: null,

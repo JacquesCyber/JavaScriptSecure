@@ -224,7 +224,7 @@ export class LoginController extends PageController {
           id: result.user._id,
           fullName: result.user.fullName,
           email: result.user.email,
-          role: 'user',
+          role: result.user.role || 'user', // Use actual role from database, fallback to 'user'
           loginTime: new Date().toLocaleString()
         });
         this.app.showNotification('✅ Welcome back, ' + result.user.fullName + '!', 'success');
@@ -311,12 +311,35 @@ export class PaymentController extends PageController {
     if (methodSelect && cardDetails) {
       methodSelect.addEventListener('change', (e) => {
         const selectedMethod = e.target.value;
-        cardDetails.style.display = selectedMethod === 'card' ? 'block' : 'none';
         
-        // Show/hide SWIFT details
-        const swiftDetails = document.getElementById('swift-details');
-        if (swiftDetails) {
-          swiftDetails.style.display = selectedMethod === 'swift' ? 'block' : 'none';
+        // Hide all payment method sections first
+        const allSections = ['card-details', 'paypal-details', 'bank-details', 'eft-details', 'swift-details'];
+        allSections.forEach(sectionId => {
+          const section = document.getElementById(sectionId);
+          if (section) section.style.display = 'none';
+        });
+        
+        // Show the appropriate section based on selected method
+        switch (selectedMethod) {
+          case 'card':
+            cardDetails.style.display = 'block';
+            break;
+          case 'paypal':
+            const paypalDetails = document.getElementById('paypal-details');
+            if (paypalDetails) paypalDetails.style.display = 'block';
+            break;
+          case 'bank_transfer':
+            const bankDetails = document.getElementById('bank-details');
+            if (bankDetails) bankDetails.style.display = 'block';
+            break;
+          case 'eft':
+            const eftDetails = document.getElementById('eft-details');
+            if (eftDetails) eftDetails.style.display = 'block';
+            break;
+          case 'swift':
+            const swiftDetails = document.getElementById('swift-details');
+            if (swiftDetails) swiftDetails.style.display = 'block';
+            break;
         }
       });
     }
@@ -356,6 +379,11 @@ export class PaymentController extends PageController {
           ...this.preparePaymentMethodData(data)
         }
       };
+      
+      // Add user ID to payment data
+      if (this.app.user && this.app.user.id) {
+        paymentData.userId = this.app.user.id;
+      }
       
       // Submit to MongoDB via API
       const response = await fetch('/api/payments/process', {
@@ -427,6 +455,32 @@ export class PaymentController extends PageController {
       }
     }
 
+    // Validate bank transfer details if bank transfer is selected
+    if (data.method === 'bank_transfer') {
+      if (!data.bankCode || !/^\d{6}$/.test(data.bankCode)) {
+        errors.push('Please enter a valid 6-digit bank code');
+      }
+      if (!data.branchCode || !/^\d{6}$/.test(data.branchCode)) {
+        errors.push('Please enter a valid 6-digit branch code');
+      }
+      if (!data.accountNumber || !/^\d{10,12}$/.test(data.accountNumber)) {
+        errors.push('Please enter a valid account number (10-12 digits)');
+      }
+    }
+
+    // Validate EFT details if EFT is selected
+    if (data.method === 'eft') {
+      if (!data.eftBankCode || !/^\d{6}$/.test(data.eftBankCode)) {
+        errors.push('Please enter a valid 6-digit bank code for EFT');
+      }
+      if (!data.eftBranchCode || !/^\d{6}$/.test(data.eftBranchCode)) {
+        errors.push('Please enter a valid 6-digit branch code for EFT');
+      }
+      if (!data.eftAccountNumber || !/^\d{10,12}$/.test(data.eftAccountNumber)) {
+        errors.push('Please enter a valid account number for EFT (10-12 digits)');
+      }
+    }
+
     // Validate SWIFT details if SWIFT is selected
     if (data.method === 'swift') {
       if (!data.beneficiaryName || data.beneficiaryName.trim().length === 0) {
@@ -475,9 +529,18 @@ export class PaymentController extends PageController {
         break;
       case 'bank_transfer':
         methodData.bankDetails = {
-          accountType: data.accountType || 'checking',
-          routingNumber: data.routingNumber,
-          accountLastFour: data.accountLastFour
+          accountType: data.accountType || 'cheque',
+          bankCode: data.bankCode,
+          branchCode: data.branchCode,
+          accountNumber: data.accountNumber
+        };
+        break;
+      case 'eft':
+        methodData.bankDetails = {
+          accountType: data.eftAccountType || 'cheque',
+          bankCode: data.eftBankCode,
+          branchCode: data.eftBranchCode,
+          accountNumber: data.eftAccountNumber
         };
         break;
       case 'swift':
@@ -536,7 +599,8 @@ export class ValidatorController extends PageController {
       container.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
       // Fetch transactions from API
-      const response = await fetch('/api/payments/history?limit=50');
+      const userId = this.app.user ? this.app.user.id : '';
+      const response = await fetch(`/api/payments/history?limit=50&userId=${encodeURIComponent(userId)}`);
       const result = await response.json();
       
       if (!result.success) {
@@ -601,7 +665,8 @@ export class ValidatorController extends PageController {
   async updateStats() {
     try {
       // Fetch payment statistics from API
-      const response = await fetch('/api/payments/stats');
+      const userId = this.app.user ? this.app.user.id : '';
+      const response = await fetch(`/api/payments/stats?userId=${encodeURIComponent(userId)}`);
       const result = await response.json();
       
       if (!result.success) {
