@@ -17,6 +17,37 @@
             <div class="invalid-feedback">Please provide a valid email.</div>
           </div>
           <div class="mb-3">
+            <label for="username" class="form-label">Username</label>
+            <input type="text" class="form-control" id="username" name="username" minlength="3" maxlength="50" pattern="[a-zA-Z0-9_]+" required>
+            <div class="invalid-feedback">Username must be 3-50 characters (letters, numbers, underscores only).</div>
+          </div>
+          <div class="mb-3">
+            <label for="idNumber" class="form-label">South African ID Number</label>
+            <input type="text" class="form-control" id="idNumber" name="idNumber" minlength="13" maxlength="13" pattern="[0-9]{13}" required>
+            <div class="invalid-feedback">Please provide a valid 13-digit South African ID number.</div>
+          </div>
+          <div class="mb-3">
+            <label for="accountNumber" class="form-label">Bank Account Number</label>
+            <input type="text" class="form-control" id="accountNumber" name="accountNumber" minlength="10" maxlength="12" pattern="[0-9]{10,12}" required>
+            <div class="invalid-feedback">Please provide a valid 10-12 digit bank account number.</div>
+          </div>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="bankCode" class="form-label">Bank Code</label>
+                <input type="text" class="form-control" id="bankCode" name="bankCode" minlength="6" maxlength="6" pattern="[0-9]{6}" required>
+                <div class="invalid-feedback">Please provide a valid 6-digit bank code.</div>
+              </div>
+            </div>
+            <div class="col-md-6">
+              <div class="mb-3">
+                <label for="branchCode" class="form-label">Branch Code</label>
+                <input type="text" class="form-control" id="branchCode" name="branchCode" minlength="6" maxlength="6" pattern="[0-9]{6}" required>
+                <div class="invalid-feedback">Please provide a valid 6-digit branch code.</div>
+              </div>
+            </div>
+          </div>
+          <div class="mb-3">
             <label for="password" class="form-label">Password</label>
             <input type="password" class="form-control" id="password" name="password" minlength="8" required>
             <div class="password-requirements mt-2">

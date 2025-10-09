@@ -7,6 +7,7 @@ import cors from 'cors';
 
 // Import middleware
 import { setupSecurity } from './middleware/security.js';
+import { generalLimiter, apiLimiter } from './middleware/rateLimiting.js';
 
 // Import session configuration
 import { sessionConfig } from './auth/session.js';
@@ -16,6 +17,8 @@ import secretRoutes from './routes/secret.js';
 import healthRoutes from './routes/health.js';
 import staticRoutes from './routes/static.js';
 import userRoutes from './routes/users.js';
+import paymentRoutes from './routes/payments.js';
+import staffRoutes from './routes/staff.js';
 
 dotenv.config();
 
@@ -57,10 +60,16 @@ app.use(express.static('public', { index: false }));
 // Setup security middleware
 setupSecurity(app);
 
+// Rate limiting middleware
+app.use(generalLimiter);
+app.use('/api', apiLimiter);
+
 // Routes
 app.use('/', healthRoutes);
 app.use('/', secretRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/payments', paymentRoutes);
+app.use('/api/staff', staffRoutes);
 app.use('/', staticRoutes);
 
 // 404 handler with CSP-compliant response

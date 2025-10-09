@@ -22,34 +22,28 @@
       
       <div class="collapse navbar-collapse" id="navbarNav">
         <ul class="navbar-nav me-auto">
-          <li class="nav-item">
+          <li class="nav-item" id="nav-register">
             <a class="nav-link" href="#" data-page="register">Register</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-login">
             <a class="nav-link" href="#" data-page="login">Login</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-dashboard">
             <a class="nav-link" href="#" data-page="dashboard">Dashboard</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-payment">
             <a class="nav-link" href="#" data-page="payment">Payment</a>
           </li>
-          <li class="nav-item">
+          <li class="nav-item" id="nav-validator">
             <a class="nav-link" href="#" data-page="validator">Transactions</a>
           </li>
         </ul>
         
         <ul class="navbar-nav">
-          <li class="nav-item dropdown">
-            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-              👤 User
-            </a>
-            <ul class="dropdown-menu">
-              <li><a class="dropdown-item" href="#">Profile</a></li>
-              <li><a class="dropdown-item" href="#">Settings</a></li>
-              <li><hr class="dropdown-divider"></li>
-              <li><a class="dropdown-item" href="#" data-page="login">Logout</a></li>
-            </ul>
+          <li class="nav-item" id="nav-logout" style="display: none;">
+            <button class="btn btn-outline-light btn-sm" id="logout-btn">
+              <i class="fas fa-sign-out-alt"></i> Logout
+            </button>
           </li>
         </ul>
       </div>
@@ -83,6 +77,41 @@
   
   <!-- App Logic - ES6 Module -->
   <script nonce="{nonce}" type="module" src="/app.js"></script>
+  
+  <!-- Global logout function and event listener -->
+  <script nonce="{nonce}">
+    function logoutUser() {
+      if (window.SecureApp && typeof window.SecureApp.logout === 'function') {
+        window.SecureApp.logout();
+      } else {
+        // Fallback logout functionality
+        console.warn('SecureApp not available, using fallback logout');
+        sessionStorage.removeItem('user');
+        localStorage.removeItem('transactions');
+        
+        // Hide authenticated navigation elements
+        const navRegister = document.getElementById('nav-register');
+        const navLogin = document.getElementById('nav-login');
+        const navDashboard = document.getElementById('nav-dashboard');
+        const navPayment = document.getElementById('nav-payment');
+        const navValidator = document.getElementById('nav-validator');
+        const navLogout = document.getElementById('nav-logout');
+        
+        if (navRegister) navRegister.style.display = 'block';
+        if (navLogin) navLogin.style.display = 'block';
+        if (navDashboard) navDashboard.style.display = 'none';
+        if (navPayment) navPayment.style.display = 'none';
+        if (navValidator) navValidator.style.display = 'none';
+        if (navLogout) navLogout.style.display = 'none';
+        
+        // Force redirect to login
+        window.location.hash = 'login';
+        window.location.reload();
+      }
+    }
+
+    // Logout button event listener is now handled in app.js updateNavigation method
+  </script>
   
   <!-- Global Form Validation -->
   <script nonce="{nonce}">
