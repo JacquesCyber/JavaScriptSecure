@@ -2,7 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
-import { csrf } from 'lusca';
+import pkg from 'lusca';
+const { csrf } = pkg;
 
 import cors from 'cors';
 
