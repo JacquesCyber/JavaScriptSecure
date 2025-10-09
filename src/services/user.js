@@ -91,14 +91,18 @@ export class UserService {
   // Login user
   static async loginUser(username, accountNumber, password) {
     try {
-      if(!((typeof accountNumber === 'string' && typeof accountNumber === 'number' && !Array.isArray(accountNumber) ||
-        (typeof accountNumber === 'number' && isFinite(accountNumber))))) {
+      // Validate account number - accept either string or number
+      if (!accountNumber || (typeof accountNumber !== 'string' && typeof accountNumber !== 'number')) {
         throw new Error('Invalid account number');
       }
+      
+      // Convert to string for consistent comparison
+      const accountNumberStr = String(accountNumber);
+      
       // Find user by username and account number
       const user = await User.findOne({ 
         username: username.toLowerCase(),
-        accountNumber: accountNumber,
+        accountNumber: accountNumberStr,
         isActive: true 
       });
       
@@ -128,7 +132,16 @@ export class UserService {
       
     } catch (error) {
       console.error('❌ Error logging in user:', error);
-      throw error;
+      console.error('Error type:', typeof error);
+      console.error('Error message:', error.message);
+      console.error('Error stack:', error.stack?.split('\n')[0]);
+      
+      // Ensure we're throwing a proper Error object with a message
+      if (error instanceof Error) {
+        throw error;
+      } else {
+        throw new Error(String(error) || 'Login failed');
+      }
     }
   }
   

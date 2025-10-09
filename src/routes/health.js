@@ -7,9 +7,29 @@ const router = express.Router();
 // Home route - serve the main HTML page
 router.get('/', (req, res) => {
   const nonce = res.locals.nonce;
+  const csrfToken = res.locals.csrfToken || (req.csrfToken ? req.csrfToken() : '');
+  
+  console.log('🏠 Serving index.html with CSRF token:', csrfToken ? 'present' : 'missing');
   
   try {
     let htmlContent = fs.readFileSync('./public/index.html', 'utf8');
+    
+    // Inject CSRF token meta tag and debug script in the head section
+    const csrfMetaTag = `<meta name="csrf-token" content="${csrfToken}">`;
+    const debugScript = `<script nonce="${nonce}">
+    // Debug: Log CSRF token presence on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      const csrfMeta = document.querySelector('meta[name="csrf-token"]');
+      if (csrfMeta && csrfMeta.content) {
+        console.log('✅ Page loaded with CSRF token:', csrfMeta.content.substring(0, 15) + '...');
+      } else {
+        console.error('❌ Page loaded WITHOUT CSRF token in meta tag!');
+      }
+    });
+  </script>`;
+    
+    htmlContent = htmlContent.replace('</head>', `  ${csrfMetaTag}\n  ${debugScript}\n</head>`);
+    
     // Replace nonce placeholder in HTML if it exists
     htmlContent = htmlContent.replace(/\{nonce\}/g, nonce);
     res.send(htmlContent);

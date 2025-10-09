@@ -2,32 +2,16 @@ import Staff from '../models/Staff.js';
 import bcrypt from 'bcrypt';
 
 export class StaffService {
-  /**
-   * Register a new staff member
-   * @param {Object} staffData - Staff information
-   * @returns {Promise<Object>} Registration result
-   */
   static async registerStaff(staffData) {
     try {
-      console.log('👥 Registering new staff member...');
-
-      // Check if staff already exists
       const existingStaff = await Staff.findOne({
-        $or: [
-          { email: staffData.email },
-          { username: staffData.username }
-        ]
+        $or: [{ email: staffData.email }, { username: staffData.username }]
       });
+      if (existingStaff) throw new Error('Staff member with this email or username already exists');
 
-      if (existingStaff) {
-        throw new Error('Staff member with this email or username already exists');
-      }
-
-      // Hash password
       const saltRounds = 12;
       const hashedPassword = await bcrypt.hash(staffData.password, saltRounds);
 
-      // Create staff member
       const staff = new Staff({
         fullName: staffData.fullName,
         email: staffData.email,
@@ -45,9 +29,6 @@ export class StaffService {
       });
 
       await staff.save();
-
-      console.log('✅ Staff member created successfully:', staff.email);
-
       return {
         success: true,
         message: 'Staff member registered successfully',
@@ -61,39 +42,22 @@ export class StaffService {
           isActive: staff.isActive
         }
       };
-    } catch (error) {
-      console.error('❌ Staff registration error:', error);
-      throw error;
+    } catch (err) {
+      console.error('❌ Staff registration error:', err);
+      throw err;
     }
   }
 
-  /**
-   * Login staff member
-   * @param {string} username - Staff username
-   * @param {string} password - Staff password
-   * @returns {Promise<Object>} Login result
-   */
   static async loginStaff(username, password) {
     try {
-      console.log('🔐 Staff login attempt for:', username);
-
-      // Find staff member
       const staff = await Staff.findOne({ username: { $eq: username }, isActive: true });
-      if (!staff) {
-        throw new Error('Invalid credentials');
-      }
+      if (!staff) throw new Error('Invalid credentials');
 
-      // Verify password
-      const isValidPassword = await bcrypt.compare(password, staff.password);
-      if (!isValidPassword) {
-        throw new Error('Invalid credentials');
-      }
+      const valid = await bcrypt.compare(password, staff.password);
+      if (!valid) throw new Error('Invalid credentials');
 
-      // Update last login
       staff.lastLogin = new Date();
       await staff.save();
-
-      console.log('✅ Staff login successful:', staff.email);
 
       return {
         success: true,
@@ -109,53 +73,47 @@ export class StaffService {
           lastLogin: staff.lastLogin
         }
       };
-    } catch (error) {
-      console.error('❌ Staff login error:', error);
-      throw error;
+    } catch (err) {
+      console.error('❌ Staff login error:', err);
+      throw err;
     }
   }
 
-  /**
-   * Get staff member by ID
-   * @param {string} staffId - Staff ID
-   * @returns {Promise<Object>} Staff information
-   */
   static async getStaffById(staffId) {
-    try {
-      const staff = await Staff.findById(staffId).select('-password');
-      if (!staff) {
-        throw new Error('Staff member not found');
-      }
-
-      return staff;
-    } catch (error) {
-      console.error('❌ Error getting staff by ID:', error);
-      throw error;
-    }
+    const staff = await Staff.findById(staffId).select('-password');
+    if (!staff) throw new Error('Staff member not found');
+    return staff;
   }
 
-  /**
-   * Update staff member
-   * @param {string} staffId - Staff ID
-   * @param {Object} updateData - Update data
-   * @returns {Promise<Object>} Update result
-   */
   static async updateStaff(staffId, updateData) {
     try {
       const staff = await Staff.findById(staffId);
-      if (!staff) {
-        throw new Error('Staff member not found');
+      if (!staff) throw new Error('Staff member not found');
+
+      // Explicit whitelist map removes computed access
+      const allowedUpdates = {
+        name: val => { staff.name = val; },
+        email: val => { staff.email = val; },
+        role: val => { staff.role = val; },
+        phone: val => { staff.phone = val; },
+        department: val => { staff.department = val; }
+      };
+
+      if (Object.hasOwn(updateData, 'name') && updateData.name !== undefined) {
+        allowedUpdates.name(updateData.name);
       }
-
-      // Only allow updates to whitelisted fields
-      const allowedFields = ['name', 'email', 'role', 'phone', 'department'];
-      Object.keys(updateData).forEach(key => {
-        if (allowedFields.includes(key) && updateData[key] !== undefined) {
-          staff[key] = updateData[key];
-        }
-      });
-
-      // Handle password update separately
+      if (Object.hasOwn(updateData, 'email') && updateData.email !== undefined) {
+        allowedUpdates.email(updateData.email);
+      }
+      if (Object.hasOwn(updateData, 'role') && updateData.role !== undefined) {
+        allowedUpdates.role(updateData.role);
+      }
+      if (Object.hasOwn(updateData, 'phone') && updateData.phone !== undefined) {
+        allowedUpdates.phone(updateData.phone);
+      }
+      if (Object.hasOwn(updateData, 'department') && updateData.department !== undefined) {
+        allowedUpdates.department(updateData.department);
+      }
       if (updateData.password) {
         const saltRounds = 12;
         staff.password = await bcrypt.hash(updateData.password, saltRounds);
@@ -177,99 +135,55 @@ export class StaffService {
           isActive: staff.isActive
         }
       };
-    } catch (error) {
-      console.error('❌ Error updating staff:', error);
-      throw error;
+    } catch (err) {
+      console.error('❌ Error updating staff:', err);
+      throw err;
     }
   }
 
-  /**
-   * Get all staff members
-   * @param {Object} filters - Filter options
-   * @returns {Promise<Array>} Staff members list
-   */
   static async getAllStaff(filters = {}) {
-    try {
-      const query = {};
-      
-      if (filters.department) {
-        query.department = filters.department;
-      }
-      
-      if (filters.role) {
-        query.role = filters.role;
-      }
-      
-      if (filters.isActive !== undefined) {
-        query.isActive = filters.isActive;
-      }
+    const query = {};
+    if (filters.department) query.department = filters.department;
+    if (filters.role) query.role = filters.role;
+    if (filters.isActive !== undefined) query.isActive = filters.isActive;
 
-      const staff = await Staff.find(query)
-        .select('-password')
-        .sort({ createdAt: -1 });
-
-      return staff;
-    } catch (error) {
-      console.error('❌ Error getting all staff:', error);
-      throw error;
-    }
+    const staff = await Staff.find(query).select('-password').sort({ createdAt: -1 });
+    return staff;
   }
 
-  /**
-   * Deactivate staff member
-   * @param {string} staffId - Staff ID
-   * @returns {Promise<Object>} Deactivation result
-   */
   static async deactivateStaff(staffId) {
-    try {
-      const staff = await Staff.findById(staffId);
-      if (!staff) {
-        throw new Error('Staff member not found');
-      }
-
-      staff.isActive = false;
-      await staff.save();
-
-      return {
-        success: true,
-        message: 'Staff member deactivated successfully'
-      };
-    } catch (error) {
-      console.error('❌ Error deactivating staff:', error);
-      throw error;
-    }
+    const staff = await Staff.findById(staffId);
+    if (!staff) throw new Error('Staff member not found');
+    staff.isActive = false;
+    await staff.save();
+    return { success: true, message: 'Staff member deactivated successfully' };
   }
 
-  /**
-   * Check staff permissions
-   * @param {string} staffId - Staff ID
-   * @param {string} permission - Permission to check
-   * @returns {Promise<boolean>} Permission result
-   */
   static async checkPermission(staffId, permission) {
     try {
       const staff = await Staff.findById(staffId).select('permissions role');
-      if (!staff) {
-        return false;
-      }
+      if (!staff) return false;
+      if (staff.role === 'admin') return true;
 
-      // Admin has all permissions
-      if (staff.role === 'admin') {
-        return true;
-      }
-
-      // Only allow known permissions
       const allowedPermissions = [
         'read', 'write', 'delete', 'manage_users', 'manage_payments', 'view_reports'
       ];
-      if (!allowedPermissions.includes(permission)) {
-        return false;
+      if (!allowedPermissions.includes(permission)) return false;
+      if (!staff.permissions || !Object.hasOwn(staff.permissions, permission)) return false;
+
+      // Use explicit checks for each permission
+      switch (permission) {
+        case 'read': return staff.permissions.read === true;
+        case 'write': return staff.permissions.write === true;
+        case 'delete': return staff.permissions.delete === true;
+        case 'manage_users': return staff.permissions.manage_users === true;
+        case 'manage_payments': return staff.permissions.manage_payments === true;
+        case 'view_reports': return staff.permissions.view_reports === true;
+        default: return false;
       }
-      return staff.permissions && staff.permissions[permission] === true;
-    } catch (error) {
-      console.error('❌ Error checking staff permission:', error);
+    } catch (err) {
+      console.error('❌ Error checking staff permission:', err);
       return false;
     }
   }
 }
-

@@ -2,8 +2,8 @@ import express from 'express';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
-import pkg from 'lusca';
-const { csrf } = pkg;
+
+import csurf from 'csurf';
 
 import cors from 'cors';
 
@@ -31,7 +31,6 @@ import staticRoutes from './routes/static.js';
 import userRoutes from './routes/users.js';
 import paymentRoutes from './routes/payments.js';
 import staffRoutes from './routes/staff.js';
-import validationTestRoutes from './routes/validation-test.js';
 import testRoutes from './routes/test.js';
 
 dotenv.config();
@@ -61,15 +60,32 @@ app.use(cors({
   },
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  allowedHeaders: [
+    'Content-Type', 
+    'Authorization', 
+    'X-Requested-With', 
+    'Accept',
+    'csrf-token',
+    'xsrf-token',
+    'x-csrf-token',
+    'x-xsrf-token'
+  ],
   exposedHeaders: ['Set-Cookie']
 }));
 
 // Session middleware (before security setup)
 app.use(session(secureSessionConfig));
 
-// CSRF protection
-app.use(csrf());
+// CSRF protection (use csurf, after cookie/session middleware, before routes)
+app.use(csurf({ cookie: true }));
+
+// Expose CSRF token to views/APIs
+app.use((req, res, next) => {
+  if (req.csrfToken) {
+    res.locals.csrfToken = req.csrfToken();
+  }
+  next();
+});
 
 // Serve static files from the 'public' directory (except index.html)
 app.use(express.static('public', { index: false }));
@@ -99,9 +115,24 @@ app.use('/', secretRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
 app.use('/api/staff', staffRoutes);
-app.use('/api', validationTestRoutes);
 app.use('/api', testRoutes);
 app.use('/', staticRoutes);
+
+// CSRF error handler (must be after routes)
+app.use((err, req, res, next) => {
+  if (err.code === 'EBADCSRFTOKEN') {
+    console.error('❌ CSRF token validation failed');
+    console.error('Request headers:', {
+      'csrf-token': req.headers['csrf-token'],
+      'x-csrf-token': req.headers['x-csrf-token'],
+      'xsrf-token': req.headers['xsrf-token'],
+      'x-xsrf-token': req.headers['x-xsrf-token']
+    });
+    console.error('Cookies:', Object.keys(req.cookies || {}));
+    return res.status(403).json({ error: 'Invalid CSRF token' });
+  }
+  next(err);
+});
 
 // 404 handler with CSP-compliant response
 app.use((req, res) => {
