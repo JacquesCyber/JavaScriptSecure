@@ -28,12 +28,19 @@ jobs:
           
       - name: Install dependencies
         run: npm ci
+        env:
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          ENCRYPTION_IV: ${{ secrets.ENCRYPTION_IV }}
         
       - name: Run ESLint Security Rules
         run: |
           npm install eslint-plugin-security --save-dev
           npx eslint src/ --config eslint.config.security.js
         continue-on-error: false
+        env:
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          ENCRYPTION_IV: ${{ secrets.ENCRYPTION_IV }}
+          NODE_ENV: test
         
       - name: Generate Temporary RSA Keys for Testing
         run: |
@@ -69,6 +76,10 @@ jobs:
             echo "Attempt $i/60: Application not ready yet, waiting..."
             sleep 1
           done
+        env:
+          ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
+          ENCRYPTION_IV: ${{ secrets.ENCRYPTION_IV }}
+          NODE_ENV: test
           
       - name: Run OWASP ZAP Baseline Scan
         uses: zaproxy/action-baseline@v0.10.0
