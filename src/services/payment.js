@@ -445,21 +445,17 @@ export class PaymentService {
    * @returns {string} Status message
    */
   static getStatusMessage(status) {
-    const messages = {
-      pending: 'Payment is being processed',
-      processing: 'Payment is being verified',
-      completed: 'Payment completed successfully',
-      failed: 'Payment could not be processed',
-      cancelled: 'Payment was cancelled',
-      refunded: 'Payment has been refunded'
-    };
-    const allowed = [
-      'pending', 'processing', 'completed', 'failed', 'cancelled', 'refunded'
-    ];
-    if (allowed.includes(status)) {
-      return messages[status];
-    }
-    return 'Unknown payment status';
+  const messages = new Map([
+    ['pending', 'Payment is being processed'],
+    ['processing', 'Payment is being verified'],
+    ['completed', 'Payment completed successfully'],
+    ['failed', 'Payment could not be processed'],
+    ['cancelled', 'Payment was cancelled'],
+    ['refunded', 'Payment has been refunded']
+  ]);
+
+  return messages.has(status)
+    ? messages.get(status)
+    : 'Unknown payment status';
   }
 }
-
