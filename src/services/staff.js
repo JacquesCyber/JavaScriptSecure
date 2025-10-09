@@ -78,7 +78,7 @@ export class StaffService {
       console.log('🔐 Staff login attempt for:', username);
 
       // Find staff member
-      const staff = await Staff.findOne({ username, isActive: true });
+      const staff = await Staff.findOne({ username: { $eq: username }, isActive: true });
       if (!staff) {
         throw new Error('Invalid credentials');
       }

@@ -240,7 +240,7 @@ router.get('/:transactionId', extractUserIdFromQuery, async (req, res) => {
     
     const payment = await Payment.findOne({
       transactionId,
-      userId
+      userId: { $eq: userId }
     });
 
     if (!payment) {

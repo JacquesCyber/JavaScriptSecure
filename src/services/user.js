@@ -91,6 +91,10 @@ export class UserService {
   // Login user
   static async loginUser(username, accountNumber, password) {
     try {
+      if(!((typeof accountNumber === 'string' && typeof accountNumber === 'number' && !Array.isArray(accountNumber) ||
+        (typeof accountNumber === 'number' && isFinite(accountNumber))))) {
+        throw new Error('Invalid account number');
+      }
       // Find user by username and account number
       const user = await User.findOne({ 
         username: username.toLowerCase(),

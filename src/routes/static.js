@@ -64,16 +64,22 @@ router.get('/templates/:template', (req, res) => {
     if (!/^[a-zA-Z0-9_-]+\.html$/.test(templateName)) {
       return res.status(400).send('Invalid template name');
     }
+    
+    // Secure root directory for templates
+    const templatesRoot = path.resolve(process.cwd(), 'public', 'templates');
+    const filePath = path.resolve(templatesRoot,templateName);
 
-    const baseDir = path.join(process.cwd(), 'public', 'templates');
-    const filePath = path.join(baseDir, templateName);
-    const safePath = path.normalize(filePath);
-
-    // Prevent path traversal
-    if (!safePath.startsWith(baseDir)) {
-      return res.status(403).send('Path traversal detected');
+    // Resolve symlinks and canonicalize path
+    try {
+      filePath = fs.realpathSync(filePath);
+    }catch (e){
+      return res.status(400).send('Template not found');
     }
 
+    if(!filePath.startsWith(templatesRoot + path.sep)){
+      return res.status(400).send('Forbidden');
+    }
+    
     // Check if file exists
     if (!fs.existsSync(safePath)) {
       return res.status(404).send('Template not found');

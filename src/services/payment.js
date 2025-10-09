@@ -13,6 +13,10 @@ export class PaymentService {
    */
   static async processPayment(paymentData, userId, ipAddress, userAgent) {
     try {
+      // Ensuring userId is a string
+      if (typeof userId !== 'string'){
+        throw new Error('Invalid user ID');
+      }
       console.log('💳 Processing payment for user:', userId);
       
       // Validate user exists
@@ -195,7 +199,7 @@ export class PaymentService {
       throw new Error('PayPal email is required');
     }
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/;
     if (!emailRegex.test(email)) {
       throw new Error('Invalid PayPal email format');
     }
@@ -281,7 +285,7 @@ export class PaymentService {
 
       // Check recent payments from same user
       const recentPayments = await Payment.countDocuments({
-        userId,
+        userId: { $eq: userId },
         createdAt: { $gte: new Date(Date.now() - 24 * 60 * 60 * 1000) } // Last 24 hours
       });
 

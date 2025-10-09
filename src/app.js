@@ -2,6 +2,7 @@ import express from 'express';
 import dotenv from 'dotenv';
 import session from 'express-session';
 import cookieParser from 'cookie-parser';
+import { csrf } from 'lusca';
 
 import cors from 'cors';
 
@@ -13,6 +14,14 @@ import { sanitizeInput as enhancedSanitizeInput, cspSanitize, sanitizationLimite
 
 // Import session configuration
 import { sessionConfig } from './auth/session.js';
+
+const secureSessionConfig = {
+  ...sessionConfig,
+  cookie: {
+    ...((sessionConfig && sessionConfig.cookie) || {}),
+    secure: true
+  }
+}
 
 // Import routes
 import secretRoutes from './routes/secret.js';
@@ -56,7 +65,10 @@ app.use(cors({
 }));
 
 // Session middleware (before security setup)
-app.use(session(sessionConfig));
+app.use(session(secureSessionConfig));
+
+// CSRF protection
+app.use(csrf());
 
 // Serve static files from the 'public' directory (except index.html)
 app.use(express.static('public', { index: false }));

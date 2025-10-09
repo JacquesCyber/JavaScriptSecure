@@ -99,7 +99,7 @@ router.post('/register', authLimiter, registerValidation, async (req, res) => {
       branchCode, 
       password 
     });
-    console.log('✅ User created successfully:', result.user.email);
+    console.log('✅ User created successfully:');
     
     res.status(201).json(result);
   } catch (error) {
@@ -150,7 +150,7 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
       
-      console.log('✅ User logged in with secure session:', result.user.email);
+      console.log('✅ User logged in with secure session:');
       
       // Return success without sensitive data
       const userResponse = {
