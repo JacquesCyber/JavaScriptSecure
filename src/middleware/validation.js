@@ -1,5 +1,5 @@
 import { body } from 'express-validator';
-import { sanitizeInput as sanitize } from './sanitation.js';
+import { sanitizeInput as sanitize } from './sanitization.js';
 
 // Regex patterns for different input types - Security-focused whitelist approach
 export const patterns = {
