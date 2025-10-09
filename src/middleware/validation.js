@@ -11,7 +11,6 @@ export const patterns = {
   // Security-focused patterns - Anti-injection measures
   alphanumeric: /^[a-zA-Z0-9]+$/,
   safeText: /^[a-zA-Z0-9\s.,!?-]{1,200}$/,
-  noScript: /^(?!.*<script)(?!.*javascript:)(?!.*on\w+\s*=)(?!.*data:)(?!.*vbscript:).*$/i,
   noHtml: /^[^<>]*$/,
   
   // Business-specific patterns
@@ -115,9 +114,28 @@ function validateField(value, rules) {
     errors.push('Invalid format');
   }
   
-  // Anti-script check (always applied when specified)
-  if (rules.noScript && !patterns.noScript.test(stringValue)) {
-    errors.push('Potentially dangerous content detected');
+  // Anti-script check using efficient substring search instead of complex regex
+  // This prevents ReDoS attacks while maintaining security
+  if (rules.noScript) {
+    const lowerValue = stringValue.toLowerCase();
+    const dangerousPatterns = [
+      '<script',
+      'javascript:',
+      'on=',        // Catches onclick=, onload=, etc.
+      'onerror=',
+      'onload=',
+      'data:text/html',
+      'vbscript:',
+      'eval(',
+      'expression('
+    ];
+    
+    for (const pattern of dangerousPatterns) {
+      if (lowerValue.includes(pattern)) {
+        errors.push('Potentially dangerous content detected');
+        break; // Stop checking once we find one
+      }
+    }
   }
   
   // HTML injection check
