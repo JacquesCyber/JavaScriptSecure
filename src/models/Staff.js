@@ -84,8 +84,7 @@ const staffSchema = new mongoose.Schema({
 
 // Indexes for performance
 staffSchema.index({ createdAt: -1 });
-staffSchema.index({ username: 1 });
-staffSchema.index({ email: 1 });
+// username and email indexes are automatically created by unique: true properties
 staffSchema.index({ department: 1 });
 
 export default mongoose.model('Staff', staffSchema);

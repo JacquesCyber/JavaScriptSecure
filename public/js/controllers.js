@@ -221,12 +221,13 @@ export class LoginController extends PageController {
       
       if (result.success) {
         this.app.setUser({
-          id: result.user._id,
+          id: result.user._id || result.user.id, // Handle both _id and id formats
           fullName: result.user.fullName,
           email: result.user.email,
           role: result.user.role || 'user', // Use actual role from database, fallback to 'user'
           loginTime: new Date().toLocaleString()
         });
+        
         this.app.showNotification('✅ Welcome back, ' + result.user.fullName + '!', 'success');
         setTimeout(() => this.app.navigateTo('dashboard'), 1500);
       } else {
@@ -324,22 +325,26 @@ export class PaymentController extends PageController {
           case 'card':
             cardDetails.style.display = 'block';
             break;
-          case 'paypal':
+          case 'paypal': {
             const paypalDetails = document.getElementById('paypal-details');
             if (paypalDetails) paypalDetails.style.display = 'block';
             break;
-          case 'bank_transfer':
+          }
+          case 'bank_transfer': {
             const bankDetails = document.getElementById('bank-details');
             if (bankDetails) bankDetails.style.display = 'block';
             break;
-          case 'eft':
+          }
+          case 'eft': {
             const eftDetails = document.getElementById('eft-details');
             if (eftDetails) eftDetails.style.display = 'block';
             break;
-          case 'swift':
+          }
+          case 'swift': {
             const swiftDetails = document.getElementById('swift-details');
             if (swiftDetails) swiftDetails.style.display = 'block';
             break;
+          }
         }
       });
     }

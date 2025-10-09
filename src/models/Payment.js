@@ -180,8 +180,7 @@ const paymentSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    index: true
+    required: true
   },
   
   // Transaction details
@@ -325,7 +324,7 @@ const paymentSchema = new mongoose.Schema({
 // Indexes for performance and security
 paymentSchema.index({ userId: 1, createdAt: -1 });
 paymentSchema.index({ status: 1, createdAt: -1 });
-paymentSchema.index({ transactionId: 1 }, { unique: true });
+// transactionId index is automatically created by unique: true property
 paymentSchema.index({ 'paymentMethod.type': 1 });
 paymentSchema.index({ amount: 1, createdAt: -1 });
 

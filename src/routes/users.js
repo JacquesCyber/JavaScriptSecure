@@ -2,7 +2,7 @@ import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { UserService } from '../services/user.js';
 import { TokenManager, SessionManager } from '../auth/session.js';
-import { authenticate, authorize } from '../middleware/auth.js';
+import { authenticate } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimiting.js';
 
 const router = express.Router();
@@ -153,15 +153,18 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
       console.log('✅ User logged in with secure session:', result.user.email);
       
       // Return success without sensitive data
+      const userResponse = {
+        _id: result.user._id,
+        id: result.user._id, // Also provide as 'id' for frontend compatibility
+        email: result.user.email,
+        fullName: result.user.fullName,
+        role: result.user.role || 'user'
+      };
+      
       res.json({
         success: true,
         message: 'Login successful',
-        user: {
-          id: result.user._id,
-          email: result.user.email,
-          fullName: result.user.fullName,
-          role: result.user.role || 'user'
-        },
+        user: userResponse,
         sessionId: req.session.id
       });
     } else {

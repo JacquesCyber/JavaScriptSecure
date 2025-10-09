@@ -106,5 +106,6 @@ const userSchema = new mongoose.Schema({
 
 // Indexes for performance
 userSchema.index({ createdAt: -1 });
+// username and email indexes are automatically created by unique: true properties
 
 export default mongoose.model('User', userSchema);

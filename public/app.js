@@ -21,9 +21,9 @@ class SecureApp {
     this.pageConfig = {
       'register': { requiresAuth: false, allowedRoles: [] },
       'login': { requiresAuth: false, allowedRoles: [] },
-      'dashboard': { requiresAuth: true, allowedRoles: ['user', 'admin'] },
-      'payment': { requiresAuth: true, allowedRoles: ['user', 'admin'] },
-      'validator': { requiresAuth: true, allowedRoles: ['user', 'admin'] }
+      'dashboard': { requiresAuth: true, allowedRoles: ['customer', 'user', 'admin'] },
+      'payment': { requiresAuth: true, allowedRoles: ['customer', 'user', 'admin'] },
+      'validator': { requiresAuth: true, allowedRoles: ['customer', 'user', 'admin'] }
     };
     
     this.init();
@@ -139,7 +139,7 @@ class SecureApp {
     if (navLogin) navLogin.style.display = !isAuth ? 'block' : 'none';
     if (navDashboard) navDashboard.style.display = isAuth ? 'block' : 'none';
     if (navPayment) navPayment.style.display = isAuth ? 'block' : 'none';
-    if (navValidator) navValidator.style.display = isAuth && this.hasRequiredRole(['admin']) ? 'block' : 'none';
+    if (navValidator) navValidator.style.display = isAuth && this.hasRequiredRole(['customer', 'user', 'admin']) ? 'block' : 'none';
     if (navLogout) navLogout.style.display = isAuth ? 'block' : 'none';
   }
 
