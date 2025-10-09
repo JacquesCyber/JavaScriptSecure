@@ -31,7 +31,7 @@ export class PaymentService {
       const payment = new Payment({
         userId,
         amount: validatedData.amount,
-        currency: validatedData.currency || 'USD',
+        currency: validatedData.currency || 'ZAR', // Use ZAR as default (South African Rand)
         paymentMethod: validatedData.paymentMethod,
         description: validatedData.description,
         ipAddress,

@@ -39,8 +39,18 @@ const userSchema = new mongoose.Schema({
     },
     validate: {
       validator: function(v) {
-        // Validate before encryption (this runs on the original value)
-        return /^\d{13}$/.test(v);
+        // Handle both encrypted and unencrypted values
+        if (!v || typeof v !== 'string') return false;
+        
+        const cleanedValue = v.trim();
+        
+        // Check if it's already encrypted (base64 pattern)
+        if (cleanedValue.length > 13 && /^[A-Za-z0-9+/=]+$/.test(cleanedValue)) {
+          return true; // Already encrypted, assume valid
+        }
+        
+        // Validate unencrypted ID number format
+        return /^\d{13}$/.test(cleanedValue);
       },
       message: 'ID number must be exactly 13 digits'
     }

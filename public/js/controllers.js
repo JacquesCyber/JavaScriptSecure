@@ -377,7 +377,7 @@ export class PaymentController extends PageController {
       // Prepare payment data for API
       const paymentData = {
         amount: parseFloat(data.amount),
-        currency: 'USD',
+        currency: data.currency || 'ZAR', // Use selected currency, default to ZAR
         description: data.description || 'Payment transaction',
         paymentMethod: {
           type: data.method,
@@ -581,6 +581,12 @@ export class ValidatorController extends PageController {
   async render(data = {}) {
     const content = await super.render('validator', data);
     
+    // Ensure user session is valid before loading data
+    if (!this.app.user || !this.app.user.id) {
+      console.log('🔍 No valid user session found, attempting to restore...');
+      this.app.loadUserFromSession();
+    }
+    
     // Load transactions after render
     setTimeout(() => {
       this.loadTransactions();
@@ -592,6 +598,21 @@ export class ValidatorController extends PageController {
 
   setupEventListeners() {
     // Validator-specific event listeners
+    // Add refresh button functionality
+    const refreshBtn = document.querySelector('button[onclick="location.reload()"]');
+    if (refreshBtn) {
+      refreshBtn.addEventListener('click', (e) => {
+        e.preventDefault();
+        this.refreshData();
+      });
+    }
+  }
+
+  async refreshData() {
+    console.log('🔄 Refreshing transaction data...');
+    await this.loadTransactions();
+    await this.updateStats();
+    this.app.showNotification('✅ Data refreshed successfully', 'success');
   }
 
   // Load and display transactions from MongoDB
@@ -603,9 +624,21 @@ export class ValidatorController extends PageController {
       // Show loading state
       container.innerHTML = '<div class="text-center"><div class="spinner-border" role="status"><span class="visually-hidden">Loading...</span></div></div>';
 
+      // Check if user is authenticated and has valid user data
+      if (!this.app.user || !this.app.user.id) {
+        console.error('User not authenticated or missing user ID');
+        container.innerHTML = '<p class="text-danger text-center">❌ Authentication required. Please log in again.</p>';
+        return;
+      }
+
       // Fetch transactions from API
-      const userId = this.app.user ? this.app.user.id : '';
+      const userId = this.app.user.id;
       const response = await fetch(`/api/payments/history?limit=50&userId=${encodeURIComponent(userId)}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const result = await response.json();
       
       if (!result.success) {
@@ -614,7 +647,7 @@ export class ValidatorController extends PageController {
 
       const transactions = result.payments;
       
-      if (transactions.length === 0) {
+      if (!transactions || transactions.length === 0) {
         container.innerHTML = '<p class="text-muted text-center">No transactions found.</p>';
         return;
       }
@@ -669,9 +702,26 @@ export class ValidatorController extends PageController {
 
   async updateStats() {
     try {
+      // Check if user is authenticated and has valid user data
+      if (!this.app.user || !this.app.user.id) {
+        console.error('User not authenticated or missing user ID for stats');
+        // Set default values when not authenticated
+        const totalTxnEl = document.getElementById('total-transactions');
+        const totalAmountEl = document.getElementById('total-amount');
+        
+        if (totalTxnEl) totalTxnEl.textContent = '0';
+        if (totalAmountEl) totalAmountEl.textContent = '$0.00';
+        return;
+      }
+
       // Fetch payment statistics from API
-      const userId = this.app.user ? this.app.user.id : '';
+      const userId = this.app.user.id;
       const response = await fetch(`/api/payments/stats?userId=${encodeURIComponent(userId)}`);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
       const result = await response.json();
       
       if (!result.success) {

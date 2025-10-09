@@ -355,7 +355,19 @@ class SecureApp {
     try {
       const savedUser = sessionStorage.getItem('user');
       if (savedUser) {
-        this.user = JSON.parse(savedUser);
+        const parsedUser = JSON.parse(savedUser);
+        // Validate that the user object has required properties
+        if (parsedUser && parsedUser.id && parsedUser.fullName) {
+          this.user = parsedUser;
+          console.log('✅ User session restored:', parsedUser.fullName);
+        } else {
+          console.warn('Invalid user session data, clearing...');
+          sessionStorage.removeItem('user');
+          this.user = null;
+        }
+      } else {
+        console.log('No user session found');
+        this.user = null;
       }
     } catch (error) {
       console.error('Error loading user from session:', error);

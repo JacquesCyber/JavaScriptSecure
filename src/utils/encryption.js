@@ -88,12 +88,21 @@ export function encryptIdNumber(idNumber) {
     throw new Error('Invalid ID number provided');
   }
   
-  // Validate South African ID number format before encryption
-  if (!/^\d{13}$/.test(idNumber)) {
-    throw new Error('Invalid South African ID number format');
+  // Clean the input
+  const cleanedIdNumber = idNumber.trim().replace(/\s/g, '');
+  
+  // Check if the value is already encrypted (base64 encoded and not 13 digits)
+  if (cleanedIdNumber.length > 13 && /^[A-Za-z0-9+/=]+$/.test(cleanedIdNumber)) {
+    // Already encrypted, return as is
+    return cleanedIdNumber;
   }
   
-  return encrypt(idNumber);
+  // Validate South African ID number format before encryption
+  if (!/^\d{13}$/.test(cleanedIdNumber)) {
+    throw new Error(`Invalid South African ID number format. Expected 13 digits, got: "${cleanedIdNumber}" (length: ${cleanedIdNumber.length})`);
+  }
+  
+  return encrypt(cleanedIdNumber);
 }
 
 /**
