@@ -1,5 +1,6 @@
 import mongoose from 'mongoose';
 import crypto from 'crypto';
+import validator from 'validator';
 
 // Payment method schema for nested documents
 const paymentMethodSchema = new mongoose.Schema({
@@ -133,7 +134,11 @@ const paymentMethodSchema = new mongoose.Schema({
       uppercase: true,
       validate: {
         validator: function(v) {
-          return !v || /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/.test(v); // SWIFT/BIC format
+          // Use a safe, strict SWIFT/BIC code check (8 or 11 uppercase letters/digits)
+          if (!v) return true;
+          if (typeof v !== 'string') return false;
+          if (v.length !== 8 && v.length !== 11) return false;
+          return /^[A-Z0-9]+$/.test(v);
         },
         message: 'Invalid SWIFT code format'
       }
@@ -249,15 +254,10 @@ const paymentSchema = new mongoose.Schema({
     type: String,
     required: true,
     validate: {
-      validator: function(v) {
-        // More flexible IP validation (IPv4, IPv6, and localhost formats)
-        const ipv4Regex = /^(\d{1,3}\.){3}\d{1,3}$/;
-        const ipv6Regex = /^([0-9a-fA-F]{1,4}:){7}[0-9a-fA-F]{1,4}$/;
-        const ipv6ShortRegex = /^::1$|^::ffff:(\d{1,3}\.){3}\d{1,3}$/;
-        const localhostRegex = /^::1$|^127\.0\.0\.1$/;
-        
-        return ipv4Regex.test(v) || ipv6Regex.test(v) || ipv6ShortRegex.test(v) || localhostRegex.test(v);
-      },
+        validator: function(v) {
+          // Use validator.js for safe IP validation
+          return validator.isIP(v + '') || v === '::1' || v === '127.0.0.1';
+        },
       message: 'Invalid IP address format'
     }
   },

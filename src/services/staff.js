@@ -147,9 +147,10 @@ export class StaffService {
         throw new Error('Staff member not found');
       }
 
-      // Update fields
+      // Only allow updates to whitelisted fields
+      const allowedFields = ['name', 'email', 'role', 'phone', 'department'];
       Object.keys(updateData).forEach(key => {
-        if (key !== 'password' && updateData[key] !== undefined) {
+        if (allowedFields.includes(key) && updateData[key] !== undefined) {
           staff[key] = updateData[key];
         }
       });
@@ -257,7 +258,13 @@ export class StaffService {
         return true;
       }
 
-      // Check specific permission
+      // Only allow known permissions
+      const allowedPermissions = [
+        'read', 'write', 'delete', 'manage_users', 'manage_payments', 'view_reports'
+      ];
+      if (!allowedPermissions.includes(permission)) {
+        return false;
+      }
       return staff.permissions && staff.permissions[permission] === true;
     } catch (error) {
       console.error('❌ Error checking staff permission:', error);
