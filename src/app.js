@@ -19,7 +19,7 @@ import staticRoutes from './routes/static.js';
 import userRoutes from './routes/users.js';
 import paymentRoutes from './routes/payments.js';
 import staffRoutes from './routes/staff.js';
-import { sanitizeInput} from './middleware/sanitization.js';
+import { sanitizeInput } from './middleware/sanitization.js';
 import testRouter from './routes/test_sanitization.js';
 
 dotenv.config();

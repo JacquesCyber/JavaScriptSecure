@@ -42,11 +42,11 @@ export const sanitizeInput = (req, res, next) => {
         console.log(`🧹 Sanitized ${req.method} request to ${req.path}`);
     }
     next();
-}
+};
 
 export const mongoSanitizer = mongoSanitize({
     replaceWith: '_',
     onSanitize: ({ req, key }) => {
-        console.log(`⚠️ MongoDB injection attempt blocked: ${key} in ${req.path}`)
+        console.log(`⚠️ MongoDB injection attempt blocked: ${key} in ${req.path}`);
     }
 });
