@@ -426,6 +426,7 @@ This application uses **dual-layer encryption** for maximum security:
 **AES Keys:** Generate with `openssl rand -base64 32` (see `ENCRYPTION_SETUP.md`)
 
 ##  Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Node.js (v18+)
