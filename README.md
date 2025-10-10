@@ -1,4 +1,4 @@
-# JavaScript Secure Business Portal
+#  Secure Banking Portal
 
 A secure, enterprise-grade Node.js business application featuring multi-page architecture, HTTPS support, and comprehensive security practices. Built with modern ES6 modules and component-based design patterns following **OWASP Top 10** security guidelines.
 
