@@ -11,7 +11,7 @@ A secure, enterprise-grade Node.js business application featuring multi-page arc
 - **Configuration Management**: Environment-specific settings with validation
 - **Security-First Design**: CSP, HTTPS, rate limiting, input validation
 
-## 🛡️ Security Features
+##  Security Features
 
 - **Content Security Policy (CSP)** with nonce-based script execution
 - **HTTPS with trusted certificates** (auto-generated for development)
@@ -37,7 +37,7 @@ This application uses **dual-layer encryption** for maximum security:
 
 **Generation:** Both key sets are automatically created with `npm run cert:generate`
 
-## �🚀 Quick Start
+##  Quick Start
 
 ### Prerequisites
 - Node.js (v18+)
@@ -85,21 +85,21 @@ npm run start        # HTTP production
 npm run prod         # HTTPS production (requires certificates)
 ```
 
-## 🔒 Security Standards
+##  Security Standards
 
 This project maintains strict security standards:
 
-### ❌ **Blocking Vulnerabilities (CI/CD Fails)**
+###  **Blocking Vulnerabilities (CI/CD Fails)**
 - **Critical**: CVSS 9.0-10.0
 - **High**: CVSS 7.0-8.9  
 - **Medium**: CVSS 4.0-6.9
 
-### ⚠️ **Non-Blocking Vulnerabilities (CI/CD Warns)**
+###  **Non-Blocking Vulnerabilities (CI/CD Warns)**
 - **Low**: CVSS 0.1-3.9
 
 The CI/CD pipeline will **fail** on Medium+ vulnerabilities but **allow** Low vulnerabilities with warnings. This follows security industry best practices.
 
-## 🧪 Security Testing
+##  Security Testing
 
 ```bash
 # Run security linting
@@ -112,7 +112,7 @@ npm audit --audit-level=high
 npm run security:scan
 ```
 
-## 📋 API Endpoints
+##  API Endpoints
 
 ### Frontend Pages
 - `GET /` - Main business portal (loads SPA)
@@ -161,7 +161,7 @@ npm run security:scan
 
 See [SECURITY.md](SECURITY.md) for detailed security policies and vulnerability reporting procedures.
 
-## 🏗️ CI/CD Security Pipeline
+##  CI/CD Security Pipeline
 
 The project includes automated security scanning:
 - ESLint security rules
@@ -169,7 +169,7 @@ The project includes automated security scanning:
 - OWASP ZAP full scan (reports all, warns on Low)
 - npm audit (fails on High+)
 
-## 🤝 Contributing
+##  Contributing
 
 We welcome contributions! Please follow these guidelines to maintain code quality and security standards.
 
@@ -225,7 +225,7 @@ public/
 
 ### Security Requirements
 
-#### ✅ **Required Security Checks**
+####  **Required Security Checks**
 ```bash
 # Run before every commit
 npm run lint                    # ESLint general rules
@@ -233,7 +233,7 @@ npm run lint:security          # Security-specific rules
 npm audit --audit-level=high   # Dependency vulnerabilities
 ```
 
-#### ⚠️ **Security Standards**
+####  **Security Standards**
 - **No secrets in code** - Use environment variables
 - **Input validation** - Validate all user inputs
 - **SQL/NoSQL injection prevention** - Use parameterized queries
@@ -302,15 +302,6 @@ When adding new environment variables:
 3. **Add validation** in configuration files
 4. **Consider security implications** (secrets vs. config)
 
-### Release Process
 
-For maintainers:
-1. **Security audit** of all changes
-2. **Version bump** following semantic versioning
-3. **Update CHANGELOG** with security-focused notes
-4. **Test production deployment** process
-5. **Update security documentation** if needed
 
-## 📄 License
 
-MIT License - See LICENSE file for details.
