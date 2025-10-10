@@ -21,7 +21,7 @@ router.get('/', (req, res) => {
     document.addEventListener('DOMContentLoaded', function() {
       const csrfMeta = document.querySelector('meta[name="csrf-token"]');
       if (csrfMeta && csrfMeta.content) {
-        console.log('✅ Page loaded with CSRF token:', csrfMeta.content.substring(0, 15) + '...');
+        console.log('✅ Page loaded with CSRF token: present');
       } else {
         console.error('❌ Page loaded WITHOUT CSRF token in meta tag!');
       }

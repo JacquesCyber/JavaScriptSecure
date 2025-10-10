@@ -1,4 +1,4 @@
-# 🔐 Encryption Setup Guide
+#  Encryption Setup Guide
 
 ## Environment Variables Required
 
@@ -47,8 +47,8 @@ console.log(user.idNumber); // Returns original ID number
 
 ## Security Benefits
 
-- ✅ **Reversible**: Can retrieve original ID numbers when needed
-- ✅ **Secure**: AES-256 encryption with random IVs
-- ✅ **Validated**: Format validation before encryption
-- ✅ **Unique**: Maintains uniqueness constraints
-- ✅ **Compliant**: Meets data protection requirements
+-  **Reversible**: Can retrieve original ID numbers when needed
+-  **Secure**: AES-256 encryption with random IVs
+-  **Validated**: Format validation before encryption
+-  **Unique**: Maintains uniqueness constraints
+-  **Compliant**: Meets data protection requirements

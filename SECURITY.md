@@ -4,15 +4,15 @@
 
 This project maintains the following security standards:
 
-### ❌ **Blocking Vulnerabilities (CI/CD Fails)**
+###  **Blocking Vulnerabilities (CI/CD Fails)**
 - **Critical**: CVSS 9.0-10.0 - Immediate security risk
 - **High**: CVSS 7.0-8.9 - Significant security risk  
 - **Medium**: CVSS 4.0-6.9 - Moderate security risk
 
-### ⚠️ **Non-Blocking Vulnerabilities (CI/CD Warns)**
+###  **Non-Blocking Vulnerabilities (CI/CD Warns)**
 - **Low**: CVSS 0.1-3.9 - Informational/best practice issues
 
-### ✅ **Security Tools Used**
+###  **Security Tools Used**
 - OWASP ZAP for security scanning
 - ESLint security rules
 - Helmet.js for security headers
