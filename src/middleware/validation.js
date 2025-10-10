@@ -1,8 +1,30 @@
+/*
+ * Input Validation Middleware
+ * -------------------------------------------------------------
+ * This module provides input validation logic for Express routes.
+ * It is designed to prevent common web attacks, including:
+ *   - Injection attacks (NoSQL, command, object injection)
+ *   - Cross-Site Scripting (XSS) via strict input patterns
+ *   - Unsafe regex denial-of-service (ReDoS)
+ *
+ *  Security & Best Practices
+ *   - All user input is validated and sanitized before processing
+ *   - Only whitelisted fields and patterns are accepted
+ *   - Regexes are reviewed for safety and performance
+ *
+ * Usage:
+ *   app.post('/route', validationMiddleware, handler);
+ *
+ *  REFERENCES:
+ *    - https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html
+ *    - https://owasp.org/www-community/attacks/Regular_expression_Denial_of_Service_-_ReDoS
+ *    - https://express-validator.github.io/docs/
+ */
 import { body } from 'express-validator';
 
 /* eslint-disable security/detect-object-injection, security/detect-unsafe-regex */
 
-// ✅ Safer regex patterns (bounded quantifiers & no catastrophic backtracking)
+//  Safer regex patterns (bounded quantifiers & no catastrophic backtracking)
 export const patterns = {
   name: /^[a-zA-Z\s\-.]{2,50}$/, // bounded length
   email: /^[a-zA-Z0-9._%+-]{1,64}@[a-zA-Z0-9.-]{1,253}\.[a-zA-Z]{2,}$/u,
@@ -38,7 +60,7 @@ export const patterns = {
 
 /* eslint-enable security/detect-unsafe-regex */
 
-// ✅ Immutable validation rules (safe static mapping)
+// Immutable validation rules (safe static mapping)
 export const validationRules = Object.freeze({
   '/api/users/register': {
     fullName: { pattern: patterns.name, required: true },
@@ -74,7 +96,7 @@ export const validationRules = Object.freeze({
   }
 });
 
-// ✅ Field validation function
+// Field validation function
 function validateField(value, rules) {
   const errors = [];
   const stringValue = typeof value === 'string' ? value.trim() : String(value || '');
@@ -95,22 +117,22 @@ function validateField(value, rules) {
   return errors;
 }
 
-// ✅ Security logging for validation attempts
+// Security logging for validation attempts
 function logValidationAttempt(req, hasErrors, errors = {}) {
   const clientIP = req.ip || req.connection?.remoteAddress || req.socket?.remoteAddress;
   const timestamp = new Date().toISOString();
   const { method, url } = req;
 
   if (hasErrors) {
-    console.warn(`🚨 [${timestamp}] VALIDATION FAILED - ${method} ${url} - IP: ${clientIP}`);
-    console.warn('❌ Errors:', JSON.stringify(errors, null, 2));
+    console.warn(`[${timestamp}] VALIDATION FAILED - ${method} ${url} - IP: ${clientIP}`);
+    console.warn('Errors:', JSON.stringify(errors, null, 2));
   } else {
-    console.log(`✅ [${timestamp}] VALIDATION PASSED - ${method} ${url} - IP: ${clientIP}`);
+    console.log(` [${timestamp}] VALIDATION PASSED - ${method} ${url} - IP: ${clientIP}`);
   }
 }
 
 /* eslint-disable security/detect-object-injection */
-// ✅ Middleware: regex validator
+//  Middleware: regex validator
 export const regexValidator = (req, res, next) => {
   if (!['POST', 'PUT', 'PATCH'].includes(req.method)) return next();
   if (!req.body || typeof req.body !== 'object') return next();
@@ -150,7 +172,7 @@ export const regexValidator = (req, res, next) => {
 };
 // eslint-enable security/detect-object-injection
 
-// ✅ Middleware: input sanitization
+//  Middleware: input sanitization
 export function sanitizeInput(req, res, next) {
   try {
     const allowedKeys = [
@@ -200,15 +222,15 @@ export function sanitizeInput(req, res, next) {
     if (req.body && typeof req.body === 'object') sanitize(req.body);
     if (req.query && typeof req.query === 'object') sanitize(req.query);
 
-    console.log(`🧹 Input sanitized for ${req.method} ${req.path}`);
+    console.log(`Input sanitized for ${req.method} ${req.path}`);
     next();
   } catch (error) {
-    console.error('❌ Sanitization error:', error);
+    console.error(' Sanitization error:', error);
     next();
   }
 }
 
-// ✅ Legacy validation setup
+//  Legacy validation setup
 export function setupValidation(app) {
   app.locals.validators = {
     secretData: [
@@ -235,3 +257,5 @@ export function setupValidation(app) {
 }
 
 export { patterns as validationPatterns };
+
+//----------------------------------------------End of File----------------------------------------------

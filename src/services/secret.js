@@ -1,3 +1,19 @@
+/*
+ * Secret Service
+ * -------------------------------------------------------------
+ * This service handles secret management logic for the application.
+ * It enforces input validation, secure storage, and
+ * access control best practices.
+ *
+ *  Security & Best Practices
+ *   - Validates all secret data to prevent injection and data leakage
+ *   - Never stores or logs secrets in plaintext; always encrypt at rest
+ *   - Ensures all operations are authenticated and authorized
+ *
+ * Usage:
+ *   import secretService from './services/secret.js';
+ *
+ */
 import mongoose from 'mongoose';
 import Secret from '../models/secret.js';
 import { encryptHybrid, decryptHybrid } from '../utils/crypto.js';
@@ -30,7 +46,7 @@ export class SecretService {
         expiresAt: saved.expiresAt
       };
     } catch (error) {
-      console.error('❌ Error storing secret:', error);
+      console.error('Error storing secret:', error);
       throw new Error('Failed to store secret');
     }
   }
@@ -73,7 +89,7 @@ export class SecretService {
         wasCreatedAt: secret.createdAt
       };
     } catch (error) {
-      console.error('❌ Error retrieving secret:', error);
+      console.error('Error retrieving secret:', error);
       
       if (error.message === 'Secret not found' || error.message === 'Secret has expired') {
         throw error;
@@ -102,8 +118,10 @@ export class SecretService {
           Math.floor((Date.now() - oldestSecret.createdAt) / (1000 * 60 * 60 * 24)) : 0
       };
     } catch (error) {
-      console.error('❌ Error getting secret stats:', error);
+      console.error('Error getting secret stats:', error);
       throw new Error('Failed to get secret statistics');
     }
   }
 }
+
+//----------------------------------------------End of File----------------------------------------------

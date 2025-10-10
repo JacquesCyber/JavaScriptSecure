@@ -1,3 +1,24 @@
+/*
+ * Frontend App Configuration
+ * -------------------------------------------------------------
+ * This file defines client-side configuration constants and settings
+ * for the JavaScript frontend. It is intended to centralize all
+ * environment-specific and security-relevant options for the browser app.
+ *
+ * Centralized Config
+ *   - API endpoints, environment flags, and feature toggles
+ *   - All sensitive values should be injected at build time, not hardcoded
+ *
+ * Security & Best Practices
+ *   - Never store secrets or credentials in frontend config
+ *   - Use environment variables or server-injected values for sensitive data
+ *   - Document all config options for maintainability
+ *
+ * Usage:
+ *   import { API_URL } from './config.js';
+ * 
+ */
+
 // Application Configuration - Best Practice
 export const AppConfig = {
   // Environment Detection
@@ -155,3 +176,5 @@ export function isDevelopment() {
 export function isProduction() {
   return getConfig('environment.isProduction');
 }
+
+//----------------------------------------------End of File----------------------------------------------

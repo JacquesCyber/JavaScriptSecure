@@ -1,3 +1,21 @@
+/*
+ * Static Files Route
+ * -------------------------------------------------------------
+ * This route serves static files to the client.
+ * It enforces path validation and safe file serving to prevent
+ * path traversal, information leakage, and unauthorized access.
+ *
+ *  Security & Best Practices
+ *   - Validates file paths to prevent path traversal attacks
+ *   - Restricts access to only whitelisted/static directories
+ *   - Never exposes sensitive files or server internals
+ *
+ * Usage:
+ *   app.use('/static', staticRouter);
+ *
+ * REFERENCES:
+ *  - https://owasp.org/www-community/attacks/Path_Traversal 
+ */
 import express from 'express';
 import fs from 'fs';
 import path from 'path';
@@ -134,3 +152,5 @@ router.get('/sitemap.xml', (req, res) => {
 });
 
 export default router;
+
+//----------------------------------------------End of File----------------------------------------------

@@ -1,11 +1,27 @@
 /*
-This module handles secure session management and JWT token operations.
-It provides functions to create, verify, and destroy sessions, as well as
-generate and validate JWT access and refresh tokens.
-Sessions ensure stateful user interactions, while JWTs enable stateless authentication.
-This ensures robust security for user authentication and session handling.
-✅ CSRF, ✅ XSS, ✅ Session Fixation, ✅ Secure Cookies, ✅ Token Expiry, ✅ HttpOnly Cookies
-*/
+ * Session & Token Management
+ * -------------------------------------------------------------
+ * This module handles secure session management and JWT token operations.
+ * It provides functions to create, verify, and destroy sessions, as well as
+ * generate and validate JWT access and refresh tokens for authentication.
+ *
+ * Security Features:
+ *   - CSRF protection
+ *   - XSS mitigation
+ *   - Session fixation prevention
+ *   - Secure, HttpOnly cookies
+ *   - Token expiry and rotation
+ *   - Stateless JWT authentication
+ *
+ * Usage:
+ *   import { TokenManager, SessionManager } from './auth/session.js';
+ * 
+ *  REFERENCES:
+ *  - https://cheatsheetseries.owasp.org/cheatsheets/JSON_Web_Token_for_Java_Cheat_Sheet.html
+ *  - https://auth0.com/docs/tokens/json-web-tokens
+ *
+ */
+
 import jwt from 'jsonwebtoken';
 import crypto from 'crypto';
 
@@ -163,3 +179,5 @@ export class SessionManager {
     return (now - lastActivity) < maxInactivity;
   }
 }
+
+//----------------------------------------------End of File----------------------------------------------

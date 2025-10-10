@@ -1,3 +1,19 @@
+/*
+ * Security Test & Demo Route
+ * -------------------------------------------------------------
+ * This route provides endpoints to test and demonstrate security features
+ * such as input sanitization, XSS prevention, and NoSQL injection protection.
+ * It is intended for development and QA environments only.
+ *
+ * Security Features Demonstrated:
+ *   - Input sanitization (XSS, NoSQL injection)
+ *   - Strict validation and whitelisting
+ *   - Safe response formatting
+ *
+ * Usage:
+ *   app.use('/test', testRouter);
+ *
+ */
 import express from 'express';
 import { sanitizeXSS } from '../middleware/sanitization.js';
 
@@ -55,3 +71,5 @@ router.post('/security-test', (req, res) => {
 });
 
 export default router;
+
+//----------------------------------------------End of File----------------------------------------------

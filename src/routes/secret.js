@@ -1,3 +1,22 @@
+/*
+ * Secret Route
+ * -------------------------------------------------------------
+ * This route handles secret-related API endpoints.
+ * It enforces input validation, authentication, and access control
+ * to prevent data leakage, injection, and unauthorized access.
+ *
+ *  Security & Best Practices
+ *   - Validates all secret input to prevent injection and data leakage
+ *   - Requires authentication and role-based authorization
+ *   - Never exposes secret values in responses
+ *
+ * Usage:
+ *   app.use('/secret', secretRouter);
+ *
+ * REFERENCES:
+ *   - https://blog.logrocket.com/how-to-implement-a-health-check-in-node-js/
+ *   - https://stripe.com/docs/payments/accept-a-payment
+ */
 import express from 'express';
 import { validationResult, body } from 'express-validator';
 import { SecretService } from '../services/secret.js';
@@ -24,7 +43,7 @@ router.post('/store',
   // Rate limiting middleware (basic implementation)
   (req, res, next) => {
     const clientIP = req.ip || req.connection.remoteAddress;
-    console.log(`📝 Store request from IP: ${clientIP}`);
+    console.log(` Store request from IP: ${clientIP}`);
     next();
   },
   ...validateSecretData,
@@ -43,7 +62,7 @@ router.post('/store',
       
       res.json(result);
     } catch (error) {
-      console.error('❌ Error in POST /store:', error);
+      console.error(' Error in POST /store:', error);
       
       if (error.message === 'Database connection not available') {
         return res.status(503).json({ 
@@ -76,7 +95,7 @@ router.get('/secret/:id',
       
       res.json(result);
     } catch (error) {
-      console.error('❌ Error in GET /secret/:id:', error);
+      console.error(' Error in GET /secret/:id:', error);
       
       if (error.message === 'Database connection not available') {
         return res.status(503).json({ 
@@ -130,3 +149,5 @@ router.get('/secret', (req, res) => {
 });
 
 export default router;
+
+//----------------------------------------------End of File----------------------------------------------

@@ -1,3 +1,19 @@
+/*
+ * User Model (Mongoose)
+ * -------------------------------------------------------------
+ * This schema defines the User data model for MongoDB using Mongoose.
+ * It enforces data integrity, validation, and security best practices.
+ *
+ *  Security & Best Practices
+ *   - Validates all fields to prevent injection and schema manipulation
+ *   - Uses strict schema to prevent object injection and prototype pollution
+ *   - Never stores plaintext passwords; always hash and salt
+ *   - Enforces unique constraints to prevent privilege escalation
+ *
+ * Usage:
+ *   import User from './models/User.js';
+ *
+ */
 import mongoose from 'mongoose';
 import { encryptIdNumber, decryptIdNumber } from '../utils/encryption.js';
 
@@ -119,3 +135,5 @@ userSchema.index({ createdAt: -1 });
 // username and email indexes are automatically created by unique: true properties
 
 export default mongoose.model('User', userSchema);
+
+//----------------------------------------------End of File----------------------------------------------

@@ -1,3 +1,19 @@
+/*
+ * Staff Model (Mongoose)
+ * -------------------------------------------------------------
+ * This schema defines the Staff data model for MongoDB using Mongoose.
+ * It enforces data integrity, validation, and security best practices.
+ *
+ *  Security & Best Practices
+ *   - Validates all fields to prevent injection and schema manipulation
+ *   - Uses strict schema to prevent object injection and prototype pollution
+ *   - Never stores plaintext passwords; always hash and salt
+ *   - Enforces unique constraints to prevent privilege escalation
+ *
+ * Usage:
+ *   import Staff from './models/Staff.js';
+ *
+ */
 import mongoose from 'mongoose';
 
 const staffSchema = new mongoose.Schema({
@@ -89,3 +105,4 @@ staffSchema.index({ department: 1 });
 
 export default mongoose.model('Staff', staffSchema);
 
+//----------------------------------------------End of File----------------------------------------------

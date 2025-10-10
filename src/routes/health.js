@@ -1,3 +1,21 @@
+/*
+ * Health Check Route
+ * -------------------------------------------------------------
+ * This route provides health and readiness checks for the application.
+ * It exposes minimal information to avoid leaking sensitive details
+ * to attackers or automated scanners.
+ *
+ *  Security & Best Practices
+ *   - Returns only basic status (no stack traces or internals)
+ *   - Does not expose sensitive environment or config info
+ *   - Can be protected or rate-limited in production
+ *
+ * Usage:
+ *   app.use('/health', healthRouter);
+ *
+ * REFERENCES:
+ *   - https://blog.logrocket.com/how-to-implement-a-health-check-in-node-js/
+ */
 import express from 'express';
 import fs from 'fs';
 import { SecretService } from '../services/secret.js';
@@ -9,7 +27,7 @@ router.get('/', (req, res) => {
   const nonce = res.locals.nonce;
   const csrfToken = res.locals.csrfToken || (req.csrfToken ? req.csrfToken() : '');
   
-  console.log('🏠 Serving index.html with CSRF token:', csrfToken ? 'present' : 'missing');
+  console.log('Serving index.html with CSRF token:', csrfToken ? 'present' : 'missing');
   
   try {
     let htmlContent = fs.readFileSync('./public/index.html', 'utf8');
@@ -21,9 +39,9 @@ router.get('/', (req, res) => {
     document.addEventListener('DOMContentLoaded', function() {
       const csrfMeta = document.querySelector('meta[name="csrf-token"]');
       if (csrfMeta && csrfMeta.content) {
-        console.log('✅ Page loaded with CSRF token: present');
+        console.log(' Page loaded with CSRF token: present');
       } else {
-        console.error('❌ Page loaded WITHOUT CSRF token in meta tag!');
+        console.error(' Page loaded WITHOUT CSRF token in meta tag!');
       }
     });
   </script>`;
@@ -34,7 +52,7 @@ router.get('/', (req, res) => {
     htmlContent = htmlContent.replace(/\{nonce\}/g, nonce);
     res.send(htmlContent);
   } catch (error) {
-    console.error('❌ Error serving index.html:', error);
+    console.error(' Error serving index.html:', error);
     res.status(500).send(`
       <!DOCTYPE html>
       <html>
@@ -89,3 +107,5 @@ router.get('/health', (req, res) => {
 });
 
 export default router;
+
+//----------------------------------------------End of File----------------------------------------------

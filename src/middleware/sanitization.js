@@ -1,3 +1,24 @@
+/*
+ * Input Sanitization Middleware
+ * -------------------------------------------------------------
+ * This module sanitizes user input for Express routes.
+ * It is designed to prevent:
+ *   - Cross-Site Scripting (XSS) by escaping/stripping dangerous input
+ *   - Injection attacks (NoSQL, command, object injection)
+ *   - Prototype pollution and object injection via strict whitelisting
+ *
+ *   Security & Best Practices
+ *   - All user input is sanitized before use or storage
+ *   - Only whitelisted fields and safe values are allowed
+ *   - Designed to be used with validation middleware for defense-in-depth
+ *
+ * Usage:
+ *   app.post('/route', sanitizationMiddleware, handler);
+ *
+ *  REFERENCES:
+ *    - https://medium.com/devmap/7-best-practices-for-sanitizing-input-in-node-js-e61638440096
+ * 
+ */
 /* eslint-disable security/detect-object-injection */
 
 const htmlEntities = {
@@ -60,7 +81,7 @@ function sanitizeObject(obj, depth = 0) {
   for (const key of Object.keys(obj)) {
     if (!allowedKeys.has(key)) {
       hasInjectionAttempt = true;
-      console.warn(`🚨 Blocked non-whitelisted key: "${key}"`);
+      console.warn(` Blocked non-whitelisted key: "${key}"`);
       continue;
     }
 
@@ -68,7 +89,7 @@ function sanitizeObject(obj, depth = 0) {
     if (key.startsWith('$') || key.includes('.')) {
       sanitizedKey = key.replace(/^\$/, '_').replace(/\./g, '_');
       hasInjectionAttempt = true;
-      console.warn(`🚨 MongoDB injection attempt blocked in key: "${key}" -> "${sanitizedKey}"`);
+      console.warn(` MongoDB injection attempt blocked in key: "${key}" -> "${sanitizedKey}"`);
     }
 
     if (sanitizedKey.length > 100) sanitizedKey = sanitizedKey.slice(0, 100);
@@ -85,7 +106,7 @@ function sanitizeObject(obj, depth = 0) {
     }
   }
 
-  if (hasInjectionAttempt) console.log('🚨 NoSQL injection attempt detected and blocked');
+  if (hasInjectionAttempt) console.log(' NoSQL injection attempt detected and blocked');
 
   return sanitized;
 }
@@ -97,7 +118,7 @@ export const sanitizeInput = (req, res, next) => {
       const originalBody = JSON.stringify(req.body);
       req.body = sanitizeObject(req.body);
       if (originalBody !== JSON.stringify(req.body)) {
-        console.log(`🧹 Input sanitized for ${req.method} ${req.path}`);
+        console.log(`Input sanitized for ${req.method} ${req.path}`);
       }
     }
 
@@ -107,7 +128,7 @@ export const sanitizeInput = (req, res, next) => {
       for (const key of Object.keys(sanitizedQuery)) req.query[key] = sanitizedQuery[key];
     }
   } catch (error) {
-    console.error('❌ Sanitization error:', error);
+    console.error(' Sanitization error:', error);
     return res.status(400).json({ error: true, message: 'Invalid input data', timestamp: new Date().toISOString() });
   }
   next();
@@ -121,7 +142,7 @@ export const sanitizeXSS = (fields = []) => (req, res, next) => {
         const value = req.body[field];
         if (typeof value === 'string') {
           const sanitized = sanitizeHtml(value);
-          if (sanitized !== value) console.log(`🛡️ XSS prevention applied to field: ${field}`);
+          if (sanitized !== value) console.log(`XSS prevention applied to field: ${field}`);
           req.body[field] = sanitized;
         }
       }
@@ -141,7 +162,7 @@ export const cspSanitize = (req, res, next) => {
 // Middleware: warn on large sanitization-heavy requests
 export const sanitizationLimiter = (req, res, next) => {
   if (req.method === 'POST' && req.body && JSON.stringify(req.body).length > 10000) {
-    console.log(`⚠️ Large payload detected: ${JSON.stringify(req.body).length} characters`);
+    console.log(`Large payload detected: ${JSON.stringify(req.body).length} characters`);
   }
   next();
 };
@@ -154,3 +175,5 @@ export default {
 };
 
 /* eslint-enable security/detect-object-injection */
+
+//----------------------------------------------End of File----------------------------------------------

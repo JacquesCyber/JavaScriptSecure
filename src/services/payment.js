@@ -1,3 +1,21 @@
+/*
+ * Payment Service
+ * -------------------------------------------------------------
+ * This service handles payment processing logic for the application.
+ * It enforces input validation, secure transaction handling, and
+ * fraud prevention best practices.
+ *
+ *  Security & Best Practices
+ *   - Validates all payment data to prevent injection and fraud
+ *   - Never stores or logs sensitive payment details (e.g., card numbers)
+ *   - Ensures all operations are authenticated and authorized
+ *
+ * Usage:
+ *   import paymentService from './services/payment.js';
+ *
+ *  REFERENCES:
+ *  - https://owasp.org/www-community/OWASP_Validation_Regex_Repository
+ */
 import Payment from '../models/Payment.js';
 import User from '../models/User.js';
 import crypto from 'crypto';
@@ -46,7 +64,7 @@ export class PaymentService {
       });
 
       await payment.save();
-      console.log('✅ Payment created with ID:', payment.transactionId);
+      console.log('Payment created with ID:', payment.transactionId);
 
       // Simulate payment processing (in real app, integrate with payment processor)
       const processingResult = await this.simulatePaymentProcessing(payment);
@@ -58,7 +76,7 @@ export class PaymentService {
       
       await payment.save();
       
-      console.log('✅ Payment processed:', payment.status);
+      console.log('Payment processed:', payment.status);
       
       return {
         success: true,
@@ -67,7 +85,7 @@ export class PaymentService {
       };
       
     } catch (error) {
-      console.error('❌ Payment processing error:', error);
+      console.error('Payment processing error:', error);
       throw error;
     }
   }
@@ -521,3 +539,5 @@ export class PaymentService {
     : 'Unknown payment status';
   }
 }
+
+//----------------------------------------------End of File----------------------------------------------

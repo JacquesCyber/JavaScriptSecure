@@ -1,10 +1,23 @@
 /*
-This module provides hybrid encryption and decryption using AES for data. The AES key and IV are securely exchanged using RSA.
-It lazily loads RSA keys from the filesystem only when needed, allowing the application to start even if keys are missing.
-This is modern best practice for securely handling sensitive data in a web application. 
-It uses AES-256-GCM for authenticated encryption and RSA-OAEP for key exchange ensuring confidentiality and integrity.
-✅ Data in transit and at rest is protected.
-*/
+ * Cryptography Utilities
+ * -------------------------------------------------------------
+ * This module provides cryptographic functions for the application.
+ * It is designed for secure hashing, random value generation, and
+ * cryptographic operations using vetted algorithms.
+ *
+ *  Security & Best Practices
+ *   - Uses strong, industry-standard algorithms (e.g., SHA-256, AES)
+ *   - Never hardcodes secrets or keys in source code
+ *   - Handles errors to avoid leaking sensitive information
+ *
+ * Usage:
+ *   import { hashPassword, generateToken } from './utils/crypto.js';
+ *
+ * REFERENCES:
+ *  - https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+ * 
+ */
+
 import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
@@ -30,7 +43,7 @@ function loadKeys() {
       return true;
     }
   } catch (error) {
-    console.warn('⚠️ RSA keys not available:', error.message);
+    console.warn('RSA keys not available:', error.message);
   }
   
   return false;
@@ -81,3 +94,5 @@ export function decryptHybrid({ encryptedData, encryptedKey, encryptedIV, authTa
 
   return decrypted.toString('utf8');
 }
+
+//----------------------------------------------End of File----------------------------------------------

@@ -1,3 +1,19 @@
+/*
+ * Payment Model (Mongoose)
+ * -------------------------------------------------------------
+ * This schema defines the Payment data model for MongoDB using Mongoose.
+ * It enforces data integrity, validation, and security best practices.
+ *
+ *  Security & Best Practices
+ *   - Validates all fields to prevent injection and schema manipulation
+ *   - Uses strict schema to prevent object injection and prototype pollution
+ *   - Never stores sensitive payment data (e.g., card numbers) in plaintext
+ *
+ * Usage:
+ *   import Payment from './models/Payment.js';
+ *
+ * 
+ */
 import mongoose from 'mongoose';
 import crypto from 'crypto';
 import validator from 'validator';
@@ -413,3 +429,5 @@ paymentSchema.index({ createdAt: -1 });
 paymentSchema.index({ userId: 1, status: 1 });
 
 export default mongoose.model('Payment', paymentSchema);
+
+//----------------------------------------------End of File----------------------------------------------

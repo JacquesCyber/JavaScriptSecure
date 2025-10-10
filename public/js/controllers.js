@@ -1,31 +1,51 @@
-/* eslint-env browser, es6 */
-/* global document, localStorage, alert */
-// Page Controllers - Best Practice Separation
+/*
+ * Frontend Controllers (MVC)
+ * -------------------------------------------------------------
+ * This file contains controller logic for the browser-based JavaScript app.
+ * Controllers handle user interactions, update the UI, and communicate
+ * with backend APIs. This structure supports maintainable, testable code.
+ *
+ * Separation of Concerns
+ *   - Controllers should not contain direct DOM manipulation (use views)
+ *   - All API calls and business logic should be centralized here
+ *
+ * Security & Best Practices
+ *   - Sanitize all user input before sending to backend
+ *   - Handle API errors gracefully and avoid leaking sensitive info
+ *   - Avoid direct access to window or document unless necessary
+ *
+ * Usage:
+ *   import { loginController } from './controllers.js';
+ *
+ *  REFERENCES:
+ *  - https://cheatsheetseries.owasp.org/cheatsheets/Cross-Site_Request_Forgery_Prevention_Cheat_Sheet.html
+ */
+
 
 // Helper function to get CSRF token
 function getCsrfToken() {
   // Primary: Get from meta tag (injected by server)
   const metaTag = document.querySelector('meta[name="csrf-token"]');
   if (metaTag && metaTag.content) {
-    console.log('✅ CSRF token from meta tag:', metaTag.content.substring(0, 10) + '...');
+    console.log('CSRF token from meta tag:', metaTag.content.substring(0, 10) + '...');
     return metaTag.content;
   }
   
   // Fallback: try cookies (for other implementations)
   const match = document.cookie.match(/_csrf=([^;]+)/);
   if (match) {
-    console.log('✅ CSRF token from _csrf cookie');
+    console.log('CSRF token from _csrf cookie');
     return decodeURIComponent(match[1]);
   }
   
   // Also try XSRF-TOKEN as fallback
   const xsrfMatch = document.cookie.match(/XSRF-TOKEN=([^;]+)/);
   if (xsrfMatch) {
-    console.log('✅ CSRF token from XSRF-TOKEN cookie');
+    console.log('CSRF token from XSRF-TOKEN cookie');
     return decodeURIComponent(xsrfMatch[1]);
   }
-  
-  console.error('❌ No CSRF token found in meta tag or cookies!');
+
+  console.error('No CSRF token found in meta tag or cookies!');
   return '';
 }
 
@@ -45,7 +65,7 @@ function getHeadersWithCsrf(additionalHeaders = {}) {
     headers['x-csrf-token'] = csrfToken;
     headers['x-xsrf-token'] = csrfToken;
   } else {
-    console.warn('⚠️ No CSRF token available - request will likely fail!');
+    console.warn('No CSRF token available - request will likely fail!');
   }
   
   return headers;
@@ -168,7 +188,7 @@ export class RegisterController extends PageController {
     const allValid = Object.values(passwordRequirements).every(req => req);
     
     if (!allValid) {
-      this.app.showNotification('❌ Password does not meet security requirements. Please check the requirements below.', 'error');
+      this.app.showNotification('Password does not meet security requirements. Please check the requirements below.', 'error');
       return;
     }
 
@@ -205,15 +225,15 @@ export class RegisterController extends PageController {
       console.log('📥 Response data:', result);
       
       if (result.success) {
-        this.app.showNotification('✅ Account created successfully! Welcome ' + result.user.fullName, 'success');
+        this.app.showNotification('Account created successfully! Welcome ' + result.user.fullName, 'success');
         setTimeout(() => this.app.navigateTo('login'), 1500);
       } else {
-        this.app.showNotification('❌ Registration failed: ' + result.message, 'error');
+        this.app.showNotification('Registration failed: ' + result.message, 'error');
       }
       
     } catch (error) {
-      console.error('❌ Registration error:', error);
-      this.app.showNotification('❌ Network error. Please try again.', 'error');
+      console.error('Registration error:', error);
+      this.app.showNotification('Network error. Please try again.', 'error');
     } finally {
       // Restore button state
       const submitBtn = form.querySelector('button[type="submit"]');
@@ -272,7 +292,7 @@ export class LoginController extends PageController {
       });
       
       const result = await response.json();
-      console.log('📥 Login response:', result);
+      console.log('Login response:', result);
       console.log('Response status:', response.status);
       
       if (result.success) {
@@ -284,18 +304,18 @@ export class LoginController extends PageController {
           loginTime: new Date().toLocaleString()
         });
         
-        this.app.showNotification('✅ Welcome back, ' + result.user.fullName + '!', 'success');
+        this.app.showNotification('Welcome back, ' + result.user.fullName + '!', 'success');
         setTimeout(() => this.app.navigateTo('dashboard'), 1500);
       } else {
         // Handle both 'message' and 'error' properties in the response
         const errorMessage = result.message || result.error || 'Unknown error occurred';
-        console.error('❌ Login failed with message:', errorMessage);
-        this.app.showNotification('❌ Login failed: ' + errorMessage, 'error');
+        console.error('Login failed with message:', errorMessage);
+        this.app.showNotification('Login failed: ' + errorMessage, 'error');
       }
       
     } catch (error) {
       console.error('Login error:', error);
-      this.app.showNotification('❌ Network error. Please try again.', 'error');
+      this.app.showNotification('Network error. Please try again.', 'error');
     } finally {
       // Restore button state
       const submitBtn = form.querySelector('button[type="submit"]');
@@ -430,8 +450,8 @@ export class PaymentController extends PageController {
       
       this.app.showNotification('Processing payment...', 'info');
       
-      console.log('💳 Starting payment process...');
-      console.log('📤 Payment data:', data);
+      console.log('Starting payment process...');
+      console.log('Payment data:', data);
       
       // Prepare payment data for API
       const paymentData = {
@@ -449,7 +469,7 @@ export class PaymentController extends PageController {
         paymentData.userId = this.app.user.id;
       }
       
-      console.log('📤 Final payment data being sent:', JSON.stringify(paymentData, null, 2));
+      console.log('Final payment data being sent:', JSON.stringify(paymentData, null, 2));
       
       // Submit to MongoDB via API
       const response = await fetch('/api/payments/process', {
@@ -459,12 +479,12 @@ export class PaymentController extends PageController {
         body: JSON.stringify(paymentData)
       });
       
-      console.log('📥 Payment response status:', response.status);
+      console.log('Payment response status:', response.status);
       const result = await response.json();
-      console.log('📥 Payment response data:', result);
+      console.log('Payment response data:', result);
       
       if (result.success) {
-        this.app.showNotification('✅ Payment processed successfully!', 'success');
+        this.app.showNotification('Payment processed successfully!', 'success');
         // Store transaction ID for later reference
         if (result.payment && result.payment.transactionId) {
           localStorage.setItem('lastTransactionId', result.payment.transactionId);
@@ -474,18 +494,18 @@ export class PaymentController extends PageController {
         // Display detailed validation errors
         let errorMessage = result.message || 'Payment failed';
         if (result.errors && result.errors.length > 0) {
-          console.error('❌ Validation errors:', result.errors);
+          console.error('Validation errors:', result.errors);
           const errorDetails = result.errors.map(err => 
             `${err.path || err.param}: ${err.msg}`
           ).join(', ');
           errorMessage += '. Details: ' + errorDetails;
         }
-        this.app.showNotification('❌ ' + errorMessage, 'error');
+        this.app.showNotification('Payment failed: ' + errorMessage, 'error');
       }
       
     } catch (error) {
-      console.error('❌ Payment error:', error);
-      this.app.showNotification('❌ Network error. Please try again.', 'error');
+      console.error('Payment error:', error);
+      this.app.showNotification('Network error. Please try again.', 'error');
     } finally {
       // Restore button state
       const submitBtn = form.querySelector('button[type="submit"]');
@@ -591,7 +611,7 @@ export class PaymentController extends PageController {
 
     // Show errors if any
     if (errors.length > 0) {
-      this.app.showNotification('❌ ' + errors.join(', '), 'error');
+      this.app.showNotification('Errors found: ' + errors.join(', '), 'error');
       return false;
     }
 
@@ -655,7 +675,7 @@ export class ValidatorController extends PageController {
     
     // Ensure user session is valid before loading data
     if (!this.app.user || !this.app.user.id) {
-      console.log('🔍 No valid user session found, attempting to restore...');
+      console.log('No valid user session found, attempting to restore...');
       this.app.loadUserFromSession();
     }
     
@@ -681,10 +701,10 @@ export class ValidatorController extends PageController {
   }
 
   async refreshData() {
-    console.log('🔄 Refreshing transaction data...');
+    console.log('Refreshing transaction data...');
     await this.loadTransactions();
     await this.updateStats();
-    this.app.showNotification('✅ Data refreshed successfully', 'success');
+    this.app.showNotification('Data refreshed successfully', 'success');
   }
 
   // Load and display transactions from MongoDB
@@ -699,7 +719,7 @@ export class ValidatorController extends PageController {
       // Check if user is authenticated and has valid user data
       if (!this.app.user || !this.app.user.id) {
         console.error('User not authenticated or missing user ID');
-        container.innerHTML = '<p class="text-danger text-center">❌ Authentication required. Please log in again.</p>';
+        container.innerHTML = '<p class="text-danger text-center"> Authentication required. Please log in again.</p>';
         return;
       }
 
@@ -767,7 +787,7 @@ export class ValidatorController extends PageController {
       `).join('');
       
     } catch (error) {
-      console.error('❌ Error loading transactions:', error);
+      console.error(' Error loading transactions:', error);
       container.innerHTML = '<p class="text-danger text-center">You have probably been rate limited. Please try again in 15 minutes(if you are a marker just restart the server).</p>';
     }
   }
@@ -813,7 +833,7 @@ export class ValidatorController extends PageController {
       if (failedTxnEl) failedTxnEl.textContent = stats.failedPayments || 0;
       
     } catch (error) {
-      console.error('❌ Error loading payment stats:', error);
+      console.error(' Error loading payment stats:', error);
       // Fallback to default values
       const totalTxnEl = document.getElementById('total-transactions');
       const totalAmountEl = document.getElementById('total-amount');
@@ -854,11 +874,13 @@ ${payment.completedAt ? `Completed: ${new Date(payment.completedAt).toLocaleStri
         
         alert(details);
       } else {
-        this.app.showNotification('❌ Transaction not found', 'error');
+        this.app.showNotification('Transaction not found', 'error');
       }
     } catch (error) {
-      console.error('❌ Error viewing transaction:', error);
-      this.app.showNotification('❌ Failed to load transaction details', 'error');
+      console.error('Error viewing transaction:', error);
+      this.app.showNotification('Failed to load transaction details', 'error');
     }
   }
 }
+
+//----------------------------------------------End of File----------------------------------------------

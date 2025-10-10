@@ -1,3 +1,19 @@
+/*
+ * User Service
+ * -------------------------------------------------------------
+ * This service handles user management logic for the application.
+ * It enforces input validation, secure authentication, and
+ * access control best practices.
+ *
+ *  Security & Best Practices
+ *   - Validates all user data to prevent injection and account abuse
+ *   - Never stores or logs plaintext passwords
+ *   - Ensures all operations are authenticated and authorized
+ *
+ * Usage:
+ *   import userService from './services/user.js';
+ *
+ */
 import User from '../models/User.js';
 import bcrypt from 'bcrypt';
 import { encryptIdNumber } from '../utils/encryption.js';
@@ -67,7 +83,7 @@ export class UserService {
       };
       
     } catch (error) {
-      console.error('❌ Error registering user:', error);
+      console.error('Error registering user:', error);
       
       if (error.code === 11000) {
         if (error.keyPattern.email) {
@@ -131,7 +147,7 @@ export class UserService {
       };
       
     } catch (error) {
-      console.error('❌ Error logging in user:', error);
+      console.error('Error logging in user:', error);
       console.error('Error type:', typeof error);
       console.error('Error message:', error.message);
       console.error('Error stack:', error.stack?.split('\n')[0]);
@@ -154,7 +170,7 @@ export class UserService {
       }
       return user;
     } catch (error) {
-      console.error('❌ Error getting user:', error);
+      console.error('Error getting user:', error);
       throw error;
     }
   }
@@ -174,8 +190,10 @@ export class UserService {
         recent: recentUsers
       };
     } catch (error) {
-      console.error('❌ Error getting user stats:', error);
+      console.error('Error getting user stats:', error);
       throw error;
     }
   }
 }
+
+//----------------------------------------------End of File----------------------------------------------

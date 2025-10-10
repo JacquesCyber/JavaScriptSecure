@@ -1,6 +1,27 @@
-/* eslint-env browser, es6 */
-/* global document, window, sessionStorage, localStorage, alert */
-// Enterprise-Grade SPA with Best Practices
+/*
+ * Frontend Application Entry Point
+ * -------------------------------------------------------------
+ * This file initializes the browser-based JavaScript application.
+ * It sets up global event listeners, bootstraps controllers, and
+ * manages application-wide state and configuration.
+ *
+ * Initialization & Bootstrap
+ *   - Loads config and controllers
+ *   - Sets up event listeners and global error handling
+ *
+ * Security & Best Practices
+ *   - Avoids exposing sensitive data in the global scope
+ *   - Handles errors gracefully and logs only non-sensitive info
+ *   - Ensures all DOM manipulations are sanitized
+ *
+ * Usage:
+ *   <script src="/app.js"></script>
+ *
+ *  REFERENCES:
+ *  - https://developer.mozilla.org/en-US/docs/Web/JavaScript/Guide/Modules
+ *  
+ */
+
 import { 
   RegisterController, 
   LoginController, 
@@ -99,11 +120,11 @@ class SecureApp {
 
   navigateTo(page) {
     if (!this.isValidPage(page)) {
-      this.showNotification('❌ Invalid page requested', 'error');
+      this.showNotification('Invalid page requested', 'error');
       return;
     }
     if (!this.hasPageAccess(page)) {
-      this.showNotification('❌ Access denied. Please log in.', 'error');
+      this.showNotification('Access denied. Please log in.', 'error');
       page = this.isAuthenticated() ? this.currentPage : 'login';
     }
     window.location.hash = page;
@@ -331,7 +352,7 @@ class SecureApp {
   }
 
   logout() {
-    console.log('🚪 Logout initiated...');
+    console.log('Logout initiated...');
     
     // Clear user data
     this.user = null;
@@ -340,21 +361,21 @@ class SecureApp {
     try {
       sessionStorage.removeItem('user');
       localStorage.removeItem('transactions'); // Clear any cached data
-      console.log('✅ Session data cleared');
+      console.log('Session data cleared');
     } catch (error) {
       console.warn('Error clearing storage:', error);
     }
     
     // Update navigation immediately to hide authenticated elements
     this.updateNavigation();
-    console.log('✅ Navigation updated');
+    console.log('Navigation updated');
     
     // Show success message
-    this.showNotification('✅ Successfully logged out', 'success');
-    
+    this.showNotification('Successfully logged out', 'success');
+
     // Force redirect to login page
     setTimeout(() => {
-      console.log('🔄 Redirecting to login page...');
+      console.log('Redirecting to login page...');
       window.location.hash = 'login';
       this.currentPage = 'login';
       this.loadPage('login');
@@ -369,7 +390,7 @@ class SecureApp {
         // Validate that the user object has required properties
         if (parsedUser && parsedUser.id && parsedUser.fullName) {
           this.user = parsedUser;
-          console.log('✅ User session restored:', parsedUser.fullName);
+          console.log('User session restored:', parsedUser.fullName);
         } else {
           console.warn('Invalid user session data, clearing...');
           sessionStorage.removeItem('user');
@@ -405,11 +426,11 @@ ${payment.completedAt ? `Completed: ${new Date(payment.completedAt).toLocaleStri
         
         alert(details);
       } else {
-        this.showNotification('❌ Transaction not found', 'error');
+        this.showNotification('Transaction not found', 'error');
       }
     } catch (error) {
-      console.error('❌ Error viewing transaction:', error);
-      this.showNotification('❌ Failed to load transaction details', 'error');
+      console.error('Error viewing transaction:', error);
+      this.showNotification('Failed to load transaction details', 'error');
     }
   }
 }
@@ -419,3 +440,5 @@ const app = new SecureApp();
 
 // Make app globally available for debugging
 window.SecureApp = app;
+
+//----------------------------------------------End of File----------------------------------------------

@@ -1,3 +1,21 @@
+/*
+ * Payments Route
+ * -------------------------------------------------------------
+ * This route handles payment-related API endpoints.
+ * It enforces input validation, authentication, and access control
+ * to prevent fraud, injection, and unauthorized access.
+ *
+ *  Security & Best Practices
+ *   - Validates all payment input to prevent injection and fraud
+ *   - Requires authentication and role-based authorization
+ *   - Never exposes sensitive payment data in responses
+ *
+ * Usage:
+ *   app.use('/payments', paymentsRouter);
+ *
+ * REFERENCES:
+ *  - https://stripe.com/docs/payments/accept-a-payment
+ */
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { PaymentService } from '../services/payment.js';
@@ -140,12 +158,12 @@ const extractUserIdFromQuery = (req, res, next) => {
 
 // POST /api/payments/process - Process a new payment
 router.post('/process', authLimiter, paymentValidation, extractUserIdFromBody, async (req, res) => {
-  console.log('💳 Payment processing request received');
-  console.log('📦 Request body:', JSON.stringify(req.body, null, 2));
+  console.log(' Payment processing request received');
+  console.log(' Request body:', JSON.stringify(req.body, null, 2));
   
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log('❌ Payment validation errors:', JSON.stringify(errors.array(), null, 2));
+    console.log(' Payment validation errors:', JSON.stringify(errors.array(), null, 2));
     // Log each error with field and message
     errors.array().forEach(err => {
       console.log(`   - Field: ${err.path || err.param}, Message: ${err.msg}`);
@@ -163,7 +181,7 @@ router.post('/process', authLimiter, paymentValidation, extractUserIdFromBody, a
     const ipAddress = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent');
 
-    console.log('✅ Payment validation passed, processing...');
+    console.log(' Payment validation passed, processing...');
     
     const result = await PaymentService.processPayment(
       { amount, currency, description, paymentMethod, provider },
@@ -176,7 +194,7 @@ router.post('/process', authLimiter, paymentValidation, extractUserIdFromBody, a
     
     res.status(201).json(result);
   } catch (error) {
-    console.error('❌ Error in POST /api/payments/process:', error);
+    console.error(' Error in POST /api/payments/process:', error);
     
     res.status(400).json({
       success: false,
@@ -212,7 +230,7 @@ router.get('/history', extractUserIdFromQuery, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error in GET /api/payments/history:', error);
+    console.error(' Error in GET /api/payments/history:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve payment history'
@@ -231,7 +249,7 @@ router.get('/stats', extractUserIdFromQuery, async (req, res) => {
       stats
     });
   } catch (error) {
-    console.error('❌ Error in GET /api/payments/stats:', error);
+    console.error(' Error in GET /api/payments/stats:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve payment statistics'
@@ -267,7 +285,7 @@ router.get('/:transactionId', extractUserIdFromQuery, async (req, res) => {
       payment: sanitizedPayment
     });
   } catch (error) {
-    console.error('❌ Error in GET /api/payments/:transactionId:', error);
+    console.error(' Error in GET /api/payments/:transactionId:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve payment details'
@@ -285,3 +303,5 @@ router.get('/health', (req, res) => {
 });
 
 export default router;
+
+//----------------------------------------------End of File----------------------------------------------

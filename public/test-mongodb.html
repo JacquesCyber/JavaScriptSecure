@@ -42,7 +42,7 @@
             </div>
             
             <button type="submit" class="btn btn-primary w-100">
-              💾 Store Secret in MongoDB
+              Store Secret in MongoDB
             </button>
           </form>
         </div>
@@ -83,13 +83,13 @@
         const result = await response.json();
         
         if (response.ok) {
-          resultContent.innerHTML = `✅ SUCCESS!\n\n${JSON.stringify(result, null, 2)}`;
+          resultContent.innerHTML = `SUCCESS!\n\n${JSON.stringify(result, null, 2)}`;
           document.getElementById('secretForm').reset();
         } else {
-          resultContent.innerHTML = `❌ ERROR!\n\n${JSON.stringify(result, null, 2)}`;
+          resultContent.innerHTML = `ERROR!\n\n${JSON.stringify(result, null, 2)}`;
         }
       } catch (error) {
-        resultContent.innerHTML = `❌ NETWORK ERROR!\n\n${error.message}`;
+        resultContent.innerHTML = `NETWORK ERROR!\n\n${error.message}`;
       }
     });
   </script>

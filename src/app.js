@@ -1,3 +1,23 @@
+/*
+ * Main Express Application
+ * -------------------------------------------------------------
+ * This file initializes the Express app, configures global middleware,
+ * and sets up all API routes. It is the central entry point for all
+ * HTTP requests and enforces security, validation, and error handling.
+ *
+ *  Security & Best Practices
+ *   - Loads security, validation, and sanitization middleware globally
+ *   - Configures CORS, CSRF, and secure session management
+ *   - Handles errors and logging in a centralized way
+ *
+ * Usage:
+ *   import app from './app.js';
+ * 
+ * REFERENCES:
+ *  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Guides/CORS
+ *  - https://www.npmjs.com/package/csurf
+ *  - https://expressjs.com/en/advanced/best-practice-security.html
+ */
 import express from 'express';
 import dotenv from 'dotenv';
 import session from 'express-session';
@@ -121,7 +141,7 @@ app.use('/', staticRoutes);
 // CSRF error handler (must be after routes)
 app.use((err, req, res, next) => {
   if (err.code === 'EBADCSRFTOKEN') {
-    console.error('❌ CSRF token validation failed');
+    console.error('CSRF token validation failed');
     console.error('Request headers:', {
       'csrf-token': req.headers['csrf-token'],
       'x-csrf-token': req.headers['x-csrf-token'],
@@ -166,3 +186,5 @@ app.use((req, res) => {
 });
 
 export default app;
+
+//----------------------------------------------End of File----------------------------------------------

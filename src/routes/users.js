@@ -1,3 +1,21 @@
+/*
+ * Users Route
+ * -------------------------------------------------------------
+ * This route handles user-related API endpoints.
+ * It enforces input validation, authentication, and access control
+ * to prevent account takeover, injection, and unauthorized access.
+ *
+ *  Security & Best Practices
+ *   - Validates all user input to prevent injection and account abuse
+ *   - Requires authentication and role-based authorization
+ *   - Never exposes sensitive user data in responses
+ *
+ * Usage:
+ *   app.use('/users', usersRouter);
+ *
+ * REFERENCES:
+ *  - https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes
+ */
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { UserService } from '../services/user.js';
@@ -73,11 +91,11 @@ const loginValidation = [
 
 // POST /api/users/register
 router.post('/register', authLimiter, registerValidation, async (req, res) => {
-  console.log('📝 Registration request received:', req.body);
+  console.log('Registration request received:', req.body);
   
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
-    console.log('❌ Validation errors:', errors.array());
+    console.log('Validation errors:', errors.array());
     return res.status(400).json({
       success: false,
       message: 'Validation failed',
@@ -87,7 +105,7 @@ router.post('/register', authLimiter, registerValidation, async (req, res) => {
 
   try {
     const { fullName, email, username, idNumber, accountNumber, bankCode, branchCode, password } = req.body;
-    console.log('✅ Validation passed, creating user...');
+    console.log('Validation passed, creating user...');
     
     const result = await UserService.registerUser({ 
       fullName, 
@@ -99,11 +117,11 @@ router.post('/register', authLimiter, registerValidation, async (req, res) => {
       branchCode, 
       password 
     });
-    console.log('✅ User created successfully:');
+    console.log(' User created successfully:');
     
     res.status(201).json(result);
   } catch (error) {
-    console.error('❌ Error in POST /api/users/register:', error);
+    console.error(' Error in POST /api/users/register:', error);
     
     res.status(400).json({
       success: false,
@@ -125,9 +143,9 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
 
   try {
     const { username, accountNumber, password } = req.body;
-    console.log('📝 Login attempt for username:', username, 'with account number type:', typeof accountNumber);
-    console.log('🍪 Cookies:', Object.keys(req.cookies || {}).join(', '));
-    console.log('🔒 CSRF headers:', {
+    console.log('Login attempt for username:', username, 'with account number type:', typeof accountNumber);
+    console.log('Cookies:', Object.keys(req.cookies || {}).join(', '));
+    console.log('CSRF headers:', {
       'csrf-token': req.headers['csrf-token'],
       'x-csrf-token': req.headers['x-csrf-token'],
       'xsrf-token': req.headers['xsrf-token'],
@@ -158,7 +176,7 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
         maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
       });
       
-      console.log('✅ User logged in with secure session:');
+      console.log('User logged in with secure session:');
       
       // Return success without sensitive data
       const userResponse = {
@@ -179,7 +197,7 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
       res.status(401).json(result);
     }
   } catch (error) {
-    console.error('❌ Error in POST /api/users/login:', error);
+    console.error('Error in POST /api/users/login:', error);
     console.error('Error details:', {
       name: error.name,
       message: error.message,
@@ -205,7 +223,7 @@ router.get('/stats', async (req, res) => {
       stats
     });
   } catch (error) {
-    console.error('❌ Error in GET /api/users/stats:', error);
+    console.error('Error in GET /api/users/stats:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to get user statistics'
@@ -223,15 +241,15 @@ router.post('/logout', authenticate, async (req, res) => {
     res.clearCookie('accessToken');
     res.clearCookie('refreshToken');
     res.clearCookie('secureSessionId');
-    
-    console.log('✅ User logged out successfully');
-    
+
+    console.log('User logged out successfully');
+
     res.json({
       success: true,
       message: 'Logout successful'
     });
   } catch (error) {
-    console.error('❌ Error during logout:', error);
+    console.error('Error during logout:', error);
     res.status(500).json({
       success: false,
       message: 'Logout failed'
@@ -299,7 +317,7 @@ router.post('/refresh', async (req, res) => {
     });
     
   } catch (error) {
-    console.error('❌ Token refresh failed:', error);
+    console.error('Error refreshing token:', error);
     res.status(401).json({
       error: true,
       message: 'Token refresh failed'
@@ -308,3 +326,5 @@ router.post('/refresh', async (req, res) => {
 });
 
 export default router;
+
+//----------------------------------------------End of File----------------------------------------------

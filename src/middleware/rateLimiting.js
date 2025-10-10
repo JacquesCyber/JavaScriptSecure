@@ -1,3 +1,25 @@
+/*
+ * Rate Limiting Middleware
+ * -------------------------------------------------------------
+ * This module enforces rate limiting for Express routes.
+ * It is designed to prevent:
+ *   - Brute-force attacks (login, API abuse)
+ *   - Denial-of-Service (DoS) and resource exhaustion
+ *
+ *  Security & Best Practices
+ *   - Limits requests per IP per time window
+ *   - Customizable for general and API-specific routes
+ *   - Returns clear error messages on limit exceeded
+ *
+ * Usage:
+ *   app.use(rateLimitingMiddleware);
+ *
+ *  REFERENCES:
+ *  - https://www.cloudflare.com/learning/bots/what-is-rate-limiting/
+ *  - https://medium.com/@ignatovich.dm/creating-a-simple-api-rate-limiter-with-node-a834d03bad7a
+ */
+
+
 import rateLimit from 'express-rate-limit';
 import { securityConfig } from '../../config/security.js';
 
@@ -82,3 +104,5 @@ export const strictLimiter = rateLimit({
     });
   }
 });
+
+//----------------------------------------------End of File----------------------------------------------

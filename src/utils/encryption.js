@@ -1,3 +1,20 @@
+/*
+ * Encryption Utilities
+ * -------------------------------------------------------------
+ * This module provides encryption and decryption functions for the application.
+ * It is designed for secure data protection, key management, and
+ * cryptographic operations using vetted algorithms.
+ *
+ * Security & Best Practices
+ *   - Uses strong, industry-standard algorithms (e.g., AES, RSA)
+ *   - Never hardcodes secrets or keys in source code
+ *   - Handles errors to avoid leaking sensitive information
+ *
+ * Usage:
+ *   import { encrypt, decrypt } from './utils/encryption.js';
+ * REFERENCES:
+ *  - https://cheatsheetseries.owasp.org/cheatsheets/Cryptographic_Storage_Cheat_Sheet.html
+ */
 import CryptoJS from 'crypto-js';
 import dotenv from 'dotenv';
 
@@ -15,16 +32,16 @@ const ENCRYPTION_IV = process.env.ENCRYPTION_IV;
 
 // Validate that encryption keys are set
 if (!ENCRYPTION_KEY || !ENCRYPTION_IV) {
-  throw new Error('❌ Encryption keys must be set in environment variables: ENCRYPTION_KEY and ENCRYPTION_IV');
+  throw new Error('Encryption keys must be set in environment variables: ENCRYPTION_KEY and ENCRYPTION_IV');
 }
 
 // Validate key lengths
 if (ENCRYPTION_KEY.length !== 32) {
-  throw new Error('❌ ENCRYPTION_KEY must be exactly 32 characters for AES-256');
+  throw new Error('ENCRYPTION_KEY must be exactly 32 characters for AES-256');
 }
 
 if (ENCRYPTION_IV.length !== 16) {
-  throw new Error('❌ ENCRYPTION_IV must be exactly 16 characters');
+  throw new Error('ENCRYPTION_IV must be exactly 16 characters');
 }
 
 // Convert to CryptoJS format
@@ -50,7 +67,7 @@ export function encrypt(text) {
     // Return as Base64 string
     return encrypted.toString();
   } catch (error) {
-    console.error('❌ Encryption error:', error);
+    console.error('Encryption error:', error);
     throw new Error('Failed to encrypt data');
   }
 }
@@ -73,7 +90,7 @@ export function decrypt(encryptedText) {
     
     return decrypted.toString(CryptoJS.enc.Utf8);
   } catch (error) {
-    console.error('❌ Decryption error:', error);
+    console.error('Decryption error:', error);
     throw new Error('Failed to decrypt data');
   }
 }
@@ -133,3 +150,5 @@ export function decryptIdNumber(encryptedIdNumber) {
 export function createHash(text) {
   return CryptoJS.SHA256(text).toString();
 }
+
+//----------------------------------------------End of File----------------------------------------------

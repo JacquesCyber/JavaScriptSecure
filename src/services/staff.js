@@ -1,3 +1,19 @@
+/*
+ * Staff Service
+ * -------------------------------------------------------------
+ * This service handles staff management logic for the application.
+ * It enforces input validation, secure authentication, and
+ * privilege control best practices.
+ *
+ *  Security & Best Practices
+ *   - Validates all staff data to prevent injection and privilege abuse
+ *   - Never stores or logs plaintext passwords
+ *   - Ensures all operations are authenticated and authorized
+ *
+ * Usage:
+ *   import staffService from './services/staff.js';
+ *
+ */
 import Staff from '../models/Staff.js';
 import bcrypt from 'bcrypt';
 
@@ -43,7 +59,7 @@ export class StaffService {
         }
       };
     } catch (err) {
-      console.error('❌ Staff registration error:', err);
+      console.error(' Staff registration error:', err);
       throw err;
     }
   }
@@ -74,7 +90,7 @@ export class StaffService {
         }
       };
     } catch (err) {
-      console.error('❌ Staff login error:', err);
+      console.error('Staff login error:', err);
       throw err;
     }
   }
@@ -136,7 +152,7 @@ export class StaffService {
         }
       };
     } catch (err) {
-      console.error('❌ Error updating staff:', err);
+      console.error('Error updating staff:', err);
       throw err;
     }
   }
@@ -182,8 +198,10 @@ export class StaffService {
         default: return false;
       }
     } catch (err) {
-      console.error('❌ Error checking staff permission:', err);
+      console.error('Error checking staff permission:', err);
       return false;
     }
   }
 }
+
+//----------------------------------------------End of File----------------------------------------------

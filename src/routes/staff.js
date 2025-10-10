@@ -1,3 +1,20 @@
+/*
+ * Staff Route
+ * -------------------------------------------------------------
+ * This route handles staff-related API endpoints.
+ * It enforces input validation, authentication, and access control
+ * to prevent privilege escalation, injection, and unauthorized access.
+ *
+ *  Security & Best Practices
+ *   - Validates all staff input to prevent injection and privilege abuse
+ *   - Requires authentication and role-based authorization
+ *   - Never exposes sensitive staff data in responses
+ *
+ * Usage:
+ *   app.use('/staff', staffRouter);
+ *
+ *  
+ */
 import express from 'express';
 import { body, validationResult } from 'express-validator';
 import { StaffService } from '../services/staff.js';
@@ -41,7 +58,7 @@ router.post('/login', authLimiter, staffLoginValidation, async (req, res) => {
     
     res.json(result);
   } catch (error) {
-    console.error('❌ Error in POST /api/staff/login:', error);
+    console.error(' Error in POST /api/staff/login:', error);
     
     res.status(401).json({
       success: false,
@@ -128,7 +145,7 @@ router.get('/payments', extractStaffId, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error in GET /api/staff/payments:', error);
+    console.error(' Error in GET /api/staff/payments:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve payments'
@@ -180,7 +197,7 @@ router.get('/payments/:transactionId', extractStaffId, async (req, res) => {
       payment: sanitizedPayment
     });
   } catch (error) {
-    console.error('❌ Error in GET /api/staff/payments/:transactionId:', error);
+    console.error(' Error in GET /api/staff/payments/:transactionId:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve payment details'
@@ -232,7 +249,7 @@ router.put('/payments/:transactionId/status', extractStaffId, async (req, res) =
       }
     });
   } catch (error) {
-    console.error('❌ Error in PUT /api/staff/payments/:transactionId/status:', error);
+    console.error('Error in PUT /api/staff/payments/:transactionId/status:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to update payment status'
@@ -304,7 +321,7 @@ router.get('/dashboard', extractStaffId, async (req, res) => {
       }
     });
   } catch (error) {
-    console.error('❌ Error in GET /api/staff/dashboard:', error);
+    console.error(' Error in GET /api/staff/dashboard:', error);
     res.status(500).json({
       success: false,
       message: 'Failed to retrieve dashboard data'
@@ -323,3 +340,4 @@ router.get('/health', (req, res) => {
 
 export default router;
 
+//----------------------------------------------End of File----------------------------------------------
