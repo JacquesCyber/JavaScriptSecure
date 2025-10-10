@@ -2,7 +2,7 @@
 
 A secure, enterprise-grade Node.js business application featuring multi-page architecture, HTTPS support, and comprehensive security practices. Built with modern ES6 modules and component-based design patterns.
 
-## �️ Architecture Overview
+##  Architecture Overview
 
 **Enterprise Single-Page Application (SPA)** with server-side security:
 - **5 Business Pages**: Register, Login, Customer Dashboard, Payment Processor, Transaction Validator
