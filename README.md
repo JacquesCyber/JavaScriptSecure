@@ -623,10 +623,12 @@ npm run prod         # HTTPS production (requires certificates)
 
 **URL**: `http://localhost:3000/employee-portal`
 
-**Test Credentials**:
-- **Username**: `employee001`
-- **Password**: `SecureBank2024!`
+**Test Credentials** (configured in `.env`):
+- **Username**: `employee001` (or `TEST_EMPLOYEE_USERNAME`)
+- **Password**: `SecureBank2024!` (or `TEST_EMPLOYEE_PASSWORD`)
 - **Employee**: Jane Smith (Staff Role)
+
+> **Note**: These are development/demo credentials. In production, use proper onboarding and strong passwords. Credentials can be customized via environment variables in `.env` file.
 
 **How It Works**:
 1. Navigate to the employee portal URL
@@ -1341,10 +1343,20 @@ ENCRYPTION_IV=<16-character-iv>       # AES IV
 SESSION_SECRET=<random-secret>        # Session signing
 JWT_SECRET=<random-secret>            # JWT signing (optional, auto-generated)
 
+# Test Credentials (Development Only)
+TEST_EMPLOYEE_PASSWORD=SecureBank2024!
+TEST_EMPLOYEE_USERNAME=employee001
+TEST_EMPLOYEE_ID=EMP001234
+TEST_EMPLOYEE_EMAIL=jane.smith@securebank.com
+
 # Server
 NODE_ENV=production|development|test
 PORT=3000
 ```
+
+> **💡 Tip**: Copy `.env.example` to `.env` and customize the values. The `.env` file is gitignored and will never be committed.
+
+> **⚠️ Security Note**: Test credentials are for development/demo purposes only. In production, use a proper employee onboarding system with strong, unique passwords and multi-factor authentication.
 
 ##  Security Documentation
 

@@ -19,13 +19,19 @@ dotenv.config();
 async function seedEmployee() {
   try {
     // Connect to MongoDB
-    const mongoUri = process.env.MONGO_URI || 'mongodb://localhost:27017/securebank';
+    const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/securebank';
     await mongoose.connect(mongoUri);
     
     console.log('✓ Connected to MongoDB');
     
+    // Get test credentials from environment (with fallback for backwards compatibility)
+    const testPassword = process.env.TEST_EMPLOYEE_PASSWORD || 'SecureBank2024!';
+    const testUsername = process.env.TEST_EMPLOYEE_USERNAME || 'employee001';
+    const testEmployeeId = process.env.TEST_EMPLOYEE_ID || 'EMP001234';
+    const testEmail = process.env.TEST_EMPLOYEE_EMAIL || 'jane.smith@securebank.com';
+    
     // Check if employee already exists
-    const existing = await Staff.findOne({ username: 'employee001' });
+    const existing = await Staff.findOne({ username: testUsername });
     if (existing) {
       console.log('\n⚠️  Employee already exists!');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
@@ -41,15 +47,15 @@ async function seedEmployee() {
     }
     
     // Hash password with high cost factor for security
-    const hashedPassword = await hashPassword('SecureBank2024!');
+    const hashedPassword = await hashPassword(testPassword);
     
     // Create employee
     const employee = new Staff({
       fullName: 'Jane Smith',
-      username: 'employee001',
-      email: 'jane.smith@securebank.com',
+      username: testUsername,
+      email: testEmail,
       password: hashedPassword,
-      employeeId: 'EMP001234',
+      employeeId: testEmployeeId,
       role: 'staff', // Matches USER_ROLES.STAFF in constants
       department: 'International Payments',
       isActive: true
@@ -64,13 +70,13 @@ async function seedEmployee() {
     console.log('Name:', employee.fullName);
     console.log('Username:', employee.username);
     console.log('Email:', employee.email);
-    console.log('Password:', 'SecureBank2024!');
+    console.log('Password:', testPassword);
     console.log('Role:', employee.role);
     console.log('Department:', employee.department);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('\n🔐 Login Credentials for Testing:');
-    console.log('   Username: employee001');
-    console.log('   Password: SecureBank2024!');
+    console.log('   Username:', testUsername);
+    console.log('   Password:', testPassword);
     console.log('\n📍 Access Portal: http://localhost:3000/employee-portal\n');
     
   } catch (error) {

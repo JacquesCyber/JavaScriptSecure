@@ -16,6 +16,11 @@ async function updateEmployee() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✓ Connected to MongoDB');
     
+    // Get test credentials from environment
+    const testUsername = process.env.TEST_EMPLOYEE_USERNAME || 'employee001';
+    const testEmployeeId = process.env.TEST_EMPLOYEE_ID || 'EMP001234';
+    const testPassword = process.env.TEST_EMPLOYEE_PASSWORD || 'SecureBank2024!';
+    
     // First, list all staff members
     const allStaff = await Staff.find({});
     console.log('\n📋 All staff members in database:');
@@ -27,9 +32,9 @@ async function updateEmployee() {
       console.log('💡 Please manually add the employee to your MongoDB staff collection with these fields:');
       console.log({
         fullName: 'Jane Smith',
-        username: 'employee001',
-        email: 'jane.smith@securebank.com',
-        employeeId: 'EMP001234',
+        username: testUsername,
+        email: process.env.TEST_EMPLOYEE_EMAIL || 'jane.smith@securebank.com',
+        employeeId: testEmployeeId,
         password: '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKw8k8W8Iq',
         role: 'staff',
         department: 'International Payments',
@@ -39,10 +44,10 @@ async function updateEmployee() {
     }
     
     // Find the existing employee by username
-    const employee = await Staff.findOne({ username: 'employee001' });
+    const employee = await Staff.findOne({ username: testUsername });
     
     if (!employee) {
-      console.log('\n❌ Employee with username "employee001" not found');
+      console.log('\n❌ Employee with username "' + testUsername + '" not found');
       console.log('💡 Available staff usernames:', allStaff.map(s => s.username));
       process.exit(1);
     }
@@ -55,9 +60,9 @@ async function updateEmployee() {
     
     // Update the employee with employeeId if not present
     if (!employee.employeeId) {
-      employee.employeeId = 'EMP001234';
+      employee.employeeId = testEmployeeId;
       await employee.save();
-      console.log('✓ Updated employee with employeeId: EMP001234');
+      console.log('✓ Updated employee with employeeId:', testEmployeeId);
     } else {
       console.log('✓ Employee already has employeeId:', employee.employeeId);
     }
@@ -79,7 +84,7 @@ async function updateEmployee() {
     console.log(`   - Username: ${employee.username}`);
     console.log(`   - Email: ${employee.email}`);
     console.log(`   - Employee ID: ${employee.employeeId}`);
-    console.log(`   - Password: SecureBank2024!`);
+    console.log(`   - Password: ${testPassword}`);
     
   } catch (error) {
     console.error('❌ Error updating employee:', error);

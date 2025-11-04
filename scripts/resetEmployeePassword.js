@@ -17,8 +17,12 @@ async function resetPassword() {
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✓ Connected to MongoDB\n');
     
+    // Get test credentials from environment
+    const testUsername = process.env.TEST_EMPLOYEE_USERNAME || 'employee001';
+    const testPassword = process.env.TEST_EMPLOYEE_PASSWORD || 'SecureBank2024!';
+    
     // Find the employee
-    const employee = await Staff.findOne({ username: 'employee001' });
+    const employee = await Staff.findOne({ username: testUsername });
     
     if (!employee) {
       console.log('❌ Employee not found');
@@ -30,11 +34,10 @@ async function resetPassword() {
     console.log('  Employee ID:', employee.employeeId);
     
     // Hash the new password
-    const newPassword = 'SecureBank2024!';
-    const hashedPassword = await hashPassword(newPassword);
+    const hashedPassword = await hashPassword(testPassword);
     
     console.log('\n🔐 Hashing new password...');
-    console.log('  Plain text:', newPassword);
+    console.log('  Plain text:', testPassword);
     console.log('  New hash:', hashedPassword);
     
     // Update the password
@@ -45,15 +48,15 @@ async function resetPassword() {
     
     // Verify the password works
     console.log('\n🔍 Verifying password...');
-    const isValid = await verifyPassword(newPassword, employee.password);
+    const isValid = await verifyPassword(testPassword, employee.password);
     
     if (isValid) {
       console.log('✅ Password verification PASSED');
       console.log('\n📝 You can now login with:');
-      console.log('  Employee ID: EMP001234');
-      console.log('  Email: jane.smith@securebank.com');
-      console.log('  Username: employee001');
-      console.log('  Password: SecureBank2024!');
+      console.log('  Employee ID:', employee.employeeId);
+      console.log('  Email:', employee.email);
+      console.log('  Username:', employee.username);
+      console.log('  Password:', testPassword);
     } else {
       console.log('❌ Password verification FAILED');
     }
