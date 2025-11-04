@@ -39,6 +39,7 @@
     "lint:security": "eslint src/ --config eslint.config.security.js",
     "test:server": "cross-env NODE_ENV=test node src/server.js",
     "cert:generate": "cd scripts && ./generate-cert.sh",
-    "health": "curl -f http://localhost:3000/health || exit 1"
+    "health": "curl -f http://localhost:3000/health || exit 1",
+    "seed:employee": "node scripts/seedEmployee.js"
   }
 }

@@ -32,6 +32,7 @@ import { setupSecurity } from './middleware/security.js';
 import { generalLimiter, apiLimiter } from './middleware/rateLimiting.js';
 import { regexValidator, sanitizeInput } from './middleware/validation.js';
 import { sanitizeInput as enhancedSanitizeInput, cspSanitize, sanitizationLimiter } from './middleware/sanitization.js';
+import { errorHandler, notFoundHandler } from './middleware/errorHandler.js';
 
 // Import session configuration
 import { sessionConfig } from './auth/session.js';
@@ -51,7 +52,7 @@ import staticRoutes from './routes/static.js';
 import userRoutes from './routes/users.js';
 import paymentRoutes from './routes/payments.js';
 import staffRoutes from './routes/staff.js';
-import testRoutes from './routes/test.js';
+import internationalPaymentsRoutes from './routes/internationalPayments.js';
 
 dotenv.config();
 
@@ -97,7 +98,15 @@ app.use(cors({
 app.use(session(secureSessionConfig));
 
 // CSRF protection (use csurf, after cookie/session middleware, before routes)
-app.use(csurf({ cookie: true }));
+// Exclude login endpoints from CSRF protection (they use rate limiting instead)
+app.use((req, res, next) => {
+  // Skip CSRF for login endpoints (protected by rate limiting)
+  if (req.path === '/api/users/login' || req.path === '/api/staff/login') {
+    return next();
+  }
+  // Apply CSRF protection to all other routes
+  csurf({ cookie: true })(req, res, next);
+});
 
 // Expose CSRF token to views/APIs
 app.use((req, res, next) => {
@@ -134,8 +143,8 @@ app.use('/', healthRoutes);
 app.use('/', secretRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/payments', paymentRoutes);
+app.use('/api/international-payments', internationalPaymentsRoutes);
 app.use('/api/staff', staffRoutes);
-app.use('/api', testRoutes);
 app.use('/', staticRoutes);
 
 // CSRF error handler (must be after routes)
@@ -154,36 +163,11 @@ app.use((err, req, res, next) => {
   next(err);
 });
 
-// 404 handler with CSP-compliant response
-app.use((req, res) => {
-  const nonce = res.locals.nonce;
-  res.status(404).send(`
-    <!DOCTYPE html>
-    <html>
-    <head>
-      <title>404 - Page Not Found</title>
-      <meta charset="UTF-8">
-      <meta name="viewport" content="width=device-width, initial-scale=1.0">
-      <style nonce="${nonce}">
-        body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; 
-               text-align: center; padding: 50px; background: #f8f9fa; }
-        .container { max-width: 600px; margin: 0 auto; background: white; 
-                    padding: 40px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-        h1 { color: #dc3545; }
-        a { color: #007bff; text-decoration: none; }
-        a:hover { text-decoration: underline; }
-      </style>
-    </head>
-    <body>
-      <div class="container">
-        <h1>404 - Page Not Found</h1>
-        <p>The page you're looking for doesn't exist.</p>
-        <a href="/">← Back to Home</a>
-      </div>
-    </body>
-    </html>
-  `);
-});
+// 404 Not Found handler
+app.use(notFoundHandler);
+
+// Centralized error handler (must be last)
+app.use(errorHandler);
 
 export default app;
 

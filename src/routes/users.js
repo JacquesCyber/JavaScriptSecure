@@ -17,11 +17,12 @@
  *  - https://owasp.org/www-project-web-security-testing-guide/latest/4-Web_Application_Security_Testing/06-Session_Management_Testing/02-Testing_for_Cookies_Attributes
  */
 import express from 'express';
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import { UserService } from '../services/user.js';
 import { TokenManager, SessionManager } from '../auth/session.js';
 import { authenticate } from '../middleware/auth.js';
 import { authLimiter } from '../middleware/rateLimiting.js';
+import { handleValidationErrors } from '../middleware/validationHandler.js';
 
 const router = express.Router();
 
@@ -90,18 +91,8 @@ const loginValidation = [
 ];
 
 // POST /api/users/register
-router.post('/register', authLimiter, registerValidation, async (req, res) => {
+router.post('/register', authLimiter, registerValidation, handleValidationErrors, async (req, res) => {
   console.log('Registration request received:', req.body);
-  
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    console.log('Validation errors:', errors.array());
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: errors.array()
-    });
-  }
 
   try {
     const { fullName, email, username, idNumber, accountNumber, bankCode, branchCode, password } = req.body;
@@ -131,16 +122,7 @@ router.post('/register', authLimiter, registerValidation, async (req, res) => {
 });
 
 // POST /api/users/login
-router.post('/login', authLimiter, loginValidation, async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: errors.array()
-    });
-  }
-
+router.post('/login', authLimiter, loginValidation, handleValidationErrors, async (req, res) => {
   try {
     const { username, accountNumber, password } = req.body;
     console.log('Login attempt for username:', username, 'with account number type:', typeof accountNumber);

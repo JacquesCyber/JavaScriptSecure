@@ -15,8 +15,9 @@
  *
  */
 import User from '../models/User.js';
-import bcrypt from 'bcrypt';
 import { encryptIdNumber } from '../utils/encryption.js';
+import { DEFAULT_USER_ROLE } from '../constants/roles.js';
+import { hashPassword, verifyPassword } from '../utils/auth.js';
 
 export class UserService {
   
@@ -54,8 +55,7 @@ export class UserService {
       }
       
       // Hash password
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(password, saltRounds);
+      const hashedPassword = await hashPassword(password);
       
       // Create user
       const user = new User({
@@ -67,7 +67,7 @@ export class UserService {
         bankCode,
         branchCode,
         password: hashedPassword,
-        role: 'customer'
+        role: DEFAULT_USER_ROLE
       });
       
       const savedUser = await user.save();
@@ -127,7 +127,7 @@ export class UserService {
       }
       
       // Check password
-      const isPasswordValid = await bcrypt.compare(password, user.password);
+      const isPasswordValid = await verifyPassword(password, user.password);
       if (!isPasswordValid) {
         throw new Error('Invalid username, account number, or password');
       }

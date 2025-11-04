@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  
+  <!-- Security Headers (enforced server-side but declared for clarity) -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self' 'unsafe-inline'; img-src 'self' data:;">
+  <meta http-equiv="X-Content-Type-Options" content="nosniff">
+  <meta http-equiv="X-Frame-Options" content="DENY">
+  <meta http-equiv="X-XSS-Protection" content="1; mode=block">
+  <meta name="referrer" content="strict-origin-when-cross-origin">
+  
+  <title>Employee Portal - International Payments Verification</title>
+  
+  <!-- Bootstrap 5 with Cyborg theme -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/styles.css">
+  
+  <style>
+    /* Custom styles for Employee Portal */
+    body {
+      background: linear-gradient(135deg, #060c21 0%, #1a1f36 100%);
+      min-height: 100vh;
+    }
+    
+    .navbar {
+      background: rgba(0, 0, 0, 0.5);
+      backdrop-filter: blur(10px);
+      border-bottom: 1px solid rgba(46, 204, 113, 0.3);
+      box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
+    }
+    
+    .navbar-brand {
+      font-weight: 700;
+      color: #2ecc71 !important;
+      text-shadow: 0 0 10px rgba(46, 204, 113, 0.5);
+    }
+    
+    #main-content {
+      min-height: 60vh;
+      padding: 2rem 0;
+    }
+    
+    .nav-link {
+      transition: all 0.3s ease;
+      border-bottom: 2px solid transparent;
+    }
+    
+    .nav-link:hover {
+      color: #2ecc71 !important;
+      text-shadow: 0 0 5px rgba(46, 204, 113, 0.3);
+    }
+    
+    .nav-link.active {
+      color: #2ecc71 !important;
+      border-bottom-color: #2ecc71;
+    }
+    
+    .employee-badge {
+      background: rgba(46, 204, 113, 0.2);
+      border: 1px solid #2ecc71;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-weight: 500;
+    }
+    
+    footer {
+      margin-top: 4rem;
+      padding: 2rem 0;
+      background: rgba(0, 0, 0, 0.3);
+      border-top: 1px solid rgba(46, 204, 113, 0.2);
+    }
+  </style>
+</head>
+<body>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg navbar-dark sticky-top">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="#employee-login">
+        <i class="bi bi-shield-lock-fill"></i>
+        Employee Portal - SWIFT Verification
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" 
+              aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav ms-auto">
+          <!-- Before Login -->
+          <li class="nav-item" id="nav-employee-login">
+            <a class="nav-link" href="#employee-login" data-page="employee-login">
+              <i class="bi bi-box-arrow-in-right"></i> Login
+            </a>
+          </li>
+          
+          <!-- After Login -->
+          <li class="nav-item d-none" id="nav-pending-payments">
+            <a class="nav-link" href="#pending-payments" data-page="pending-payments">
+              <i class="bi bi-clock-history"></i> Pending Payments
+            </a>
+          </li>
+          <li class="nav-item d-none" id="nav-verify-payment">
+            <a class="nav-link" href="#verify-payment" data-page="verify-payment">
+              <i class="bi bi-shield-check"></i> Verify Payment
+            </a>
+          </li>
+          <li class="nav-item d-none" id="nav-submit-swift">
+            <a class="nav-link" href="#submit-swift" data-page="submit-swift">
+              <i class="bi bi-send-check"></i> Submit SWIFT
+            </a>
+          </li>
+          <li class="nav-item d-none" id="nav-employee-logout">
+            <a class="nav-link" href="#" id="employee-logout-btn">
+              <i class="bi bi-box-arrow-right"></i> Logout
+            </a>
+          </li>
+        </ul>
+        
+        <!-- Employee Info Badge -->
+        <div class="employee-badge d-none ms-3" id="employee-info-badge">
+          <i class="bi bi-person-badge"></i>
+          <span id="employee-name-display">Employee</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Main Content Container -->
+  <main class="container py-4" id="main-content">
+    <!-- Templates will be loaded here dynamically -->
+    <div class="text-center py-5">
+      <div class="spinner-border text-success" role="status">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <p class="mt-3 text-light">Loading Employee Portal...</p>
+    </div>
+  </main>
+
+  <!-- Footer -->
+  <footer class="text-center text-muted">
+    <div class="container">
+      <p class="mb-1">
+        <i class="bi bi-shield-check"></i>
+        Secure International Payment Verification System
+      </p>
+      <p class="small mb-0">
+        © 2025 BankSecure - All Rights Reserved | 
+        <a href="#" class="text-decoration-none text-success">Terms of Service</a> | 
+        <a href="#" class="text-decoration-none text-success">Privacy Policy</a>
+      </p>
+    </div>
+  </footer>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Employee Portal Application (Module) -->
+  <script type="module" src="/js/employee-app.js"></script>
+</body>
+</html>

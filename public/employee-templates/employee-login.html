@@ -1,0 +1,130 @@
+<div class="row justify-content-center">
+  <div class="col-md-6 col-lg-5">
+    <div class="card shadow-lg border-primary">
+      <div class="card-header bg-primary text-white text-center">
+        <h3 class="mb-0">
+          <i class="bi bi-shield-lock-fill"></i> Employee Portal Login
+        </h3>
+        <p class="mb-0 small">Secure access for bank staff</p>
+      </div>
+      <div class="card-body">
+        <div id="employee-login-alert" class="alert alert-dismissible fade show d-none" role="alert">
+          <span id="employee-login-message"></span>
+          <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+
+        <form id="employee-login-form" novalidate>
+          <div class="mb-3">
+            <label for="employee-id" class="form-label">
+              <i class="bi bi-person-badge"></i> Employee ID
+            </label>
+            <input 
+              type="text" 
+              class="form-control" 
+              id="employee-id" 
+              name="employeeId"
+              placeholder="Enter your employee ID"
+              required
+              autocomplete="username"
+              pattern="^EMP[0-9]{6}$"
+              maxlength="9"
+            >
+            <div class="form-text">Format: EMP######</div>
+            <div class="invalid-feedback">
+              Please enter a valid employee ID (e.g., EMP123456)
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="employee-email" class="form-label">
+              <i class="bi bi-envelope-fill"></i> Email Address
+            </label>
+            <input 
+              type="email" 
+              class="form-control" 
+              id="employee-email" 
+              name="email"
+              placeholder="employee@banksecure.com"
+              required
+              autocomplete="email"
+            >
+            <div class="invalid-feedback">
+              Please enter a valid email address
+            </div>
+          </div>
+
+          <div class="mb-3">
+            <label for="employee-password" class="form-label">
+              <i class="bi bi-key-fill"></i> Password
+            </label>
+            <div class="input-group">
+              <input 
+                type="password" 
+                class="form-control" 
+                id="employee-password" 
+                name="password"
+                placeholder="Enter your password"
+                required
+                autocomplete="current-password"
+                minlength="8"
+              >
+              <button 
+                class="btn btn-outline-secondary" 
+                type="button" 
+                id="toggle-password"
+                aria-label="Toggle password visibility"
+              >
+                <i class="bi bi-eye"></i>
+              </button>
+            </div>
+            <div class="invalid-feedback">
+              Password must be at least 8 characters
+            </div>
+          </div>
+
+          <div class="mb-3 form-check">
+            <input 
+              type="checkbox" 
+              class="form-check-input" 
+              id="remember-me"
+              name="rememberMe"
+            >
+            <label class="form-check-label" for="remember-me">
+              Remember me on this device
+            </label>
+          </div>
+
+          <div class="d-grid gap-2">
+            <button type="submit" class="btn btn-primary btn-lg" id="employee-login-btn">
+              <i class="bi bi-box-arrow-in-right"></i> Login to Employee Portal
+            </button>
+          </div>
+        </form>
+
+        <hr class="my-4">
+
+        <div class="text-center">
+          <a href="#forgot-password" class="btn btn-link text-decoration-none">
+            <i class="bi bi-question-circle"></i> Forgot Password?
+          </a>
+          <br>
+          <small class="text-muted">
+            Need help? Contact IT Support: <a href="mailto:support@banksecure.com">support@banksecure.com</a>
+          </small>
+        </div>
+      </div>
+      <div class="card-footer text-center text-muted">
+        <small>
+          <i class="bi bi-shield-check"></i> Secure employee authentication with 2FA
+        </small>
+      </div>
+    </div>
+
+    <!-- Security Notice -->
+    <div class="alert alert-info mt-3">
+      <i class="bi bi-info-circle-fill"></i>
+      <strong>Security Notice:</strong> This portal is for authorized bank employees only. 
+      All activities are logged and monitored for compliance.
+    </div>
+  </div>
+</div>

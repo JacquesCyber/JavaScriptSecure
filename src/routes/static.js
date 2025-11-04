@@ -44,7 +44,16 @@ router.get('/js/:module', (req, res) => {
     const moduleName = req.params.module;
     
     // Security: Only allow specific modules
-    const allowedModules = ['controllers.js', 'utils.js', 'services.js'];
+    const allowedModules = [
+      'controllers.js', 
+      'utils.js', 
+      'services.js', 
+      'config.js', 
+      'international-payments-portal.js',
+      'employee-app.js',
+      'employee-controllers.js',
+      'bootstrap.bundle.min.js'
+    ];
     if (!allowedModules.includes(moduleName)) {
       return res.status(403).send('// Module not allowed');
     }
@@ -72,50 +81,109 @@ router.get('/js/:module', (req, res) => {
   }
 });
 
-// Serve templates with proper security
-router.get('/templates/:template', (req, res) => {
+// Serve customer templates with proper security
+router.get('/customer-templates/:template', (req, res) => {
   try {
     const templateName = req.params.template;
     
     // Security: Only allow alphanumeric template names with hyphens/underscores
-    // Fixed: Simplified regex to avoid ReDoS
     if (!/^[a-zA-Z0-9_-]+\.html$/.test(templateName)) {
       return res.status(400).send('Invalid template name');
     }
     
-    // Secure root directory for templates
-    const templatesRoot = path.resolve(process.cwd(), 'public', 'templates');
-    const filePath = path.resolve(templatesRoot,templateName);
+    // Secure root directory for customer templates
+    const templatesRoot = path.resolve(process.cwd(), 'public', 'customer-templates');
+    let filePath = path.resolve(templatesRoot, templateName);
 
     // Resolve symlinks and canonicalize path
     try {
       filePath = fs.realpathSync(filePath);
-    }catch (e){
-      return res.status(400).send('Template not found');
-    }
-
-    if(!filePath.startsWith(templatesRoot + path.sep)){
-      return res.status(400).send('Forbidden');
-    }
-    
-    // Check if file exists
-    if (!fs.existsSync(safePath)) {
+    } catch (e) {
       return res.status(404).send('Template not found');
     }
 
-    const content = fs.readFileSync(safePath, 'utf8');
+    if (!filePath.startsWith(templatesRoot + path.sep)) {
+      return res.status(403).send('Forbidden');
+    }
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send('Template not found');
+    }
+
+    const content = fs.readFileSync(filePath, 'utf8');
     res.setHeader('Content-Type', 'text/html');
     res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes cache
     res.send(content);
   } catch (error) {
-    console.error('Error serving template:', error);
+    console.error('Error serving customer template:', error);
     res.status(500).send('Error loading template');
   }
+});
+
+// Serve employee templates with proper security
+router.get('/employee-templates/:template', (req, res) => {
+  try {
+    const templateName = req.params.template;
+    
+    // Security: Only allow alphanumeric template names with hyphens/underscores
+    if (!/^[a-zA-Z0-9_-]+\.html$/.test(templateName)) {
+      return res.status(400).send('Invalid template name');
+    }
+    
+    // Secure root directory for employee templates
+    const templatesRoot = path.resolve(process.cwd(), 'public', 'employee-templates');
+    let filePath = path.resolve(templatesRoot, templateName);
+
+    // Resolve symlinks and canonicalize path
+    try {
+      filePath = fs.realpathSync(filePath);
+    } catch (e) {
+      return res.status(404).send('Template not found');
+    }
+
+    if (!filePath.startsWith(templatesRoot + path.sep)) {
+      return res.status(403).send('Forbidden');
+    }
+    
+    // Check if file exists
+    if (!fs.existsSync(filePath)) {
+      return res.status(404).send('Template not found');
+    }
+
+    const content = fs.readFileSync(filePath, 'utf8');
+    res.setHeader('Content-Type', 'text/html');
+    res.setHeader('Cache-Control', 'public, max-age=300'); // 5 minutes cache
+    res.send(content);
+  } catch (error) {
+    console.error('Error serving employee template:', error);
+    res.status(500).send('Error loading template');
+  }
+});
+
+// Legacy route for backward compatibility - redirect to customer-templates
+router.get('/templates/:template', (req, res) => {
+  res.redirect(301, `/customer-templates/${req.params.template}`);
 });
 
 // Favicon handler
 router.get('/favicon.ico', (req, res) => {
   res.status(204).end(); // No content
+});
+
+// Employee Portal - Protected Route
+router.get('/employee-portal', (req, res) => {
+  try {
+    // Authenticated employee - serve portal (will show login page if not logged in)
+    const filePath = path.join(process.cwd(), 'public', 'employee-portal.html');
+    const content = fs.readFileSync(filePath, 'utf8');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.send(content);
+  } catch (error) {
+    console.error('Error serving employee portal:', error);
+    res.status(404).send('Employee portal not found');
+  }
 });
 
 // Robots.txt for search engines

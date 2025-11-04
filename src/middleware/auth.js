@@ -38,6 +38,7 @@
  */
 
 import { TokenManager, SessionManager } from '../auth/session.js';
+import { DEFAULT_USER_ROLE } from '../constants/roles.js';
 
 // Authentication middleware - verifies JWT tokens
 export const authenticateToken = async (req, res, next) => {
@@ -126,7 +127,7 @@ export const authorize = (allowedRoles = []) => {
       });
     }
 
-    const userRole = req.user.role || 'user';
+    const userRole = req.user.role || DEFAULT_USER_ROLE;
     
     if (allowedRoles.length === 0 || allowedRoles.includes(userRole)) {
       next();

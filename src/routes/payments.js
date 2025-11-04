@@ -17,9 +17,10 @@
  *  - https://stripe.com/docs/payments/accept-a-payment
  */
 import express from 'express';
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import { PaymentService } from '../services/payment.js';
 import { authLimiter } from '../middleware/rateLimiting.js';
+import { handleValidationErrors } from '../middleware/validationHandler.js';
 
 const router = express.Router();
 
@@ -157,23 +158,9 @@ const extractUserIdFromQuery = (req, res, next) => {
 };
 
 // POST /api/payments/process - Process a new payment
-router.post('/process', authLimiter, paymentValidation, extractUserIdFromBody, async (req, res) => {
+router.post('/process', authLimiter, paymentValidation, handleValidationErrors, extractUserIdFromBody, async (req, res) => {
   console.log(' Payment processing request received');
   console.log(' Request body:', JSON.stringify(req.body, null, 2));
-  
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    console.log(' Payment validation errors:', JSON.stringify(errors.array(), null, 2));
-    // Log each error with field and message
-    errors.array().forEach(err => {
-      console.log(`   - Field: ${err.path || err.param}, Message: ${err.msg}`);
-    });
-    return res.status(400).json({
-      success: false,
-      message: 'Payment validation failed',
-      errors: errors.array()
-    });
-  }
 
   try {
     const { amount, currency, description, paymentMethod, provider } = req.body;

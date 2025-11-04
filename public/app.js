@@ -206,7 +206,7 @@ class SecureApp {
     }
 
     try {
-      const response = await fetch(`/templates/${templateName}.html`);
+      const response = await fetch(`/customer-templates/${templateName}.html`);
       if (!response.ok) {
         throw new Error(`Template ${templateName} not found`);
       }
