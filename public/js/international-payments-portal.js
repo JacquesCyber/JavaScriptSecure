@@ -63,10 +63,15 @@ function sanitizeInput(input) {
   if (typeof input !== 'string') return input;
   
   // Remove HTML tags
-  let sanitized = input.replace(/<[^>]*>/g, '');
+  let sanitized = input;
   
   // Remove script event handlers
-  sanitized = sanitized.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+  let previous;
+
+  do { previous = sanitized;
+    sanitized = sanitized.replace(/on\w+\s*=\s*["'][^"']*["']/gi, '');
+  } while (sanitized !== previous);
+
   
   return sanitized.trim();
 }

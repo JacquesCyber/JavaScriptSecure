@@ -24,6 +24,7 @@ import { InternationalPaymentService } from '../services/internationalPayment.js
 import { authLimiter, apiLimiter } from '../middleware/rateLimiting.js';
 import { HTTP_STATUS } from '../constants/httpStatus.js';
 import { handleValidationErrors } from '../middleware/validationHandler.js';
+import mongoose from 'mongoose';
 
 const router = express.Router();
 
@@ -34,10 +35,15 @@ const router = express.Router();
 const extractEmployeeId = (req, res, next) => {
   const employeeId = req.body.employeeId || req.query.employeeId;
   
-  if (!employeeId) {
+  // Strictly validate employeeId: must be a string/ObjectId
+  if (
+    !employeeId ||
+    typeof employeeId !== 'string' ||
+    !mongoose.Types.ObjectId.isValid(employeeId)
+  ) {
     return res.status(HTTP_STATUS.BAD_REQUEST).json({
       success: false,
-      message: 'Employee ID is required'
+      message: 'A validEmployee ID is required'
     });
   }
   
@@ -293,31 +299,35 @@ router.get('/:transactionId', extractEmployeeId, async (req, res) => {
 });
 
 /**
- * GET /api/international-payments/employee/:employeeId
+ * Post /api/international-payments/employee/:employeeId
  * Get all payments for an employee
+ * Expects: { employeeId, limit?, skip?, status?, startDate?, endDate? } in request body
  */
-router.get('/employee/:employeeId', [
-  query('limit')
+  router.post('/employee', [
+  body('employeeId')
+    .notEmpty()
+    .withMessage('Employee ID is required'),
+  body('limit')
     .optional()
     .isInt({ min: 1, max: 100 })
     .withMessage('Limit must be between 1 and 100'),
-  query('skip')
+  body('skip')
     .optional()
     .isInt({ min: 0 })
     .withMessage('Skip must be >= 0'),
-  query('status')
+  body('status')
     .optional()
     .isIn(['pending', 'approved', 'rejected', 'processing', 'completed', 'failed'])
     .withMessage('Invalid status filter')
 ], handleValidationErrors, async (req, res) => {
   try {
-    const { employeeId } = req.params;
+    const { employeeId, limit, skip, status, startDate, endDate } = req.body;
     const options = {
-      limit: parseInt(req.query.limit) || 50,
-      skip: parseInt(req.query.skip) || 0,
-      status: req.query.status,
-      startDate: req.query.startDate,
-      endDate: req.query.endDate
+      limit: parseInt(limit) || 50,
+      skip: parseInt(skip) || 0,
+      status,
+      startDate,
+      endDate
     };
     
     const result = await InternationalPaymentService.getEmployeePayments(employeeId, options);
@@ -368,16 +378,25 @@ router.get('/pending/approvals', [
  * GET /api/international-payments/stats/overview
  * Get payment statistics
  */
-router.get('/stats/overview', async (req, res) => {
+router.post('/stats/overview', [
+  body('status')
+    .optional()
+    .isString()
+    .withMessage('Status must be a string'),
+  body('employeeId')
+    .optional()
+    .isString()
+    .withMessage('Employee ID must be a string')
+], handleValidationErrors, async (req, res) => {
   try {
     const filter = {};
     
     // Optional filters
-    if (req.query.status) {
-      filter.status = req.query.status;
+    if (req.body.status) {
+      filter.status = req.body.status;
     }
-    if (req.query.employeeId) {
-      filter.employeeId = req.query.employeeId;
+    if (req.body.employeeId) {
+      filter.employeeId = req.body.employeeId;
     }
     
     const result = await InternationalPaymentService.getPaymentStats(filter);

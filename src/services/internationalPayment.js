@@ -21,6 +21,7 @@ import User from '../models/User.js';
 import Staff from '../models/Staff.js';
 import { validateInternationalPayment } from '../validators/internationalPayment.js';
 import crypto from 'crypto';
+import mongoose from 'mongoose';
 
 /**
  * International Payment Service Class
@@ -40,12 +41,22 @@ export class InternationalPaymentService {
     }
     
     // Verify employee exists
+    if (typeof employeeId !== 'string' || !mongoose.Types.ObjectId.isValid(employeeId)) {
+      throw new Error('Invalid employee ID');
+    }
     const employee = await Staff.findById(employeeId);
     if (!employee) {
       throw new Error('Employee not found');
     }
     
     // Verify customer exists
+    // Prevent NoSQL injection: Ensure customerId is a string and looks like a MongoDB ObjectId
+    if (
+      typeof paymentData.customerId !== 'string' ||
+      !/^[a-fA-F0-9]{24}$/.test(paymentData.customerId)
+    ) {
+      throw new Error('Invalid customerId format');
+    }
     const customer = await User.findById(paymentData.customerId);
     if (!customer) {
       throw new Error('Customer not found');
@@ -111,7 +122,7 @@ export class InternationalPaymentService {
     
     await payment.save();
     
-    console.log('✅ International payment created:', payment.transactionId);
+    console.log(' International payment created:', payment.transactionId);
     
     return {
       success: true,
@@ -124,7 +135,15 @@ export class InternationalPaymentService {
    * Submit payment for review
    */
   static async submitForReview(transactionId, employeeId) {
-    const payment = await InternationalPayment.findOne({ transactionId, employeeId });
+    // Type check for injection prevention
+    if (typeof transactionId !== "string" || typeof employeeId !== "string") {
+      throw new Error("Invalid transactionId or employeeId format");
+    }
+    // $eq operator prevents NoSQL injection by treating as literal value
+    const payment = await InternationalPayment.findOne({
+      transactionId: { $eq: transactionId },
+      employeeId: { $eq: employeeId }
+    });
     
     if (!payment) {
       throw new Error('Payment not found');
@@ -142,7 +161,7 @@ export class InternationalPaymentService {
     payment.addStatusNote('Submitted for review', employeeId);
     await payment.save();
     
-    console.log('✅ Payment submitted for review:', transactionId);
+    console.log(' Payment submitted for review:', transactionId);
     
     return {
       success: true,
@@ -155,6 +174,10 @@ export class InternationalPaymentService {
    * Approve a payment (requires elevated privileges)
    */
   static async approvePayment(transactionId, approverId, notes) {
+     // Prevent NoSQL injection by ensuring approverId is a string (optionally validate as ObjectId)
+    if (typeof approverId !== 'string' || !/^[a-fA-F0-9]{24}$/.test(approverId)) {
+      throw new Error('Invalid approverId');
+    }
     const payment = await InternationalPayment.findOne({ transactionId });
     
     if (!payment) {
@@ -164,28 +187,40 @@ export class InternationalPaymentService {
     if (!payment.canApprove()) {
       throw new Error(`Cannot approve payment with status: ${payment.status}`);
     }
+
+    // Validate approverId
+    let sanitizedApproverId;
+    // Check ObjectId validity (string or ObjectId type)
+    if (typeof approverId === 'string' && mongoose.Types.ObjectId.isValid(approverId)) {
+      sanitizedApproverId = new mongoose.Types.ObjectId(approverId);
+    } else if (approverId instanceof mongoose.Types.ObjectId) {
+      sanitizedApproverId = approverId;
+    } else {
+      throw new Error('Invalid approverId');
+    }
+
     
     // Verify approver has permission
-    const approver = await Staff.findById(approverId);
+    const approver = await Staff.findById(sanitizedApproverId);
     if (!approver || !['admin', 'manager'].includes(approver.role)) {
       throw new Error('Insufficient permissions to approve payments');
     }
     
     // Cannot approve own payment
-    if (payment.employeeId.toString() === approverId.toString()) {
+    if (payment.employeeId.toString() === sanitizedApproverId.toString()) {
       throw new Error('Cannot approve your own payment');
     }
     
     // Update payment
     payment.approvalStatus = 'approved';
     payment.status = 'approved';
-    payment.approvedBy = approverId;
+    payment.approvedBy = sanitizedApproverId;
     payment.approvedAt = new Date();
-    payment.addStatusNote(notes || 'Payment approved', approverId);
-    
+    payment.addStatusNote(notes || 'Payment approved', sanitizedApproverId);
+
     await payment.save();
     
-    console.log('✅ Payment approved:', transactionId);
+    console.log(' Payment approved:', transactionId);
     
     return {
       success: true,
@@ -198,6 +233,10 @@ export class InternationalPaymentService {
    * Reject a payment
    */
   static async rejectPayment(transactionId, approverId, reason) {
+     // Prevent NoSQL injection by ensuring approverId is a string (optionally validate as ObjectId)
+    if (typeof approverId !== 'string' || !/^[a-fA-F0-9]{24}$/.test(approverId)) {
+      throw new Error('Invalid approverId');
+    }
     const payment = await InternationalPayment.findOne({ transactionId });
     
     if (!payment) {
@@ -305,7 +344,7 @@ export class InternationalPaymentService {
     const query = { employeeId };
     
     if (status) {
-      query.status = status;
+      query.status = { $eq: status };
     }
     
     if (startDate || endDate) {
@@ -372,7 +411,7 @@ export class InternationalPaymentService {
     // First-time destination country
     const previousPayments = await InternationalPayment.find({
       customerId: customer._id,
-      'beneficiary.address.country': paymentData.bankCountry,
+      'beneficiary.address.country': { $eq: paymentData.bankCountry },
       status: { $in: ['completed', 'processing', 'sent'] }
     }).limit(1);
     

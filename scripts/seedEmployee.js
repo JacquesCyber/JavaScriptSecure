@@ -33,7 +33,7 @@ async function seedEmployee() {
     // Check if employee already exists
     const existing = await Staff.findOne({ username: testUsername });
     if (existing) {
-      console.log('\n⚠️  Employee already exists!');
+      console.log('\n Employee already exists!');
       console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
       console.log('Employee ID:', existing._id);
       console.log('Employee Code:', existing.employeeId);
@@ -63,24 +63,24 @@ async function seedEmployee() {
     
     await employee.save();
     
-    console.log('\n✅ Employee created successfully!');
+    console.log('\n Employee created successfully!');
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('Database ID:', employee._id);
     console.log('Employee Code:', employee.employeeId);
     console.log('Name:', employee.fullName);
     console.log('Username:', employee.username);
     console.log('Email:', employee.email);
-    console.log('Password:', testPassword);
+    console.log('Password:', [REDACTED]);
     console.log('Role:', employee.role);
     console.log('Department:', employee.department);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
-    console.log('\n🔐 Login Credentials for Testing:');
+    console.log('\n Login Username for Testing (do not use in production):');
     console.log('   Username:', testUsername);
-    console.log('   Password:', testPassword);
-    console.log('\n📍 Access Portal: http://localhost:3000/employee-portal\n');
+    console.log('   Password: ', [REDACTED]);
+    console.log('\n Access Portal: http://localhost:3000/employee-portal\n');
     
   } catch (error) {
-    console.error('❌ Error seeding employee:', error);
+    console.error(' Error seeding employee:', error);
     process.exit(1);
   } finally {
     await mongoose.connection.close();

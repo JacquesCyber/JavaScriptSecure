@@ -18,6 +18,69 @@
 
 import { EmployeeControllers } from './employee-controllers.js';
 
+// --- Crypto utility for browser (AES-GCM) ---
+// WARNING: Replace STATIC_KEY with a per-user/session-derived key for production use.
+const STATIC_KEY = "please-change-me-in-production!"; // ideally a session token or user secret
+
+// Returns a CryptoKey from a given string
+async function getKeyMaterial(password) {
+  let enc = new TextEncoder();
+  return window.crypto.subtle.importKey(
+    "raw",
+    enc.encode(password),
+    { name: "PBKDF2" },
+    false,
+    ["deriveKey"]
+  );
+}
+
+async function getKey(password) {
+  let keyMaterial = await getKeyMaterial(password);
+  return window.crypto.subtle.deriveKey(
+    {
+      name: "PBKDF2",
+      salt: new Uint8Array([21, 31, 41, 14, 15, 91, 71, 28]),
+      iterations: 88899,
+      hash: "SHA-256"
+    },
+    keyMaterial,
+    { name: "AES-GCM", length: 256 },
+    false,
+    ["encrypt", "decrypt"]
+  );
+}
+
+// Encrypts data using AES-GCM (returns base64 string)
+async function encryptData(data, password = STATIC_KEY) {
+  const key = await getKey(password);
+  const iv = window.crypto.getRandomValues(new Uint8Array(12));
+  const enc = new TextEncoder();
+  const encrypted = await window.crypto.subtle.encrypt(
+    { name: "AES-GCM", iv },
+    key,
+    enc.encode(data)
+  );
+  // concatenate iv and encrypted data, return base64
+  const buff = new Uint8Array(iv.length + encrypted.byteLength);
+  buff.set(iv, 0);
+  buff.set(new Uint8Array(encrypted), iv.length);
+  return btoa(String.fromCharCode(...buff));
+}
+
+// Decrypts data using AES-GCM, given base64 string
+async function decryptData(ciphertext, password = STATIC_KEY) {
+  const buff = Uint8Array.from(atob(ciphertext), c => c.charCodeAt(0));
+  const iv = buff.slice(0, 12);
+  const data = buff.slice(12);
+  const key = await getKey(password);
+  const decrypted = await window.crypto.subtle.decrypt(
+    { name: "AES-GCM", iv },
+    key,
+    data
+  );
+  return new TextDecoder().decode(decrypted);
+}
+
 class EmployeePortalApp {
   constructor() {
     this.currentPage = 'employee-login';
@@ -224,7 +287,7 @@ class EmployeePortalApp {
       this.templateCache.set(templateName, template);
       return template;
     } catch (error) {
-      console.error(`Error loading template ${templateName}:`, error);
+      console.error("Error loading template %s:", templateName, error);
       throw error;
     }
   }
@@ -331,9 +394,10 @@ class EmployeePortalApp {
   }
 
   // Employee Management Methods
-  setEmployee(employeeData) {
+  async setEmployee(employeeData) {
     this.employee = { ...employeeData, isAuthenticated: true };
-    sessionStorage.setItem('employee', JSON.stringify(this.employee));
+    const encryptedEmployee = await encryptData(JSON.stringify(this.employee));
+    sessionStorage.setItem('employee', encryptedEmployee);
     this.updateNavigation();
   }
 
