@@ -26,7 +26,8 @@ class EmployeePortalApp {
     this.templateCache = new Map();
     this.controllers = new Map();
     this.currentPaymentId = null; // Track payment being verified
-    
+    this.csrfToken = null; // Store CSRF token
+
     // Page security configuration
     this.pageConfig = {
       'employee-login': { requiresAuth: false, allowedRoles: [] },
@@ -34,16 +35,31 @@ class EmployeePortalApp {
       'verify-payment': { requiresAuth: true, allowedRoles: ['staff', 'supervisor', 'admin'] },
       'submit-swift': { requiresAuth: true, allowedRoles: ['staff', 'supervisor', 'admin'] }
     };
-    
+
     this.init();
   }
 
-  init() {
+  async init() {
+    await this.fetchCsrfToken();
     this.loadEmployeeFromSession();
     this.initializeControllers();
     this.setupRouter();
     this.setupGlobalEventListeners();
     this.loadPage(this.getPageFromHash() || this.getDefaultPage());
+  }
+
+  async fetchCsrfToken() {
+    try {
+      const response = await fetch('/api/csrf-token', {
+        method: 'GET',
+        credentials: 'include'
+      });
+      const data = await response.json();
+      this.csrfToken = data.csrfToken;
+      console.log('CSRF token fetched successfully');
+    } catch (error) {
+      console.error('Failed to fetch CSRF token:', error);
+    }
   }
 
   initializeControllers() {
@@ -399,10 +415,22 @@ class EmployeePortalApp {
   // API Helper Methods
   async apiRequest(url, options = {}) {
     try {
+      // Merge headers with CSRF token
+      const headers = {
+        'Content-Type': 'application/json',
+        ...options.headers
+      };
+
+      // Add CSRF token to headers if available
+      if (this.csrfToken) {
+        headers['csrf-token'] = this.csrfToken;
+        headers['xsrf-token'] = this.csrfToken;
+        headers['x-csrf-token'] = this.csrfToken;
+        headers['x-xsrf-token'] = this.csrfToken;
+      }
+
       const defaultOptions = {
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers,
         credentials: 'include', // Include cookies for CSRF
       };
 

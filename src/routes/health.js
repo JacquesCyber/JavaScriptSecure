@@ -106,6 +106,22 @@ router.get('/health', (req, res) => {
   });
 });
 
+// CSRF token endpoint for SPAs
+router.get('/api/csrf-token', (req, res) => {
+  try {
+    const csrfToken = res.locals.csrfToken || (req.csrfToken ? req.csrfToken() : '');
+    res.json({
+      csrfToken: csrfToken
+    });
+  } catch (error) {
+    console.error('Error generating CSRF token:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to generate CSRF token'
+    });
+  }
+});
+
 export default router;
 
 //----------------------------------------------End of File----------------------------------------------

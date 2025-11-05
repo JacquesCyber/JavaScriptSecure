@@ -577,23 +577,47 @@ async function rejectPayment(transactionId) {
 
 async function initializeApp() {
   console.log('Initializing International Payments Portal...');
-  
+
   // Get CSRF token
   AppState.csrfToken = await getCsrfToken();
-  
-  // TODO: Get employee ID from authentication
-  // For now, use a placeholder (in real app, this would come from JWT/session)
-  AppState.employeeId = '507f1f77bcf86cd799439011'; // Replace with actual employee ID
-  
-  // Set employee ID in form
-  const employeeIdInput = document.getElementById('employeeId');
-  if (employeeIdInput) {
-    employeeIdInput.value = AppState.employeeId;
+
+  // Get employee ID and name from authenticated session
+  try {
+    const response = await fetch('/api/auth/session', {
+      credentials: 'include'
+    });
+
+    if (response.ok) {
+      const sessionData = await response.json();
+      if (sessionData.success && sessionData.user) {
+        AppState.employeeId = sessionData.user.id || sessionData.user._id;
+
+        // Set employee ID in form
+        const employeeIdInput = document.getElementById('employeeId');
+        if (employeeIdInput) {
+          employeeIdInput.value = AppState.employeeId;
+        }
+
+        // Set employee name in navbar from authenticated user
+        const employeeName = sessionData.user.fullName || sessionData.user.username || 'Employee';
+        document.getElementById('employeeName').textContent = employeeName;
+      } else {
+        // Redirect to login if not authenticated
+        console.error('User not authenticated');
+        window.location.href = '/employee-portal.html#login';
+        return;
+      }
+    } else {
+      console.error('Failed to get session data');
+      window.location.href = '/employee-portal.html#login';
+      return;
+    }
+  } catch (error) {
+    console.error('Error fetching session:', error);
+    window.location.href = '/employee-portal.html#login';
+    return;
   }
-  
-  // Set employee name in navbar
-  document.getElementById('employeeName').textContent = 'Test Employee';
-  
+
   console.log('App initialized successfully');
 }
 
