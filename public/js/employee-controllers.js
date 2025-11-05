@@ -253,16 +253,40 @@ class PendingPaymentsController {
   }
 
   extractBeneficiaryName(payment) {
-    if (payment.paymentMethod?.swiftDetails) {
-      return payment.paymentMethod.swiftDetails.beneficiaryName || 'SWIFT Transfer';
+    // Check SWIFT details first and get actual beneficiary name
+    if (payment.paymentMethod?.swiftDetails?.beneficiaryName) {
+      return payment.paymentMethod.swiftDetails.beneficiaryName;
     }
+
+    // Check PayPal email
     if (payment.paymentMethod?.paypalEmail) {
       return payment.paymentMethod.paypalEmail;
     }
-    if (payment.paymentMethod?.bankDetails) {
-      return 'Bank Transfer';
+
+    // For bank transfers, try to find beneficiary name in bankDetails
+    if (payment.paymentMethod?.bankDetails?.beneficiaryName) {
+      return payment.paymentMethod.bankDetails.beneficiaryName;
     }
-    return payment.paymentMethod?.type || 'Unknown';
+
+    // Check if there's a beneficiary name at the payment level
+    if (payment.beneficiary?.name) {
+      return payment.beneficiary.name;
+    }
+
+    // Fallback to payment method type
+    if (payment.paymentMethod?.type) {
+      const typeLabels = {
+        'card': 'Card Payment',
+        'paypal': 'PayPal',
+        'bank_transfer': 'Bank Transfer',
+        'crypto': 'Crypto Payment',
+        'swift': 'International Transfer',
+        'eft': 'EFT Transfer'
+      };
+      return typeLabels[payment.paymentMethod.type] || payment.paymentMethod.type.toUpperCase();
+    }
+
+    return 'Unknown Beneficiary';
   }
 
   calculateRiskLevel(payment) {
