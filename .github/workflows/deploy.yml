@@ -93,7 +93,7 @@ jobs:
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
-          command: pages deploy dist --project-name=securebank-frontend
+          command: pages deploy dist --project-name=securebank-frontend --branch=main
 
       - name: Deployment summary
         run: |
