@@ -1,0 +1,26 @@
+services:
+  # Backend API Service
+  - type: web
+    name: javascriptsecure-api
+    env: node
+    region: oregon
+    plan: free
+    branch: main
+    buildCommand: npm install
+    startCommand: npm start
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: 10000
+      - key: MONGODB_URI
+        sync: false  # Set this in Render dashboard
+      - key: JWT_SECRET
+        generateValue: true  # Render auto-generates
+      - key: SESSION_SECRET
+        generateValue: true  # Render auto-generates
+      - key: ENCRYPTION_KEY
+        generateValue: true  # Render auto-generates
+      - key: ENCRYPTION_IV
+        generateValue: true  # Render auto-generates
