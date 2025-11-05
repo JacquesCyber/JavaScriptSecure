@@ -28,3 +28,4 @@ dist/
 
 # Cloudflare
 wrangler.toml.local
+package-lock.json

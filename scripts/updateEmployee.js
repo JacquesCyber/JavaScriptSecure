@@ -12,9 +12,9 @@ dotenv.config();
 
 async function updateEmployee() {
   try {
-    console.log('🔄 Connecting to MongoDB...');
+    console.log(' Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✓ Connected to MongoDB');
+    console.log(' Connected to MongoDB');
     
     // Get test credentials from environment
     const testUsername = process.env.TEST_EMPLOYEE_USERNAME || 'employee001';
@@ -23,19 +23,19 @@ async function updateEmployee() {
     
     // First, list all staff members
     const allStaff = await Staff.find({});
-    console.log('\n📋 All staff members in database:');
+    console.log('\n All staff members in database:');
     console.log(JSON.stringify(allStaff, null, 2));
     console.log(`\nTotal staff count: ${allStaff.length}`);
     
     if (allStaff.length === 0) {
-      console.log('\n❌ No staff members found in database');
-      console.log('💡 Please manually add the employee to your MongoDB staff collection with these fields:');
+      console.log('\n No staff members found in database');
+      console.log(' Please manually add the employee to your MongoDB staff collection with these fields:');
       console.log({
         fullName: 'Jane Smith',
-        username: testUsername,
-        email: process.env.TEST_EMPLOYEE_EMAIL || 'jane.smith@securebank.com',
-        employeeId: testEmployeeId,
-        password: '$2b$12$LQv3c1yqBWVHxkd0LHAkCOYz6TtxMQJqhN8/LewY5GyYKw8k8W8Iq',
+        username: 'employee001',
+        email: 'jane.smith@securebank.com',
+        employeeId: 'EMP001234',
+        password: '***REDACTED_HASHPWD***',
         role: 'staff',
         department: 'International Payments',
         isActive: true
@@ -47,12 +47,12 @@ async function updateEmployee() {
     const employee = await Staff.findOne({ username: testUsername });
     
     if (!employee) {
-      console.log('\n❌ Employee with username "' + testUsername + '" not found');
-      console.log('💡 Available staff usernames:', allStaff.map(s => s.username));
+      console.log('\n Employee with username not found for the specified username.');
+      console.log(' Available staff usernames:', allStaff.map(s => s.username));
       process.exit(1);
     }
     
-    console.log('\n✓ Found employee:', {
+    console.log('\n Found employee:', {
       username: employee.username,
       fullName: employee.fullName,
       email: employee.email
@@ -62,13 +62,13 @@ async function updateEmployee() {
     if (!employee.employeeId) {
       employee.employeeId = testEmployeeId;
       await employee.save();
-      console.log('✓ Updated employee with employeeId:', testEmployeeId);
+      console.log(' Updated employee with employeeId: [REDACTED]');
     } else {
-      console.log('✓ Employee already has employeeId:', employee.employeeId);
+      console.log(' Employee already has employeeId: [REDACTED]');
     }
     
     // Display final employee data
-    console.log('\n✓ Employee updated successfully:');
+    console.log('\n Employee updated successfully:');
     console.log({
       _id: employee._id,
       fullName: employee.fullName,
@@ -80,14 +80,14 @@ async function updateEmployee() {
       isActive: employee.isActive
     });
     
-    console.log('\n📝 You can now login with any of:');
+    console.log('\n You can now login with any of:');
     console.log(`   - Username: ${employee.username}`);
     console.log(`   - Email: ${employee.email}`);
-    console.log(`   - Employee ID: ${employee.employeeId}`);
-    console.log(`   - Password: ${testPassword}`);
+    console.log(`   - Employee ID: [REDACTED]`);
+    console.log(`   - Password: [REDACTED]`);
     
   } catch (error) {
-    console.error('❌ Error updating employee:', error);
+    console.error(' Error updating employee:', error);
   } finally {
     await mongoose.connection.close();
     console.log('\n✓ Database connection closed');

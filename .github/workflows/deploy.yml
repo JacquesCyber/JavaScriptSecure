@@ -1,4 +1,6 @@
 name: Deploy to Cloudflare
+permissions:
+  contents: read
 
 on:
   push:
@@ -47,16 +49,16 @@ jobs:
 
       - name: Check for secrets in code
         run: |
-          echo "🔍 Checking for exposed secrets..."
+          echo " Checking for exposed secrets..."
           if grep -r "mongodb+srv://" --include="*.js" --exclude-dir=node_modules .; then
-            echo "❌ Found hardcoded MongoDB URI!"
+            echo " Found hardcoded MongoDB URI!"
             exit 1
           fi
           if grep -r "sk_live_" --include="*.js" --exclude-dir=node_modules .; then
-            echo "❌ Found API keys!"
+            echo " Found API keys!"
             exit 1
           fi
-          echo "✅ No exposed secrets found"
+          echo " No exposed secrets found"
 
   # Job 2: Deploy Worker (Backend)
   deploy-worker:
@@ -89,13 +91,13 @@ jobs:
 
       - name: Test Worker deployment
         run: |
-          echo "🧪 Testing Worker endpoint..."
+          echo " Testing Worker endpoint..."
           sleep 5  # Wait for deployment to propagate
           response=$(curl -s -o /dev/null -w "%{http_code}" https://securebank-api.${{ secrets.CLOUDFLARE_SUBDOMAIN }}.workers.dev/health)
           if [ "$response" -eq 200 ]; then
-            echo "✅ Worker is healthy (HTTP $response)"
+            echo " Worker is healthy (HTTP $response)"
           else
-            echo "❌ Worker health check failed (HTTP $response)"
+            echo " Worker health check failed (HTTP $response)"
             exit 1
           fi
 
@@ -133,13 +135,13 @@ jobs:
 
       - name: Deployment summary
         run: |
-          echo "## 🚀 Deployment Complete!" >> $GITHUB_STEP_SUMMARY
+          echo "## Deployment Complete!" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Deployment URLs" >> $GITHUB_STEP_SUMMARY
+          echo "### Deployment URLs" >> $GITHUB_STEP_SUMMARY
           echo "- **Frontend**: https://securebank-frontend.pages.dev" >> $GITHUB_STEP_SUMMARY
           echo "- **Backend API**: https://securebank-api.${{ secrets.CLOUDFLARE_SUBDOMAIN }}.workers.dev" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### ✅ Status" >> $GITHUB_STEP_SUMMARY
+          echo "### Status" >> $GITHUB_STEP_SUMMARY
           echo "- Worker deployed and healthy" >> $GITHUB_STEP_SUMMARY
           echo "- Frontend built and deployed" >> $GITHUB_STEP_SUMMARY
           echo "- Commit: \`${{ github.sha }}\`" >> $GITHUB_STEP_SUMMARY
@@ -148,6 +150,9 @@ jobs:
   preview:
     name: Deploy Preview
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pull-requests: write
     needs: validate
     if: github.event_name == 'pull_request'
     
@@ -184,5 +189,5 @@ jobs:
               issue_number: context.issue.number,
               owner: context.repo.owner,
               repo: context.repo.repo,
-              body: `## 🔍 Preview Deployment Ready!\n\n🔗 **Preview URL**: https://preview-${{ github.event.pull_request.number }}.securebank-frontend.pages.dev\n\n✅ Your changes are ready to review!`
+              body: `## Preview Deployment Ready!\n\n **Preview URL**: https://preview-${{ github.event.pull_request.number }}.securebank-frontend.pages.dev\n\n✅ Your changes are ready to review!`
             })

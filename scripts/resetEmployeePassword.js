@@ -13,7 +13,7 @@ dotenv.config();
 
 async function resetPassword() {
   try {
-    console.log('🔄 Connecting to MongoDB...');
+    console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
     console.log('✓ Connected to MongoDB\n');
     
@@ -25,7 +25,7 @@ async function resetPassword() {
     const employee = await Staff.findOne({ username: testUsername });
     
     if (!employee) {
-      console.log('❌ Employee not found');
+      console.log('Employee not found');
       process.exit(1);
     }
     
@@ -36,36 +36,34 @@ async function resetPassword() {
     // Hash the new password
     const hashedPassword = await hashPassword(testPassword);
     
-    console.log('\n🔐 Hashing new password...');
-    console.log('  Plain text:', testPassword);
+    console.log('\n Hashing new password...');
     console.log('  New hash:', hashedPassword);
     
     // Update the password
     employee.password = hashedPassword;
     await employee.save();
     
-    console.log('\n✓ Password updated successfully!');
+    console.log('\n Password updated successfully!');
     
     // Verify the password works
-    console.log('\n🔍 Verifying password...');
+    console.log('\n Verifying password...');
     const isValid = await verifyPassword(testPassword, employee.password);
     
     if (isValid) {
-      console.log('✅ Password verification PASSED');
-      console.log('\n📝 You can now login with:');
+      console.log(' Password verification PASSED');
+      console.log('\n You can now login with:');
       console.log('  Employee ID:', employee.employeeId);
       console.log('  Email:', employee.email);
       console.log('  Username:', employee.username);
-      console.log('  Password:', testPassword);
     } else {
-      console.log('❌ Password verification FAILED');
+      console.log(' Password verification FAILED');
     }
     
   } catch (error) {
-    console.error('❌ Error:', error);
+    console.error(' Error:', error);
   } finally {
     await mongoose.connection.close();
-    console.log('\n✓ Database connection closed');
+    console.log('\n Database connection closed');
     process.exit(0);
   }
 }
