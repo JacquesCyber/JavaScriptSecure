@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+
+  <title>Academic Disclaimer - BankSecure Payment System</title>
+
+  <!-- Bootstrap 5 with Cyborg theme -->
+  <link rel="stylesheet" href="/css/bootstrap.min.css">
+  <link rel="stylesheet" href="/css/bootstrap-icons.css">
+  <link rel="stylesheet" href="/css/styles.css">
+
+  <style>
+    body {
+      background: #f8f9fa;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .disclaimer-container {
+      max-width: 750px;
+      width: 100%;
+    }
+
+    .disclaimer-card {
+      background: #ffffff;
+      border: 2px solid #dc3545;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+    }
+
+    .disclaimer-header {
+      background: #dc3545;
+      border-radius: 6px 6px 0 0;
+      padding: 1.5rem;
+      text-align: center;
+      border-bottom: 2px solid #c82333;
+    }
+
+    .disclaimer-icon {
+      font-size: 3rem;
+      color: #fff;
+      margin-bottom: 0.5rem;
+    }
+
+    .disclaimer-body {
+      padding: 2rem;
+      color: #212529;
+    }
+
+    .warning-box {
+      background: #fff3cd;
+      border: 1px solid #ffc107;
+      border-left: 4px solid #ffc107;
+      border-radius: 4px;
+      padding: 1rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .warning-box h5 {
+      color: #856404;
+      margin-bottom: 0.5rem;
+    }
+
+    .warning-box p {
+      color: #856404;
+      margin: 0;
+    }
+
+    .info-section {
+      margin: 1.5rem 0;
+    }
+
+    .info-section h5 {
+      color: #495057;
+      margin-bottom: 1rem;
+      font-weight: 600;
+    }
+
+    .disclaimer-list {
+      background: #f8f9fa;
+      border: 1px solid #dee2e6;
+      border-radius: 4px;
+      padding: 1.5rem;
+      margin: 1rem 0;
+    }
+
+    .disclaimer-list ul {
+      margin: 0;
+      padding: 0;
+      list-style: none;
+    }
+
+    .disclaimer-list li {
+      margin-bottom: 0.75rem;
+      padding-left: 0.5rem;
+      color: #495057;
+      line-height: 1.6;
+    }
+
+    .disclaimer-list li:last-child {
+      margin-bottom: 0;
+    }
+
+    .disclaimer-list i {
+      margin-right: 0.5rem;
+      width: 20px;
+      display: inline-block;
+    }
+
+    .disclaimer-list .text-danger i {
+      color: #dc3545;
+    }
+
+    .disclaimer-list .text-success i {
+      color: #28a745;
+    }
+
+    .info-alert {
+      background: #d1ecf1;
+      border: 1px solid #bee5eb;
+      border-left: 4px solid #17a2b8;
+      border-radius: 4px;
+      padding: 1rem;
+      color: #0c5460;
+    }
+
+    .checkbox-container {
+      background: #e9ecef;
+      border: 1px solid #ced4da;
+      border-radius: 4px;
+      padding: 1rem;
+      margin: 1.5rem 0;
+    }
+
+    .form-check-label {
+      color: #212529;
+      font-weight: 500;
+    }
+
+    .form-check-input:checked {
+      background-color: #28a745;
+      border-color: #28a745;
+    }
+
+    .disclaimer-footer {
+      padding: 1.5rem 2rem 2rem 2rem;
+      border-top: 1px solid #dee2e6;
+    }
+
+    .btn-accept {
+      background: #28a745;
+      border: 1px solid #28a745;
+      color: white;
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+      cursor: pointer;
+    }
+
+    .btn-accept:hover:not(:disabled) {
+      background: #218838;
+      border-color: #1e7e34;
+      color: white;
+      cursor: pointer;
+    }
+
+    .btn-accept:disabled {
+      background: #6c757d !important;
+      border-color: #6c757d !important;
+      opacity: 0.6;
+      cursor: not-allowed !important;
+      color: white;
+    }
+
+    .btn-decline {
+      background: #6c757d;
+      border: 1px solid #6c757d;
+      color: white;
+      padding: 0.75rem 2rem;
+      font-size: 1rem;
+      font-weight: 600;
+      transition: all 0.2s ease;
+    }
+
+    .btn-decline:hover {
+      background: #5a6268;
+      border-color: #545b62;
+      color: white;
+    }
+
+    .academic-badge {
+      display: inline-block;
+      background: #007bff;
+      color: white;
+      padding: 0.5rem 1rem;
+      border-radius: 20px;
+      font-size: 0.9rem;
+      font-weight: 600;
+      margin-bottom: 1rem;
+    }
+
+    .footer-note {
+      color: #6c757d;
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="disclaimer-container">
+    <div class="disclaimer-card">
+      <div class="disclaimer-header">
+        <div class="disclaimer-icon">
+          <i class="bi bi-exclamation-triangle-fill"></i>
+        </div>
+        <h1 class="mb-2 text-white">IMPORTANT DISCLAIMER</h1>
+        <p class="text-white mb-0">Please Read Carefully Before Proceeding</p>
+      </div>
+
+      <div class="disclaimer-body">
+        <div class="text-center mb-3">
+          <span class="academic-badge">
+            <i class="bi bi-mortarboard-fill"></i> Academic Project Only
+          </span>
+        </div>
+
+        <div class="warning-box">
+          <h5>
+            <i class="bi bi-shield-exclamation"></i> Educational Demonstration System
+          </h5>
+          <p>
+            This is a demonstration payment processing system created for educational and academic purposes only.
+            <strong>This is NOT a real payment processor.</strong>
+          </p>
+        </div>
+
+        <div class="info-section">
+          <h5>Important Guidelines</h5>
+
+          <div class="disclaimer-list">
+            <ul>
+              <li class="text-danger">
+                <i class="bi bi-x-circle-fill"></i>
+                <strong>DO NOT</strong> enter any real or sensitive personal information
+              </li>
+              <li class="text-danger">
+                <i class="bi bi-x-circle-fill"></i>
+                <strong>DO NOT</strong> use real credit card numbers, bank account details, or passwords
+              </li>
+              <li class="text-danger">
+                <i class="bi bi-x-circle-fill"></i>
+                <strong>DO NOT</strong> use this system for actual financial transactions
+              </li>
+              <li class="text-success">
+                <i class="bi bi-check-circle-fill"></i>
+                Use only test data and fictional information for demonstration purposes
+              </li>
+              <li class="text-success">
+                <i class="bi bi-check-circle-fill"></i>
+                This project demonstrates secure coding practices and payment workflow concepts
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-alert">
+          <strong><i class="bi bi-lightbulb-fill"></i> Purpose:</strong> This application showcases international payment processing workflows,
+          security implementations, and compliance verification systems in an educational context.
+        </div>
+
+        <div class="checkbox-container">
+          <div class="form-check">
+            <input
+              class="form-check-input"
+              type="checkbox"
+              id="acknowledge-checkbox"
+              required
+            >
+            <label class="form-check-label" for="acknowledge-checkbox">
+              <strong>I understand and acknowledge</strong> that this is an academic demonstration system,
+              and I will not enter any real or sensitive information.
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div class="disclaimer-footer">
+        <div class="row g-3">
+          <div class="col-md-6">
+            <button
+              type="button"
+              class="btn btn-accept w-100"
+              id="accept-btn"
+              disabled
+            >
+              <i class="bi bi-check-circle-fill"></i> I Accept - Continue
+            </button>
+          </div>
+          <div class="col-md-6">
+            <button
+              type="button"
+              class="btn btn-decline w-100"
+              id="decline-btn"
+            >
+              <i class="bi bi-x-circle-fill"></i> I Decline - Exit
+            </button>
+          </div>
+        </div>
+
+        <div class="text-center mt-3">
+          <small class="footer-note">
+            <i class="bi bi-shield-check"></i>
+            By accepting, you agree to use only test data in this system
+          </small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap Bundle with Popper -->
+  <script src="/js/bootstrap.bundle.min.js"></script>
+
+  <!-- Disclaimer Logic -->
+  <script src="/js/disclaimer.js"></script>
+</body>
+</html>

@@ -306,52 +306,56 @@ class PendingPaymentsController {
     const tbody = document.getElementById('payments-tbody');
     const tableContainer = document.getElementById('payments-table-container');
     const noPayments = document.getElementById('no-payments');
-    
+
     if (!tbody) return;
-    
+
     tbody.innerHTML = '';
-    
+
     if (this.filteredPayments.length === 0) {
       if (tableContainer) tableContainer.classList.add('d-none');
       if (noPayments) noPayments.classList.remove('d-none');
       return;
     }
-    
+
     if (tableContainer) tableContainer.classList.remove('d-none');
     if (noPayments) noPayments.classList.add('d-none');
-    
+
     this.filteredPayments.forEach(payment => {
       const row = document.createElement('tr');
       row.className = 'payment-row';
       row.dataset.paymentId = payment._id;
-      
+
       const amlBadgeClass = {
         'LOW': 'bg-success',
         'MEDIUM': 'bg-warning',
         'HIGH': 'bg-danger'
       }[payment.compliance.amlRiskLevel] || 'bg-secondary';
-      
-      const fraudBadgeClass = payment.fraudScore < 30 ? 'bg-success' : 
-                             payment.fraudScore < 60 ? 'bg-warning' : 'bg-danger';
-      
+
+      // Format amount with currency
+      const formattedAmount = `${this.escapeHtml(payment.currency)} ${payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
+
+      // Format submitted date
+      const submittedDate = new Date(payment.submittedAt).toLocaleString('en-US', {
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+
       row.innerHTML = `
-        <td>${this.escapeHtml(payment.transactionId)}</td>
-        <td>${this.escapeHtml(payment.customer.fullName)}<br>
-            <small class="text-muted">${this.escapeHtml(payment.customer.accountNumber)}</small>
-        </td>
-        <td>${this.escapeHtml(payment.beneficiary.name)}</td>
-        <td>${payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}</td>
-        <td>${this.escapeHtml(payment.currency)}</td>
+        <td style="font-size: 0.85rem;">${this.escapeHtml(payment.transactionId)}</td>
+        <td>${this.escapeHtml(payment.customer.fullName)}</td>
+        <td style="white-space: nowrap;">${formattedAmount}</td>
         <td><span class="badge ${amlBadgeClass}">${this.escapeHtml(payment.compliance.amlRiskLevel)}</span></td>
-        <td><span class="badge ${fraudBadgeClass}">${payment.fraudScore}</span></td>
-        <td>${new Date(payment.submittedAt).toLocaleString()}</td>
+        <td style="font-size: 0.85rem;">${submittedDate}</td>
         <td>
           <button class="btn btn-sm btn-primary verify-btn" title="Verify Payment">
             <i class="bi bi-search"></i>
           </button>
         </td>
       `;
-      
+
       tbody.appendChild(row);
     });
   }
