@@ -1,0 +1,27 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "securebank-api"
+main = "src/worker.js"
+compatibility_date = "2025-11-05"
+compatibility_flags = ["nodejs_compat"]
+
+# Environment variables (set via Cloudflare dashboard or CLI)
+[vars]
+NODE_ENV = "production"
+PORT = "8787"
+
+# Secrets (set via: wrangler secret put SECRET_NAME)
+# MONGODB_URI
+# JWT_SECRET
+# SESSION_SECRET
+# ENCRYPTION_KEY
+# ENCRYPTION_IV
+
+# Durability (for session storage)
+[[kv_namespaces]]
+binding = "SESSIONS"
+id = "f2024d7829cd444795d4735a3b405a81"
+preview_id = "147a9e06957f4decb8677b24149a03a4"
+
+# Limits
+[limits]
+cpu_ms = 50
