@@ -482,8 +482,13 @@ export class PaymentController extends PageController {
       console.log('Payment response status:', response.status);
       const result = await response.json();
       console.log('Payment response data:', result);
-      
+
       if (result.success) {
+        // If this is a SWIFT payment, also create an international payment for employee review
+        if (data.method === 'swift' && result.payment) {
+          await this.createInternationalPayment(data, result.payment);
+        }
+
         this.app.showNotification('Payment processed successfully!', 'success');
         // Store transaction ID for later reference
         if (result.payment && result.payment.transactionId) {
@@ -665,6 +670,60 @@ export class PaymentController extends PageController {
     }
 
     return methodData;
+  }
+
+  async createInternationalPayment(formData, payment) {
+    try {
+      console.log('Creating international payment for SWIFT transaction...');
+
+      // Map purpose values from form to SWIFT codes
+      const purposeMap = {
+        'family_support': 'OTHR',
+        'business_payment': 'TRAD',
+        'education': 'EDUC',
+        'medical': 'MEDI',
+        'investment': 'INVS',
+        'other': 'OTHR'
+      };
+
+      const internationalPaymentData = {
+        customerId: this.app.user.id,
+        employeeId: this.app.user.id, // Using customer ID as placeholder - should be actual employee
+        amount: parseFloat(formData.amount),
+        currency: formData.currency || 'ZAR',
+        beneficiaryName: formData.beneficiaryName,
+        beneficiaryAccount: formData.beneficiaryAccount,
+        beneficiaryEmail: formData.beneficiaryEmail || '',
+        beneficiaryPhone: formData.beneficiaryPhone || '',
+        swiftCode: formData.swiftCode,
+        bankName: formData.bankName,
+        bankCountry: formData.bankCountry,
+        bankCity: formData.bankCity || '',
+        bankAddress: formData.bankAddress || '',
+        purpose: purposeMap[formData.purpose] || 'OTHR',
+        reference: formData.reference || payment.transactionId,
+        sourceOfFunds: formData.description || 'Customer payment',
+        notes: `Auto-created from customer payment ${payment.transactionId}`
+      };
+
+      const response = await fetch('/api/international-payments/create', {
+        method: 'POST',
+        headers: getHeadersWithCsrf(),
+        credentials: 'same-origin',
+        body: JSON.stringify(internationalPaymentData)
+      });
+
+      const result = await response.json();
+
+      if (result.success) {
+        console.log('International payment created successfully:', result.payment.transactionId);
+      } else {
+        console.error('Failed to create international payment:', result.message);
+      }
+    } catch (error) {
+      console.error('Error creating international payment:', error);
+      // Don't throw - this is a background operation
+    }
   }
 }
 
