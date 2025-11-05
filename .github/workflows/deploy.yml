@@ -89,11 +89,13 @@ jobs:
           NODE_ENV: production
 
       - name: Deploy to Cloudflare Pages
+        id: deploy
         uses: cloudflare/wrangler-action@v3
         with:
           apiToken: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           accountId: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
           command: pages deploy dist --project-name=securebank-frontend --branch=main
+        continue-on-error: false
 
       - name: Deployment summary
         run: |
