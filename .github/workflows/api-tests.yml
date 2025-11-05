@@ -32,7 +32,7 @@ jobs:
           mkdir -p keys
           openssl genrsa -out keys/private.pem 2048
           openssl rsa -in keys/private.pem -pubout -out keys/public.pem
-          echo "✅ Generated test RSA keys"
+          echo " Generated test RSA keys"
           
       - name: Start Application
         run: |
@@ -40,13 +40,13 @@ jobs:
           NODE_ENV=test npm start &
           APP_PID=$!
           echo "APP_PID=$APP_PID" >> $GITHUB_ENV
-          echo "⏳ Waiting for application..."
+          echo " Waiting for application..."
           for i in {1..60}; do
             if curl -f http://localhost:3000/health >/dev/null 2>&1; then
-              echo "✅ Application ready!"
+              echo " Application ready!"
               break
             fi
-            [ $i -eq 60 ] && echo "❌ Timeout" && exit 1
+            [ $i -eq 60 ] && echo " Timeout" && exit 1
             sleep 1
           done
         env:
@@ -56,6 +56,26 @@ jobs:
           
       - name: Install Newman
         run: npm install -g newman newman-reporter-htmlextra
+      
+      - name: Fix Postman Test - Add accountNumber to login test
+        run: |
+         
+          node -e "
+          const fs = require('fs');
+          const testFile = './postman/banking-security-tests.json';
+          const tests = JSON.parse(fs.readFileSync(testFile, 'utf8'));
+          
+          // Find and update the 'Test Rate Limiting on Login' test
+          const authTests = tests.item.find(item => item.name === 'Authentication Tests');
+          if (authTests) {
+            const loginTest = authTests.item.find(item => item.name === 'Test Rate Limiting on Login');
+            if (loginTest && loginTest.request && loginTest.request.body) {
+              loginTest.request.body.raw = '{\n  \"username\": \"attacker\",\n  \"accountNumber\": \"1234567890\",\n  \"password\": \"wrongpassword\"\n}';
+              fs.writeFileSync(testFile, JSON.stringify(tests, null, 2));
+              console.log(' Updated login test with accountNumber');
+            }
+          }
+          "
         
       - name: Run API Security Tests
         run: |
@@ -70,15 +90,15 @@ jobs:
       - name: Display Test Results
         if: always()
         run: |
-          echo "📊 API Security Test Results:"
+          echo " API Security Test Results:"
           if [ -f newman-results.json ]; then
             node -e "
               const results = require('./newman-results.json');
               const stats = results.run.stats;
-              console.log('✅ Tests Passed:', stats.assertions.passed);
-              console.log('❌ Tests Failed:', stats.assertions.failed);
-              console.log('📝 Total Assertions:', stats.assertions.total);
-              console.log('⏱️  Total Requests:', stats.requests.total);
+              console.log(' Tests Passed:', stats.assertions.passed);
+              console.log(' Tests Failed:', stats.assertions.failed);
+              console.log(' Total Assertions:', stats.assertions.total);
+              console.log('  Total Requests:', stats.requests.total);
             "
           fi
           
@@ -88,14 +108,14 @@ jobs:
           if [ -f newman-results.json ]; then
             FAILED=$(node -e "console.log(require('./newman-results.json').run.stats.assertions.failed)")
             if [ "$FAILED" != "0" ]; then
-              echo "❌ $FAILED test(s) failed!"
+              echo " $FAILED test(s) failed!"
               exit 1
             fi
-            echo "✅ All API security tests passed!"
+            echo " All API security tests passed!"
           fi
           
       - name: Cleanup
         if: always()
         run: |
           [ ! -z "$APP_PID" ] && kill $APP_PID || true
-          echo "✅ Cleanup complete"
+          echo " Cleanup complete"
