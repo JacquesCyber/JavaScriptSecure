@@ -45,14 +45,15 @@ router.get('/js/:module', (req, res) => {
     
     // Security: Only allow specific modules
     const allowedModules = [
-      'controllers.js', 
-      'utils.js', 
-      'services.js', 
-      'config.js', 
+      'controllers.js',
+      'utils.js',
+      'services.js',
+      'config.js',
       'international-payments-portal.js',
       'employee-app.js',
       'employee-controllers.js',
-      'bootstrap.bundle.min.js'
+      'bootstrap.bundle.min.js',
+      'disclaimer.js'
     ];
     if (!allowedModules.includes(moduleName)) {
       return res.status(403).send('// Module not allowed');
@@ -169,6 +170,20 @@ router.get('/templates/:template', (req, res) => {
 // Favicon handler
 router.get('/favicon.ico', (req, res) => {
   res.status(204).end(); // No content
+});
+
+// Disclaimer page - Serve to all users
+router.get('/disclaimer', (req, res) => {
+  try {
+    const filePath = path.join(process.cwd(), 'public', 'disclaimer.html');
+    const content = fs.readFileSync(filePath, 'utf8');
+    res.setHeader('Content-Type', 'text/html; charset=utf-8');
+    res.setHeader('Cache-Control', 'no-cache, no-store, must-revalidate');
+    res.send(content);
+  } catch (error) {
+    console.error('Error serving disclaimer:', error);
+    res.status(404).send('Disclaimer page not found');
+  }
 });
 
 // Employee Portal - Protected Route

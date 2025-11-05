@@ -76,9 +76,23 @@
   <!-- Bootstrap JS -->
   <script src="/js/bootstrap.bundle.min.js"></script>
   
+  <!-- Disclaimer Check - Must run before app loads -->
+  <script nonce="{nonce}">
+    // Check if user has accepted the disclaimer
+    (function() {
+      const disclaimerAccepted = sessionStorage.getItem('disclaimerAccepted') ||
+                                  localStorage.getItem('disclaimerAccepted');
+
+      // If disclaimer not accepted and not already on disclaimer page, redirect
+      if (!disclaimerAccepted && !window.location.pathname.includes('/disclaimer')) {
+        window.location.href = '/disclaimer.html';
+      }
+    })();
+  </script>
+
   <!-- App Logic - ES6 Module -->
   <script nonce="{nonce}" type="module" src="/app.js"></script>
-  
+
   <!-- Global logout function and event listener -->
   <script nonce="{nonce}">
     function logoutUser() {
