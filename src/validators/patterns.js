@@ -24,20 +24,20 @@ export const VALIDATION_PATTERNS = Object.freeze({
   username: /^[a-zA-Z0-9_]{3,20}$/u,
   
   // Banking
-  accountNumber: /^[0-9]{10,12}$/u,
-  bankCode: /^[0-9]{6}$/u,
-  branchCode: /^[0-9]{6}$/u,
-  idNumber: /^[0-9]{13}$/u,
-  
+  accountNumber: /^[0-9]{10,12}$/u, // 10-12 digits
+  bankCode: /^[0-9]{6}$/u, // 6 digits
+  branchCode: /^[0-9]{6}$/u, // 6 digits
+  idNumber: /^[0-9]{13}$/u, // 13 digits
+
   // Payment
-  creditCard: /^[0-9]{13,19}$/u,
-  amount: /^\d+(\.\d{1,2})?$/u,
-  cvv: /^[0-9]{3,4}$/u,
+  creditCard: /^[0-9]{13,19}$/u, // 13-19 digits
+  amount: /^\d+(\.\d{1,2})?$/u, // Decimal with up to 2 places
+  cvv: /^[0-9]{3,4}$/u, // 3 or 4 digits
   expiryDate: /^(0[1-9]|1[0-2])\/([0-9]{4})$/u,  // MM/YYYY
   expiryMonth: /^(0[1-9]|1[0-2])$/u,  // 01-12
   expiryYear: /^(20[2-9][0-9])$/u,  // 2020-2099
-  currency: /^[A-Z]{3}$/u,
-  swiftCode: /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/u,
+  currency: /^[A-Z]{3}$/u, // ISO 4217 currency code
+  swiftCode: /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/u, // SWIFT/BIC code
   
   // International Payments
   iban: /^[A-Z]{2}[0-9]{2}[A-Z0-9]{1,30}$/u,  // IBAN format (country code + check digits + account)
