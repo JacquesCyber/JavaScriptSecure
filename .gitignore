@@ -28,3 +28,7 @@ dist/
 
 # Cloudflare
 wrangler.toml.local
+
+# Temporary files
+nul
+cookies.txt
