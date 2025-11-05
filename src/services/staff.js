@@ -15,7 +15,8 @@
  *
  */
 import Staff from '../models/Staff.js';
-import bcrypt from 'bcrypt';
+import { DEFAULT_STAFF_ROLE } from '../constants/roles.js';
+import { hashPassword, verifyPassword } from '../utils/auth.js';
 
 export class StaffService {
   static async registerStaff(staffData) {
@@ -25,15 +26,14 @@ export class StaffService {
       });
       if (existingStaff) throw new Error('Staff member with this email or username already exists');
 
-      const saltRounds = 12;
-      const hashedPassword = await bcrypt.hash(staffData.password, saltRounds);
+      const hashedPassword = await hashPassword(staffData.password);
 
       const staff = new Staff({
         fullName: staffData.fullName,
         email: staffData.email,
         username: staffData.username,
         password: hashedPassword,
-        role: staffData.role || 'staff',
+        role: staffData.role || DEFAULT_STAFF_ROLE,
         department: staffData.department || 'payments',
         permissions: staffData.permissions || {
           canViewAllPayments: true,
@@ -64,16 +64,37 @@ export class StaffService {
     }
   }
 
-  static async loginStaff(username, password) {
+  static async loginStaff(identifier, password) {
     try {
-      const staff = await Staff.findOne({ username: { $eq: username }, isActive: true });
-      if (!staff) throw new Error('Invalid credentials');
+      // Support login with username, email, or employeeId
+      const staff = await Staff.findOne({ 
+        $or: [
+          { username: { $eq: identifier } },
+          { email: { $eq: identifier.toLowerCase() } },
+          { employeeId: { $eq: identifier } }
+        ],
+        isActive: true 
+      });
+      
+      if (!staff) {
+        console.log('❌ Staff not found with identifier:', identifier);
+        throw new Error('Invalid credentials');
+      }
 
-      const valid = await bcrypt.compare(password, staff.password);
-      if (!valid) throw new Error('Invalid credentials');
+      const valid = await verifyPassword(password, staff.password);
+      if (!valid) {
+        console.log('❌ Invalid password for staff:', staff.username);
+        throw new Error('Invalid credentials');
+      }
 
       staff.lastLogin = new Date();
       await staff.save();
+      
+      console.log('✓ Staff login successful:', {
+        username: staff.username,
+        employeeId: staff.employeeId,
+        role: staff.role
+      });
 
       return {
         success: true,
@@ -83,6 +104,7 @@ export class StaffService {
           fullName: staff.fullName,
           email: staff.email,
           username: staff.username,
+          employeeId: staff.employeeId,
           role: staff.role,
           department: staff.department,
           permissions: staff.permissions,
@@ -90,7 +112,7 @@ export class StaffService {
         }
       };
     } catch (err) {
-      console.error('Staff login error:', err);
+      console.error('❌ Staff login error:', err.message);
       throw err;
     }
   }
@@ -131,8 +153,7 @@ export class StaffService {
         allowedUpdates.department(updateData.department);
       }
       if (updateData.password) {
-        const saltRounds = 12;
-        staff.password = await bcrypt.hash(updateData.password, saltRounds);
+        staff.password = await hashPassword(updateData.password);
       }
 
       await staff.save();

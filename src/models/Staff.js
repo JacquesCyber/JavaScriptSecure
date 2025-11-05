@@ -39,6 +39,13 @@ const staffSchema = new mongoose.Schema({
     maxlength: 50,
     match: [/^[a-zA-Z0-9_]+$/, 'Username can only contain letters, numbers, and underscores']
   },
+  employeeId: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+    match: [/^EMP[0-9]{6}$/, 'Employee ID must be in format EMP######']
+  },
   password: {
     type: String,
     required: true,
@@ -52,8 +59,7 @@ const staffSchema = new mongoose.Schema({
   department: {
     type: String,
     required: true,
-    enum: ['payments', 'compliance', 'operations', 'support'],
-    default: 'payments'
+    default: 'International Payments'
   },
   isActive: {
     type: Boolean,

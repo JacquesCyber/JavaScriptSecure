@@ -21,78 +21,48 @@
  *    - https://express-validator.github.io/docs/
  */
 import { body } from 'express-validator';
+import { VALIDATION_PATTERNS } from '../validators/patterns.js';
 
-/* eslint-disable security/detect-object-injection, security/detect-unsafe-regex */
+/* eslint-disable security/detect-object-injection */
 
-//  Safer regex patterns (bounded quantifiers & no catastrophic backtracking)
-export const patterns = {
-  name: /^[a-zA-Z\s\-.]{2,50}$/, // bounded length
-  email: /^[a-zA-Z0-9._%+-]{1,64}@[a-zA-Z0-9.-]{1,253}\.[a-zA-Z]{2,}$/u,
-  phone: /^[+]?[1-9][\d]{0,15}$/u,
+// Re-export patterns for backward compatibility
+export const patterns = VALIDATION_PATTERNS;
 
-  alphanumeric: /^[a-zA-Z0-9]+$/u,
-  safeText: /^[a-zA-Z0-9\s.,!?-]{1,200}$/u,
-  noScript: /^(?!.*<(?:script|style|iframe|object|embed|link|meta))[^<>]*$/u,
-  noHtml: /^[^<>]*$/u,
-
-  creditCard: /^[0-9]{13,19}$/u,
-  amount: /^\d+(\.\d{1,2})?$/u,
-  username: /^[a-zA-Z0-9_]{3,20}$/u,
-  accountNumber: /^[0-9]{10,12}$/u,
-  bankCode: /^[0-9]{6}$/u,
-  branchCode: /^[0-9]{6}$/u,
-  idNumber: /^[0-9]{13}$/u,
-
-  uuid: /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/iu,
-  url: /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}([/?#]\S*)?$/u,
-  mongoId: /^[0-9a-fA-F]{24}$/u,
-
-  transactionId: /^[a-zA-Z0-9_-]{10,50}$/u,
-  currency: /^[A-Z]{3}$/u,
-  paymentMethod: /^(card|paypal|bank_transfer|swift|eft)$/u,
-  cardBrand: /^(visa|mastercard|amex|discover)$/u,
-  swiftCode: /^[A-Z]{6}[A-Z0-9]{2}([A-Z0-9]{3})?$/u,
-  cvv: /^[0-9]{3,4}$/u,
-  expiryDate: /^(0[1-9]|1[0-2])\/([0-9]{4})$/u,  // MM/YYYY format
-  expiryMonth: /^(0[1-9]|1[0-2])$/u,  // MM format (01-12)
-  expiryYear: /^(20[2-9][0-9])$/u  // YYYY format (2020-2099)
-};
-
-/* eslint-enable security/detect-unsafe-regex */
+/* eslint-enable */
 
 // Immutable validation rules (safe static mapping)
 export const validationRules = Object.freeze({
   '/api/users/register': {
-    fullName: { pattern: patterns.name, required: true },
-    email: { pattern: patterns.email, required: true },
-    username: { pattern: patterns.username, required: true },
-    idNumber: { pattern: patterns.idNumber, required: true },
-    accountNumber: { pattern: patterns.accountNumber, required: true },
-    bankCode: { pattern: patterns.bankCode, required: true },
-    branchCode: { pattern: patterns.branchCode, required: true },
+    fullName: { pattern: VALIDATION_PATTERNS.name, required: true },
+    email: { pattern: VALIDATION_PATTERNS.email, required: true },
+    username: { pattern: VALIDATION_PATTERNS.username, required: true },
+    idNumber: { pattern: VALIDATION_PATTERNS.idNumber, required: true },
+    accountNumber: { pattern: VALIDATION_PATTERNS.accountNumber, required: true },
+    bankCode: { pattern: VALIDATION_PATTERNS.bankCode, required: true },
+    branchCode: { pattern: VALIDATION_PATTERNS.branchCode, required: true },
     password: { minLength: 8, maxLength: 128, required: true, noScript: true }
   },
   '/api/users/login': {
-    username: { pattern: patterns.username, required: true },
-    accountNumber: { pattern: patterns.accountNumber, required: true },
+    username: { pattern: VALIDATION_PATTERNS.username, required: true },
+    accountNumber: { pattern: VALIDATION_PATTERNS.accountNumber, required: true },
     password: { minLength: 1, maxLength: 128, required: true, noScript: true }
   },
   '/api/payments/process': {
-    userId: { pattern: patterns.mongoId, required: true },
-    amount: { pattern: patterns.amount, required: true },
-    currency: { pattern: patterns.currency },
-    description: { pattern: patterns.safeText },
+    userId: { pattern: VALIDATION_PATTERNS.mongoId, required: true },
+    amount: { pattern: VALIDATION_PATTERNS.amount, required: true },
+    currency: { pattern: VALIDATION_PATTERNS.currency },
+    description: { pattern: VALIDATION_PATTERNS.safeText },
     noScript: true
   },
   '/store': {
     data: { minLength: 1, maxLength: 10000, required: true, noScript: true },
-    title: { pattern: patterns.safeText }
+    title: { pattern: VALIDATION_PATTERNS.safeText }
   },
   default: {
-    text: { pattern: patterns.safeText },
-    name: { pattern: patterns.name },
-    email: { pattern: patterns.email },
-    username: { pattern: patterns.username }
+    text: { pattern: VALIDATION_PATTERNS.safeText },
+    name: { pattern: VALIDATION_PATTERNS.name },
+    email: { pattern: VALIDATION_PATTERNS.email },
+    username: { pattern: VALIDATION_PATTERNS.username }
   }
 });
 
@@ -110,9 +80,9 @@ function validateField(value, rules) {
     errors.push(`Maximum length is ${rules.maxLength} characters`);
 
   if (rules.pattern && !rules.pattern.test(stringValue)) errors.push('Invalid format');
-  if (rules.noScript && !patterns.noScript.test(stringValue))
+  if (rules.noScript && !VALIDATION_PATTERNS.noScript.test(stringValue))
     errors.push('Potentially dangerous content detected');
-  if (rules.noHtml && !patterns.noHtml.test(stringValue)) errors.push('HTML tags not allowed');
+  if (rules.noHtml && !VALIDATION_PATTERNS.noHtml.test(stringValue)) errors.push('HTML tags not allowed');
 
   return errors;
 }

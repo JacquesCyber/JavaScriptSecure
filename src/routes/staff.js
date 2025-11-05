@@ -16,18 +16,35 @@
  *  
  */
 import express from 'express';
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import { StaffService } from '../services/staff.js';
 import { authLimiter } from '../middleware/rateLimiting.js';
+import { handleValidationErrors } from '../middleware/validationHandler.js';
 
 const router = express.Router();
 
 // Staff authentication validation
 const staffLoginValidation = [
+  body('identifier')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Username, email, or employee ID is required'),
   body('username')
+    .optional()
     .trim()
     .notEmpty()
     .withMessage('Username is required'),
+  body('employeeId')
+    .optional()
+    .trim()
+    .notEmpty()
+    .withMessage('Employee ID is required'),
+  body('email')
+    .optional()
+    .trim()
+    .isEmail()
+    .withMessage('Valid email is required'),
   body('password')
     .notEmpty()
     .withMessage('Password is required')
@@ -42,27 +59,83 @@ const extractStaffId = (req, res, next) => {
 };
 
 // POST /api/staff/login - Staff login
-router.post('/login', authLimiter, staffLoginValidation, async (req, res) => {
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    return res.status(400).json({
-      success: false,
-      message: 'Validation failed',
-      errors: errors.array()
-    });
-  }
-
+router.post('/login', authLimiter, staffLoginValidation, handleValidationErrors, async (req, res) => {
   try {
-    const { username, password } = req.body;
-    const result = await StaffService.loginStaff(username, password);
+    // Accept login with username, email, employeeId, or identifier field
+    const { username, email, employeeId, identifier, password } = req.body;
+    
+    // Determine which identifier to use (supports multiple login methods)
+    const loginIdentifier = identifier || username || email || employeeId;
+    
+    if (!loginIdentifier) {
+      return res.status(400).json({
+        success: false,
+        message: 'Username, email, or employee ID is required'
+      });
+    }
+    
+    console.log('🔐 Staff login attempt:', { identifier: loginIdentifier });
+    
+    const result = await StaffService.loginStaff(loginIdentifier, password);
+    
+    // If login successful, create session
+    if (result.success && result.staff) {
+      req.session.staffId = result.staff._id;
+      req.session.username = result.staff.username;
+      req.session.employeeId = result.staff.employeeId;
+      req.session.role = result.staff.role;
+      req.session.fullName = result.staff.fullName;
+      req.session.email = result.staff.email;
+      req.session.department = result.staff.department;
+      req.session.isAuthenticated = true;
+      
+      console.log('✓ Employee session created:', {
+        staffId: result.staff._id,
+        username: result.staff.username,
+        employeeId: result.staff.employeeId,
+        role: result.staff.role
+      });
+    }
     
     res.json(result);
   } catch (error) {
-    console.error(' Error in POST /api/staff/login:', error);
+    console.error('❌ Error in POST /api/staff/login:', error);
     
     res.status(401).json({
       success: false,
       message: error.message || 'Login failed'
+    });
+  }
+});
+
+// POST /api/staff/logout - Staff logout
+router.post('/logout', (req, res) => {
+  try {
+    // Destroy session
+    req.session.destroy((err) => {
+      if (err) {
+        console.error('❌ Error destroying session:', err);
+        return res.status(500).json({
+          success: false,
+          message: 'Logout failed'
+        });
+      }
+      
+      // Clear session cookie
+      res.clearCookie('connect.sid');
+      
+      console.log('✓ Employee logged out successfully');
+      
+      res.json({
+        success: true,
+        message: 'Logged out successfully'
+      });
+    });
+  } catch (error) {
+    console.error('❌ Error in POST /api/staff/logout:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Logout failed'
     });
   }
 });

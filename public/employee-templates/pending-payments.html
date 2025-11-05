@@ -1,0 +1,185 @@
+<div class="container-fluid">
+  <div class="row mb-4">
+    <div class="col">
+      <h2 class="text-primary">
+        <i class="bi bi-clock-history"></i> Pending Payment Approvals
+      </h2>
+      <p class="text-muted">Review and verify international payment requests</p>
+    </div>
+  </div>
+
+  <!-- Filter and Search Controls -->
+  <div class="row mb-4">
+    <div class="col-md-8">
+      <div class="input-group">
+        <span class="input-group-text">
+          <i class="bi bi-search"></i>
+        </span>
+        <input 
+          type="text" 
+          class="form-control" 
+          id="search-payments"
+          placeholder="Search by customer, amount, or transaction ID..."
+        >
+      </div>
+    </div>
+    <div class="col-md-4">
+      <select class="form-select" id="filter-risk-level">
+        <option value="">All Risk Levels</option>
+        <option value="LOW">Low Risk</option>
+        <option value="MEDIUM">Medium Risk</option>
+        <option value="HIGH">High Risk</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- Alert for status messages -->
+  <div id="pending-payments-alert" class="alert alert-dismissible fade show d-none" role="alert">
+    <span id="pending-payments-message"></span>
+    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+  </div>
+
+  <!-- Statistics Cards -->
+  <div class="row mb-4">
+    <div class="col-md-3">
+      <div class="card bg-info text-white">
+        <div class="card-body">
+          <h5 class="card-title">Total Pending</h5>
+          <p class="card-text display-6" id="stat-total-pending">0</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-warning text-dark">
+        <div class="card-body">
+          <h5 class="card-title">High Risk</h5>
+          <p class="card-text display-6" id="stat-high-risk">0</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-success text-white">
+        <div class="card-body">
+          <h5 class="card-title">Total Value</h5>
+          <p class="card-text display-6" id="stat-total-value">$0</p>
+        </div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card bg-primary text-white">
+        <div class="card-body">
+          <h5 class="card-title">Awaiting Me</h5>
+          <p class="card-text display-6" id="stat-awaiting-me">0</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Pending Payments Table -->
+  <div class="card shadow-lg">
+    <div class="card-header bg-primary text-white">
+      <h4 class="mb-0">
+        <i class="bi bi-list-check"></i> Payment Queue
+      </h4>
+    </div>
+    <div class="card-body">
+      <div id="payments-loading" class="text-center py-5">
+        <div class="spinner-border text-primary" role="status">
+          <span class="visually-hidden">Loading payments...</span>
+        </div>
+        <p class="mt-2 text-muted">Loading pending payments...</p>
+      </div>
+
+      <div id="no-payments" class="text-center py-5 d-none">
+        <i class="bi bi-inbox display-1 text-muted"></i>
+        <p class="lead text-muted">No pending payments to review</p>
+      </div>
+
+      <div id="payments-table-container" class="table-responsive d-none">
+        <table class="table table-hover table-striped" id="pending-payments-table">
+          <thead class="table-dark">
+            <tr>
+              <th>Transaction ID</th>
+              <th>Customer</th>
+              <th>Beneficiary</th>
+              <th>Amount</th>
+              <th>Currency</th>
+              <th>AML Risk</th>
+              <th>Fraud Score</th>
+              <th>Submitted</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody id="payments-tbody">
+            <!-- Payment rows will be dynamically inserted here -->
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Pagination -->
+      <nav aria-label="Payments pagination" id="payments-pagination" class="d-none">
+        <ul class="pagination justify-content-center mt-3">
+          <li class="page-item" id="prev-page">
+            <a class="page-link" href="#" aria-label="Previous">
+              <span aria-hidden="true">&laquo;</span>
+            </a>
+          </li>
+          <li class="page-item active"><a class="page-link" href="#">1</a></li>
+          <li class="page-item"><a class="page-link" href="#">2</a></li>
+          <li class="page-item"><a class="page-link" href="#">3</a></li>
+          <li class="page-item" id="next-page">
+            <a class="page-link" href="#" aria-label="Next">
+              <span aria-hidden="true">&raquo;</span>
+            </a>
+          </li>
+        </ul>
+      </nav>
+    </div>
+  </div>
+
+  <!-- Quick Actions Card -->
+  <div class="card mt-4">
+    <div class="card-header">
+      <h5 class="mb-0">
+        <i class="bi bi-lightning-fill"></i> Quick Actions
+      </h5>
+    </div>
+    <div class="card-body">
+      <div class="row">
+        <div class="col-md-6">
+          <button class="btn btn-outline-primary w-100 mb-2" id="refresh-payments">
+            <i class="bi bi-arrow-clockwise"></i> Refresh List
+          </button>
+        </div>
+        <div class="col-md-6">
+          <button class="btn btn-outline-info w-100 mb-2" id="export-pending">
+            <i class="bi bi-download"></i> Export to CSV
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Payment Row Template (hidden, used for cloning) -->
+<template id="payment-row-template">
+  <tr class="payment-row" data-payment-id="">
+    <td class="payment-id"></td>
+    <td class="customer-name"></td>
+    <td class="beneficiary-name"></td>
+    <td class="amount"></td>
+    <td class="currency"></td>
+    <td>
+      <span class="badge aml-risk-badge"></span>
+    </td>
+    <td>
+      <span class="badge fraud-score-badge"></span>
+    </td>
+    <td class="submitted-date"></td>
+    <td>
+      <button class="btn btn-sm btn-primary verify-btn" title="Verify Payment">
+        <i class="bi bi-search"></i>
+      </button>
+    </td>
+  </tr>
+</template>

@@ -17,9 +17,10 @@
  *  - https://stripe.com/docs/payments/accept-a-payment
  */
 import express from 'express';
-import { body, validationResult } from 'express-validator';
+import { body } from 'express-validator';
 import { PaymentService } from '../services/payment.js';
 import { authLimiter } from '../middleware/rateLimiting.js';
+import { handleValidationErrors } from '../middleware/validationHandler.js';
 
 const router = express.Router();
 
@@ -157,23 +158,9 @@ const extractUserIdFromQuery = (req, res, next) => {
 };
 
 // POST /api/payments/process - Process a new payment
-router.post('/process', authLimiter, paymentValidation, extractUserIdFromBody, async (req, res) => {
+router.post('/process', authLimiter, paymentValidation, handleValidationErrors, extractUserIdFromBody, async (req, res) => {
   console.log(' Payment processing request received');
   console.log(' Request body:', JSON.stringify(req.body, null, 2));
-  
-  const errors = validationResult(req);
-  if (!errors.isEmpty()) {
-    console.log(' Payment validation errors:', JSON.stringify(errors.array(), null, 2));
-    // Log each error with field and message
-    errors.array().forEach(err => {
-      console.log(`   - Field: ${err.path || err.param}, Message: ${err.msg}`);
-    });
-    return res.status(400).json({
-      success: false,
-      message: 'Payment validation failed',
-      errors: errors.array()
-    });
-  }
 
   try {
     const { amount, currency, description, paymentMethod, provider } = req.body;
@@ -238,12 +225,55 @@ router.get('/history', extractUserIdFromQuery, async (req, res) => {
   }
 });
 
+// GET /api/payments/all - Get all payments (for employee review)
+router.get('/all', async (req, res) => {
+  try {
+    const limit = parseInt(req.query.limit) || 50;
+    const skip = parseInt(req.query.skip) || 0;
+
+    // Validate pagination parameters
+    if (limit > 100) {
+      return res.status(400).json({
+        success: false,
+        message: 'Limit cannot exceed 100'
+      });
+    }
+
+    // Import Payment model
+    const Payment = (await import('../models/Payment.js')).default;
+
+    // Fetch all payments with user details populated
+    const payments = await Payment.find()
+      .populate('userId', 'fullName email accountNumber username')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip(skip)
+      .lean();
+
+    res.json({
+      success: true,
+      payments,
+      pagination: {
+        limit,
+        skip,
+        hasMore: payments.length === limit
+      }
+    });
+  } catch (error) {
+    console.error(' Error in GET /api/payments/all:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to retrieve all payments'
+    });
+  }
+});
+
 // GET /api/payments/stats - Get user payment statistics
 router.get('/stats', extractUserIdFromQuery, async (req, res) => {
   try {
     const userId = req.userId;
     const stats = await PaymentService.getUserPaymentStats(userId);
-    
+
     res.json({
       success: true,
       stats
@@ -257,6 +287,168 @@ router.get('/stats', extractUserIdFromQuery, async (req, res) => {
   }
 });
 
+// POST /api/payments/:transactionId/approve - Approve a payment (employee action)
+router.post('/:transactionId/approve', async (req, res) => {
+  console.log('=== APPROVE PAYMENT REQUEST ===');
+  console.log('Transaction ID:', req.params.transactionId);
+  console.log('Request body:', req.body);
+  console.log('Request headers:', {
+    'csrf-token': req.headers['csrf-token'],
+    'x-csrf-token': req.headers['x-csrf-token'],
+    'content-type': req.headers['content-type']
+  });
+
+  try {
+    const { transactionId } = req.params;
+    const { notes } = req.body;
+
+    console.log('Looking for payment with transactionId:', transactionId);
+
+    // Import Payment model
+    const Payment = (await import('../models/Payment.js')).default;
+
+    const payment = await Payment.findOne({ transactionId });
+
+    if (!payment) {
+      console.error('Payment not found for transactionId:', transactionId);
+      return res.status(404).json({
+        success: false,
+        message: 'Payment not found'
+      });
+    }
+
+    console.log('Payment found:', {
+      _id: payment._id,
+      transactionId: payment.transactionId,
+      currentStatus: payment.status,
+      amount: payment.amount
+    });
+
+    // Update payment status to completed (valid enum: pending, processing, completed, failed, cancelled, refunded)
+    payment.status = 'completed';
+    payment.approvalNotes = notes || 'Approved by employee';
+    payment.approvedAt = new Date();
+
+    console.log('Saving payment with new status: completed');
+    await payment.save();
+    console.log('Payment saved successfully');
+
+    // Sanitize payment data safely
+    let sanitizedPayment;
+    try {
+      console.log('Attempting to sanitize payment data...');
+      sanitizedPayment = PaymentService.sanitizePaymentData(payment);
+      console.log('Payment data sanitized successfully');
+    } catch (sanitizeError) {
+      console.warn('Error sanitizing payment data, returning basic info:', sanitizeError.message);
+      console.error('Sanitize error stack:', sanitizeError.stack);
+      sanitizedPayment = {
+        transactionId: payment.transactionId,
+        status: payment.status,
+        amount: payment.amount,
+        currency: payment.currency
+      };
+    }
+
+    console.log('Sending success response');
+    res.json({
+      success: true,
+      message: 'Payment approved successfully',
+      payment: sanitizedPayment
+    });
+  } catch (error) {
+    console.error('=== ERROR APPROVING PAYMENT ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+    console.error('Error details:', {
+      name: error.name,
+      code: error.code,
+      statusCode: error.statusCode
+    });
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to approve payment',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
+// POST /api/payments/:transactionId/reject - Reject a payment (employee action)
+router.post('/:transactionId/reject', async (req, res) => {
+  console.log('=== REJECT PAYMENT REQUEST ===');
+  console.log('Transaction ID:', req.params.transactionId);
+  console.log('Request body:', req.body);
+
+  try {
+    const { transactionId } = req.params;
+    const { reason, details } = req.body;
+
+    console.log('Looking for payment with transactionId:', transactionId);
+
+    // Import Payment model
+    const Payment = (await import('../models/Payment.js')).default;
+
+    const payment = await Payment.findOne({ transactionId });
+
+    if (!payment) {
+      console.error('Payment not found for transactionId:', transactionId);
+      return res.status(404).json({
+        success: false,
+        message: 'Payment not found'
+      });
+    }
+
+    console.log('Payment found:', {
+      _id: payment._id,
+      transactionId: payment.transactionId,
+      currentStatus: payment.status,
+      amount: payment.amount
+    });
+
+    // Update payment status to failed (rejected)
+    payment.status = 'failed';
+    payment.rejectionReason = reason || 'Rejected by employee';
+    payment.rejectionDetails = details || '';
+    payment.rejectedAt = new Date();
+
+    console.log('Saving payment with new status: failed (rejected)');
+    await payment.save();
+    console.log('Payment rejected successfully');
+
+    // Sanitize payment data safely
+    let sanitizedPayment;
+    try {
+      sanitizedPayment = PaymentService.sanitizePaymentData(payment);
+    } catch (sanitizeError) {
+      console.warn('Error sanitizing payment data, returning basic info:', sanitizeError.message);
+      sanitizedPayment = {
+        transactionId: payment.transactionId,
+        status: payment.status,
+        amount: payment.amount,
+        currency: payment.currency
+      };
+    }
+
+    console.log('Sending success response');
+    res.json({
+      success: true,
+      message: 'Payment rejected successfully',
+      payment: sanitizedPayment
+    });
+  } catch (error) {
+    console.error('=== ERROR REJECTING PAYMENT ===');
+    console.error('Error message:', error.message);
+    console.error('Error stack:', error.stack);
+
+    res.status(500).json({
+      success: false,
+      message: 'Failed to reject payment',
+      error: process.env.NODE_ENV === 'development' ? error.message : undefined
+    });
+  }
+});
+
 // GET /api/payments/:transactionId - Get specific payment details
 router.get('/:transactionId', extractUserIdFromQuery, async (req, res) => {
   try {
@@ -265,7 +457,7 @@ router.get('/:transactionId', extractUserIdFromQuery, async (req, res) => {
 
     // Import Payment model here to avoid circular dependency
     const Payment = (await import('../models/Payment.js')).default;
-    
+
     const payment = await Payment.findOne({
       transactionId,
       userId: { $eq: userId }
@@ -279,7 +471,7 @@ router.get('/:transactionId', extractUserIdFromQuery, async (req, res) => {
     }
 
     const sanitizedPayment = PaymentService.sanitizePaymentData(payment);
-    
+
     res.json({
       success: true,
       payment: sanitizedPayment

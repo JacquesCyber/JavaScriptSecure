@@ -20,3 +20,11 @@ yarn-error.log*
 # Security keys (never commit these!)
 keys/
 *.pem
+
+# Build output
+dist/
+.wrangler/
+.dev.vars
+
+# Cloudflare
+wrangler.toml.local
