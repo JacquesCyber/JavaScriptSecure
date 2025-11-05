@@ -21,7 +21,7 @@ const config = {
   // API endpoint (will be replaced during build)
   apiEndpoint: {
     development: 'http://localhost:3000',
-    production: 'https://api.securebank.pages.dev' // Your Cloudflare Worker URL
+    production: 'https://securebank-api.dupjac3.workers.dev' // Your Cloudflare Worker URL
   }
 };
 
