@@ -74,7 +74,7 @@ router.post('/login', authLimiter, staffLoginValidation, handleValidationErrors,
       });
     }
     
-    console.log('🔐 Staff login attempt:', { identifier: loginIdentifier });
+    console.log('Staff login attempt:', { identifier: loginIdentifier });
     
     const result = await StaffService.loginStaff(loginIdentifier, password);
     
@@ -89,7 +89,7 @@ router.post('/login', authLimiter, staffLoginValidation, handleValidationErrors,
       req.session.department = result.staff.department;
       req.session.isAuthenticated = true;
       
-      console.log('✓ Employee session created:', {
+      console.log('Employee session created:', {
         staffId: result.staff._id,
         username: result.staff.username,
         employeeId: result.staff.employeeId,
@@ -99,7 +99,7 @@ router.post('/login', authLimiter, staffLoginValidation, handleValidationErrors,
     
     res.json(result);
   } catch (error) {
-    console.error('❌ Error in POST /api/staff/login:', error);
+    console.error('Error in POST /api/staff/login:', error);
     
     res.status(401).json({
       success: false,
@@ -114,7 +114,7 @@ router.post('/logout', (req, res) => {
     // Destroy session
     req.session.destroy((err) => {
       if (err) {
-        console.error('❌ Error destroying session:', err);
+        console.error('Error destroying session:', err);
         return res.status(500).json({
           success: false,
           message: 'Logout failed'
@@ -124,7 +124,7 @@ router.post('/logout', (req, res) => {
       // Clear session cookie
       res.clearCookie('connect.sid');
       
-      console.log('✓ Employee logged out successfully');
+      console.log('Employee logged out successfully');
       
       res.json({
         success: true,
@@ -132,7 +132,7 @@ router.post('/logout', (req, res) => {
       });
     });
   } catch (error) {
-    console.error('❌ Error in POST /api/staff/logout:', error);
+    console.error('Error in POST /api/staff/logout:', error);
     res.status(500).json({
       success: false,
       message: 'Logout failed'

@@ -29,7 +29,7 @@ const config = {
  * Main build function
  */
 async function build() {
-  console.log('🚀 Building for Cloudflare Pages...\n');
+  console.log('Building for Cloudflare Pages...\n');
   
   try {
     // Step 1: Clean dist directory
@@ -50,14 +50,14 @@ async function build() {
     // Step 6: Generate _redirects file
     await generateRedirectsFile();
     
-    console.log('\n✅ Build complete! Files are in ./dist');
-    console.log('\n📋 Next steps:');
+    console.log('\n Build complete! Files are in ./dist');
+    console.log('\n Next steps:');
     console.log('1. Deploy backend: wrangler deploy');
     console.log('2. Deploy frontend: npm run deploy:pages');
     console.log('3. Set secrets: wrangler secret put MONGODB_URI');
     
   } catch (error) {
-    console.error('❌ Build failed:', error);
+    console.error('Build failed:', error);
     process.exit(1);
   }
 }
@@ -66,24 +66,24 @@ async function build() {
  * Clean dist directory
  */
 async function cleanDist() {
-  console.log('🧹 Cleaning dist directory...');
+  console.log('Cleaning dist directory...');
   
   if (fs.existsSync(config.distDir)) {
     fs.rmSync(config.distDir, { recursive: true });
   }
   
   fs.mkdirSync(config.distDir, { recursive: true });
-  console.log('✓ Cleaned');
+  console.log('Cleaned');
 }
 
 /**
  * Copy public files to dist
  */
 async function copyPublicFiles() {
-  console.log('📦 Copying public files...');
+  console.log('Copying public files...');
   
   copyRecursive(config.publicDir, config.distDir);
-  console.log('✓ Copied');
+  console.log('Copied');
 }
 
 /**
@@ -109,7 +109,7 @@ function copyRecursive(src, dest) {
  * Update API endpoints in JS files
  */
 async function updateApiEndpoints() {
-  console.log('🔧 Updating API endpoints...');
+  console.log('Updating API endpoints...');
   
   const jsFiles = findJsFiles(path.join(config.distDir, 'js'));
   const apiUrl = config.apiEndpoint.production;
@@ -132,7 +132,7 @@ async function updateApiEndpoints() {
     fs.writeFileSync(file, content);
   }
   
-  console.log(`✓ Updated ${jsFiles.length} files`);
+  console.log(`Updated ${jsFiles.length} files`);
 }
 
 /**
@@ -162,7 +162,7 @@ function findJsFiles(dir) {
  * Add disclaimer banner to index.html
  */
 async function addDisclaimerBanner() {
-  console.log('⚠️  Adding disclaimer banner...');
+  console.log('Adding disclaimer banner...');
   
   const indexPath = path.join(config.distDir, 'index.html');
   let html = fs.readFileSync(indexPath, 'utf-8');
@@ -170,7 +170,7 @@ async function addDisclaimerBanner() {
   const disclaimer = `
 <!-- LEGAL DISCLAIMER -->
 <div class="alert alert-warning text-center mb-0" role="alert" style="border-radius: 0;">
-  <strong>⚠️ EDUCATIONAL DEMO PROJECT</strong> - Do NOT enter real banking credentials or personal information. 
+  <strong>EDUCATIONAL DEMO PROJECT</strong> - Do NOT enter real banking credentials or personal information. 
   This is a portfolio project for demonstration purposes only.
   <a href="#disclaimer-modal" data-bs-toggle="modal" class="alert-link">Learn more</a>
 </div>
@@ -180,14 +180,14 @@ async function addDisclaimerBanner() {
   html = html.replace(/<body[^>]*>/, `$&\n${disclaimer}`);
   
   fs.writeFileSync(indexPath, html);
-  console.log('✓ Disclaimer added');
+  console.log('Disclaimer added');
 }
 
 /**
  * Generate Cloudflare _headers file
  */
 async function generateHeadersFile() {
-  console.log('📝 Generating _headers file...');
+  console.log('Generating _headers file...');
   
   const headers = `# Cloudflare Pages Headers
 # https://developers.cloudflare.com/pages/platform/headers/
@@ -214,14 +214,14 @@ async function generateHeadersFile() {
 `;
   
   fs.writeFileSync(path.join(config.distDir, '_headers'), headers);
-  console.log('✓ _headers created');
+  console.log('_headers created');
 }
 
 /**
  * Generate Cloudflare _redirects file
  */
 async function generateRedirectsFile() {
-  console.log('📝 Generating _redirects file...');
+  console.log('Generating _redirects file...');
   
   const redirects = `# Cloudflare Pages Redirects
 # https://developers.cloudflare.com/pages/platform/redirects/

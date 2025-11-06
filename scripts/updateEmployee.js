@@ -90,7 +90,7 @@ async function updateEmployee() {
     console.error(' Error updating employee:', error);
   } finally {
     await mongoose.connection.close();
-    console.log('\n✓ Database connection closed');
+    console.log('\nDatabase connection closed');
     process.exit(0);
   }
 }

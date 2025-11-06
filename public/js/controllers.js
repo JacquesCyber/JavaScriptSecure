@@ -58,7 +58,7 @@ function getHeadersWithCsrf(additionalHeaders = {}) {
   };
   
   if (csrfToken) {
-    console.log('🔒 Including CSRF token in headers:', csrfToken.substring(0, 10) + '...');
+    console.log(' Including CSRF token in headers:', csrfToken.substring(0, 10) + '...');
     // Add CSRF token in all common header formats that csurf checks
     headers['csrf-token'] = csrfToken;
     headers['xsrf-token'] = csrfToken;
@@ -200,8 +200,8 @@ export class RegisterController extends PageController {
         submitBtn.disabled = true;
       }
       
-      console.log('🚀 Starting registration process...');
-      console.log('📤 Form data:', data);
+      console.log('Starting registration process...');
+      console.log('Form data:', data);
       
       // Submit to MongoDB via API
       const response = await fetch('/api/users/register', {
@@ -220,9 +220,9 @@ export class RegisterController extends PageController {
         })
       });
       
-      console.log('📥 Response status:', response.status);
+      console.log('Response status:', response.status);
       const result = await response.json();
-      console.log('📥 Response data:', result);
+      console.log('Response data:', result);
       
       if (result.success) {
         this.app.showNotification('Account created successfully! Welcome ' + result.user.fullName, 'success');
@@ -274,7 +274,7 @@ export class LoginController extends PageController {
       }
       
       // Submit to MongoDB via API
-      console.log('🔐 Login data being sent:', {
+      console.log('Login data being sent:', {
         username: data.username,
         accountNumber: data.accountNumber,
         accountNumberType: typeof data.accountNumber
@@ -823,7 +823,6 @@ export class ValidatorController extends PageController {
               </div>
               <div class="col-md-1 text-end">
                 <button class="btn btn-sm btn-outline-info" onclick="window.SecureApp.viewTransaction('${txn.transactionId}')" title="View Details">
-                  👁️
                 </button>
               </div>
             </div>

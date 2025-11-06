@@ -22,7 +22,7 @@ async function seedEmployee() {
     const mongoUri = process.env.MONGODB_URI || 'mongodb://localhost:27017/securebank';
     await mongoose.connect(mongoUri);
     
-    console.log('✓ Connected to MongoDB');
+    console.log('Connected to MongoDB');
     
     // Get test credentials from environment (with fallback for backwards compatibility)
     const testPassword = process.env.TEST_EMPLOYEE_PASSWORD || 'SecureBank2024!';
@@ -84,7 +84,7 @@ async function seedEmployee() {
     process.exit(1);
   } finally {
     await mongoose.connection.close();
-    console.log('✓ Database connection closed');
+    console.log('Database connection closed');
   }
 }
 

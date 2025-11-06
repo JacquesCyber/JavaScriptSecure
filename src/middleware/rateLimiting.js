@@ -73,7 +73,7 @@ export const authLimiter = rateLimit({
   skipSuccessfulRequests: true, // Only count failed attempts
   // Custom handler for rate limit exceeded
   handler: (req, res) => {
-    console.warn(`🚨 Rate limit exceeded for IP: ${req.ip} on ${req.path}`);
+    console.warn(`Rate limit exceeded for IP: ${req.ip} on ${req.path}`);
     res.status(429).json({
       error: true,
       message: 'Too many login attempts. Please try again in 15 minutes.',
@@ -96,7 +96,7 @@ export const strictLimiter = rateLimit({
   standardHeaders: true,
   legacyHeaders: false,
   handler: (req, res) => {
-    console.warn(`🚨 Strict rate limit exceeded for IP: ${req.ip} on ${req.path}`);
+    console.warn(`Strict rate limit exceeded for IP: ${req.ip} on ${req.path}`);
     res.status(429).json({
       error: true,
       message: 'Too many attempts. Please try again in 1 hour.',

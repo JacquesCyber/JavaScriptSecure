@@ -366,7 +366,7 @@ class EmployeePortalApp {
 
   hasPageAccess(page) {
     const config = this.pageConfig[page];
-    console.log('🔒 Checking page access:', {
+    console.log('Checking page access:', {
       page,
       config,
       employee: this.employee,
@@ -419,9 +419,9 @@ class EmployeePortalApp {
         throw new Error(data.message || 'Logout failed');
       }
       
-      console.log('✓ Server session destroyed');
+      console.log('Server session destroyed');
     } catch (error) {
-      console.error('❌ Error calling logout API:', error);
+      console.error('Error calling logout API:', error);
       // Continue with client-side logout even if API fails
     }
     

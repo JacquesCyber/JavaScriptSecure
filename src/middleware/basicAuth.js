@@ -53,7 +53,6 @@ export const basicAuth = (req, res, next) => {
       </head>
       <body>
         <div class="auth-box">
-          <div class="icon">🔒</div>
           <h1>Authentication Required</h1>
           <p>This is a protected academic demonstration.</p>
           <p><strong>Contact your instructor for access credentials.</strong></p>
@@ -75,12 +74,12 @@ export const basicAuth = (req, res, next) => {
 
     // Verify credentials
     if (username === validUsername && password === validPassword) {
-      console.log(`✅ Authenticated user: ${username} from IP: ${req.ip}`);
+      console.log(`Authenticated user: ${username} from IP: ${req.ip}`);
       return next();
     }
 
     // Invalid credentials
-    console.warn(`⚠️  Failed authentication attempt for user: ${username} from IP: ${req.ip}`);
+    console.warn(`Failed authentication attempt for user: ${username} from IP: ${req.ip}`);
     res.setHeader('WWW-Authenticate', 'Basic realm="Academic Payment Security Demo - Restricted Access"');
     return res.status(401).send(`
       <!DOCTYPE html>
@@ -112,7 +111,6 @@ export const basicAuth = (req, res, next) => {
       </head>
       <body>
         <div class="error-box">
-          <div class="icon">❌</div>
           <h1>Invalid Credentials</h1>
           <p>The username or password you entered is incorrect.</p>
           <p><strong>Please contact your instructor.</strong></p>
@@ -121,7 +119,7 @@ export const basicAuth = (req, res, next) => {
       </html>
     `);
   } catch (error) {
-    console.error('❌ Authentication error:', error);
+    console.error('Authentication error:', error);
     res.setHeader('WWW-Authenticate', 'Basic realm="Academic Payment Security Demo - Restricted Access"');
     return res.status(401).send(`
       <!DOCTYPE html>
@@ -153,7 +151,6 @@ export const basicAuth = (req, res, next) => {
       </head>
       <body>
         <div class="error-box">
-          <div class="icon">⚠️</div>
           <h1>Authentication Error</h1>
           <p>An error occurred during authentication.</p>
           <p><strong>Please try again or contact support.</strong></p>

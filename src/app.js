@@ -62,7 +62,7 @@ const app = express();
 // Apply HTTP Basic Auth FIRST (only in production on Render)
 // This creates the "YouTube private link" experience
 if (process.env.NODE_ENV === 'production') {
-  console.log('🔒 HTTP Basic Authentication ENABLED - Private demo mode');
+  console.log('HTTP Basic Authentication ENABLED - Private demo mode');
   app.use(basicAuth);
 }
 
