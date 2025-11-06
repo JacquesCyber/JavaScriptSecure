@@ -28,6 +28,7 @@ import csurf from 'csurf';
 import cors from 'cors';
 
 // Import middleware
+import { basicAuth } from './middleware/basicAuth.js';
 import { setupSecurity } from './middleware/security.js';
 import { generalLimiter, apiLimiter } from './middleware/rateLimiting.js';
 import { regexValidator, sanitizeInput } from './middleware/validation.js';
@@ -57,6 +58,13 @@ import internationalPaymentsRoutes from './routes/internationalPayments.js';
 dotenv.config();
 
 const app = express();
+
+// Apply HTTP Basic Auth FIRST (only in production on Render)
+// This creates the "YouTube private link" experience
+if (process.env.NODE_ENV === 'production') {
+  console.log('🔒 HTTP Basic Authentication ENABLED - Private demo mode');
+  app.use(basicAuth);
+}
 
 // Basic middleware
 app.use(express.json({ limit: '100kb' })); // Lowered size limit for DoS protection
