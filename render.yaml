@@ -24,3 +24,7 @@ services:
         generateValue: true  # Render auto-generates
       - key: ENCRYPTION_IV
         generateValue: true  # Render auto-generates
+      - key: DEMO_USERNAME
+        value: instructor  # Basic Auth username for demo protection
+      - key: DEMO_PASSWORD
+        sync: false  # Set password in Render dashboard for security
