@@ -89,12 +89,12 @@ class EmployeeLoginController {
           _id: data.staff._id
         };
         
-        console.log('📝 Employee data to store:', employeeData);
+        console.log('Employee data to store:', employeeData);
         this.app.setEmployee(employeeData);
         
         // Verify employee was stored
-        console.log('✓ Employee stored in app:', this.app.employee);
-        console.log('✓ Is authenticated:', this.app.isAuthenticated());
+        console.log('Employee stored in app:', this.app.employee);
+        console.log('Is authenticated:', this.app.isAuthenticated());
         
         this.app.showNotification(`Welcome back, ${data.staff.fullName}!`, 'success');
         

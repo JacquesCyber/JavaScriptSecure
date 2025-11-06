@@ -177,7 +177,7 @@ router.post('/process', authLimiter, paymentValidation, handleValidationErrors, 
       userAgent
     );
     
-    console.log('✅ Payment processed successfully:', result.payment.transactionId);
+    console.log('Payment processed successfully:', result.payment.transactionId);
     
     res.status(201).json(result);
   } catch (error) {

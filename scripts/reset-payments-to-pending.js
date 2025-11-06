@@ -18,7 +18,7 @@ async function resetPaymentsToPending() {
   try {
     console.log('Connecting to MongoDB...');
     await mongoose.connect(MONGODB_URI);
-    console.log('✓ Connected to MongoDB');
+    console.log('Connected to MongoDB');
 
     // Find all payments that are completed or failed
     const result = await Payment.updateMany(
@@ -37,7 +37,7 @@ async function resetPaymentsToPending() {
       }
     );
 
-    console.log(`\n✓ Updated ${result.modifiedCount} payments to pending status`);
+    console.log(`\nUpdated ${result.modifiedCount} payments to pending status`);
     console.log(`  - Total matched: ${result.matchedCount}`);
     console.log(`  - Modified: ${result.modifiedCount}`);
 
@@ -63,7 +63,7 @@ async function resetPaymentsToPending() {
     console.error('Error resetting payments:', error);
   } finally {
     await mongoose.disconnect();
-    console.log('\n✓ Disconnected from MongoDB');
+    console.log('\nDisconnected from MongoDB');
   }
 }
 

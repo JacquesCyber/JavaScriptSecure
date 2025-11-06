@@ -15,7 +15,7 @@ async function resetPassword() {
   try {
     console.log('Connecting to MongoDB...');
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✓ Connected to MongoDB\n');
+    console.log('Connected to MongoDB\n');
     
     // Get test credentials from environment
     const testUsername = process.env.TEST_EMPLOYEE_USERNAME || 'employee001';
@@ -29,7 +29,7 @@ async function resetPassword() {
       process.exit(1);
     }
     
-    console.log('✓ Found employee:', employee.username);
+    console.log('Found employee:', employee.username);
     console.log('  Email:', employee.email);
     console.log('  Employee ID:', employee.employeeId);
     

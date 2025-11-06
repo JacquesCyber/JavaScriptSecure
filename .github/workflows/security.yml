@@ -35,7 +35,7 @@ jobs:
       - name: Run ESLint Security Rules
         run: |
           npm install eslint-plugin-security --save-dev
-          npx eslint src/ --config eslint.config.security.js || echo "⚠️ Lint warnings found but continuing security scan"
+          npx eslint src/ --config eslint.config.security.js || echo "Lint warnings found but continuing security scan"
         continue-on-error: true  # Don't block deployment on lint warnings
         env:
           ENCRYPTION_KEY: ${{ secrets.ENCRYPTION_KEY }}
@@ -48,7 +48,7 @@ jobs:
           mkdir -p keys
           openssl genrsa -out keys/private.pem 2048
           openssl rsa -in keys/private.pem -pubout -out keys/public.pem
-          echo "✅ Generated temporary RSA keys for testing"
+          echo " Generated temporary RSA keys for testing"
           
       - name: Start Application
         run: |
@@ -104,7 +104,7 @@ jobs:
       # Artifacts removed - focus on security scanning results only
       - name: Security Scan Complete
         run: |
-          echo "✅ Security scans completed successfully!"
+          echo " Security scans completed successfully!"
           echo "- Baseline scan: Checked critical security issues"
           echo "- Full scan: Comprehensive security analysis"
           echo "- Low priority alerts properly ignored"
@@ -131,6 +131,6 @@ jobs:
       # Artifacts removed - audit results visible in CI logs
       - name: Dependency Scan Complete  
         run: |
-          echo "✅ Dependency scan completed successfully!"
+          echo " Dependency scan completed successfully!"
           echo "- High/critical vulnerabilities checked"
           echo "- Audit report available in CI logs above"

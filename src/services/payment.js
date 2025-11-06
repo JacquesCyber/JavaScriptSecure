@@ -36,7 +36,7 @@ export class PaymentService {
       if (typeof userId !== 'string'){
         throw new Error('Invalid user ID');
       }
-      console.log('💳 Processing payment for user:', userId);
+      console.log('Processing payment for user:', userId);
       
       // Validate user exists
       const user = await User.findById(userId);

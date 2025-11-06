@@ -11,30 +11,30 @@ dotenv.config();
 
 async function listCollections() {
   try {
-    console.log('🔄 Connecting to MongoDB...');
-    console.log('📍 URI:', process.env.MONGODB_URI?.replace(/\/\/.*:.*@/, '//***:***@')); // Hide credentials
+    console.log('Connecting to MongoDB...');
+    console.log('URI:', process.env.MONGODB_URI?.replace(/\/\/.*:.*@/, '//***:***@')); // Hide credentials
     
     await mongoose.connect(process.env.MONGODB_URI);
-    console.log('✓ Connected to MongoDB\n');
+    console.log('Connected to MongoDB\n');
     
     // Get database name
     const dbName = mongoose.connection.db.databaseName;
-    console.log('📊 Database:', dbName);
+    console.log('Database:', dbName);
     
     // List all collections
     const collections = await mongoose.connection.db.listCollections().toArray();
-    console.log(`\n📋 Found ${collections.length} collections:\n`);
+    console.log(`\nFound ${collections.length} collections:\n`);
     
     if (collections.length === 0) {
-      console.log('❌ No collections found in this database');
-      console.log('\n💡 Make sure you:');
+      console.log('No collections found in this database');
+      console.log('\nMake sure you:');
       console.log('   1. Added the document to the correct database');
       console.log('   2. Are connected to the right MongoDB cluster');
       console.log('   3. The collection has at least one document');
     } else {
       for (const collection of collections) {
         const count = await mongoose.connection.db.collection(collection.name).countDocuments();
-        console.log(`   📁 ${collection.name} (${count} documents)`);
+        console.log(`   ${collection.name} (${count} documents)`);
         
         // If it's a staff-related collection, show sample
         if (collection.name.toLowerCase().includes('staff')) {
@@ -48,10 +48,10 @@ async function listCollections() {
     }
     
   } catch (error) {
-    console.error('❌ Error:', error.message);
+    console.error('Error:', error.message);
   } finally {
     await mongoose.connection.close();
-    console.log('\n✓ Database connection closed');
+    console.log('\nDatabase connection closed');
     process.exit(0);
   }
 }

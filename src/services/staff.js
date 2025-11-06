@@ -77,20 +77,20 @@ export class StaffService {
       });
       
       if (!staff) {
-        console.log('❌ Staff not found with identifier:', identifier);
+        console.log('Staff not found with identifier:', identifier);
         throw new Error('Invalid credentials');
       }
 
       const valid = await verifyPassword(password, staff.password);
       if (!valid) {
-        console.log('❌ Invalid password for staff:', staff.username);
+        console.log('Invalid password for staff:', staff.username);
         throw new Error('Invalid credentials');
       }
 
       staff.lastLogin = new Date();
       await staff.save();
       
-      console.log('✓ Staff login successful:', {
+      console.log('Staff login successful:', {
         username: staff.username,
         employeeId: staff.employeeId,
         role: staff.role
@@ -112,7 +112,7 @@ export class StaffService {
         }
       };
     } catch (err) {
-      console.error('❌ Staff login error:', err.message);
+      console.error('Staff login error:', err.message);
       throw err;
     }
   }

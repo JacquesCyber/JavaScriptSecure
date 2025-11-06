@@ -261,7 +261,7 @@ export class InternationalPaymentService {
     
     await payment.save();
     
-    console.log('⚠️ Payment rejected:', transactionId);
+    console.log('Payment rejected:', transactionId);
     
     return {
       success: true,
@@ -299,7 +299,7 @@ export class InternationalPaymentService {
     
     await payment.save();
     
-    console.log('⏳ Payment processing:', transactionId);
+    console.log('Payment processing:', transactionId);
     
     return {
       success: true,

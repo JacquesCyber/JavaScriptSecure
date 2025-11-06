@@ -65,28 +65,23 @@ export const AppConfig = {
     routeConfig: {
       register: {
         title: 'Create Account',
-        requiresAuth: false,
-        icon: '🔐'
+        requiresAuth: false
       },
       login: {
         title: 'Sign In',
-        requiresAuth: false,
-        icon: '🔑'
+        requiresAuth: false
       },
       dashboard: {
         title: 'Dashboard',
-        requiresAuth: true,
-        icon: '📊'
+        requiresAuth: true
       },
       payment: {
         title: 'Payment',
-        requiresAuth: true,
-        icon: '💳'
+        requiresAuth: true
       },
       validator: {
         title: 'Transactions',
-        requiresAuth: true,
-        icon: '✅'
+        requiresAuth: true
       }
     }
   },
