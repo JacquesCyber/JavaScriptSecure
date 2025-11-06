@@ -637,11 +637,11 @@ npm run prod         # HTTPS production (requires certificates)
 4. Session expires after inactivity or logout
 
 **Security Features**:
-- ✅ API endpoints require server-side session validation
-- ✅ Client-side authentication guard redirects to login
-- ✅ Session-based authentication with 15-minute timeout
-- ✅ Rate limiting on login attempts (5 per 15 minutes)
-- ✅ Logout destroys both client and server sessions
+-  API endpoints require server-side session validation
+-  Client-side authentication guard redirects to login
+-  Session-based authentication with 15-minute timeout
+-  Rate limiting on login attempts (5 per 15 minutes)
+-  Logout destroys both client and server sessions
 
 ##  Security Standards & Compliance
 
@@ -672,14 +672,14 @@ This project implements a **security-demonstration architecture** suitable for a
 - Server-side API protection with session checks
 
 **Current Security Features**:
-- ✅ Session-based authentication with 15-minute timeout
-- ✅ Rate limiting on authentication endpoints (5 attempts/15 min)
-- ✅ CSRF protection on state-changing operations
-- ✅ API endpoints validate server-side sessions
-- ✅ Client-side authentication guards
-- ✅ Role-based access control (RBAC)
-- ✅ Password hashing with bcrypt (12 rounds)
-- ✅ Comprehensive audit logging
+-  Session-based authentication with 15-minute timeout
+-  Rate limiting on authentication endpoints (5 attempts/15 min)
+-  CSRF protection on state-changing operations
+-  API endpoints validate server-side sessions
+-  Client-side authentication guards
+-  Role-based access control (RBAC)
+-  Password hashing with bcrypt (12 rounds)
+-  Comprehensive audit logging
 
 **Design Rationale**: This architecture demonstrates security principles while remaining accessible for markers/evaluators without requiring VPN access, hardware tokens, or corporate infrastructure.
 
@@ -999,25 +999,25 @@ await AuditLog.create(auditLog);
 ### Implementation Priority (for Production)
 
 **Phase 1 (Critical - Before Launch)**:
-1. ✅ SSO Integration (Azure AD / Okta)
-2. ✅ MFA Enforcement (TOTP + SMS)
-3. ✅ VPN-Only Access or IP Whitelisting
-4. ✅ Separate infrastructure for employee portal
-5. ✅ Enhanced audit logging with retention
+1.  SSO Integration (Azure AD / Okta)
+2.  MFA Enforcement (TOTP + SMS)
+3.  VPN-Only Access or IP Whitelisting
+4.  Separate infrastructure for employee portal
+5.  Enhanced audit logging with retention
 
 **Phase 2 (High Priority - Within 3 Months)**:
-1. ✅ Zero Trust architecture implementation
-2. ✅ Device fingerprinting and trust
-3. ✅ Behavioral analytics and risk scoring
-4. ✅ SIEM integration
-5. ✅ Penetration testing
+1.  Zero Trust architecture implementation
+2.  Device fingerprinting and trust
+3.  Behavioral analytics and risk scoring
+4.  SIEM integration
+5.  Penetration testing
 
 **Phase 3 (Continuous Improvement)**:
-1. ✅ Quarterly security audits
-2. ✅ Compliance certification (SOC 2, ISO 27001)
-3. ✅ Bug bounty program
-4. ✅ Security automation (SOAR)
-5. ✅ Advanced threat detection (ML-based)
+1.  Quarterly security audits
+2.  Compliance certification (SOC 2, ISO 27001)
+3.  Bug bounty program
+4.  Security automation (SOAR)
+5.  Advanced threat detection (ML-based)
 
 ---
 
@@ -1039,12 +1039,12 @@ await AuditLog.create(auditLog);
 **Academic Implementation Justification**:
 
 This project demonstrates comprehensive security knowledge suitable for portfolio/academic purposes:
-- ✅ **Authentication & Session Management** - Proper session handling with bcrypt password hashing
-- ✅ **Authorization** - Role-based access control (RBAC)
-- ✅ **Input Validation** - 5-layer defense-in-depth protection
-- ✅ **API Security** - CSRF protection, rate limiting, secure headers
-- ✅ **Encryption** - TLS/SSL transport + AES-256 at rest
-- ✅ **Security Architecture** - Defense-in-depth, fail-safe defaults, least privilege
+-  **Authentication & Session Management** - Proper session handling with bcrypt password hashing
+-  **Authorization** - Role-based access control (RBAC)
+-  **Input Validation** - 5-layer defense-in-depth protection
+-  **API Security** - CSRF protection, rate limiting, secure headers
+-  **Encryption** - TLS/SSL transport + AES-256 at rest
+-  **Security Architecture** - Defense-in-depth, fail-safe defaults, least privilege
 
 The current implementation showcases **understanding of security principles** while remaining **practical for evaluation** by markers/assessors who don't have access to corporate VPN or enterprise SSO infrastructure.
 
@@ -1354,9 +1354,9 @@ NODE_ENV=production|development|test
 PORT=3000
 ```
 
-> **💡 Tip**: Copy `.env.example` to `.env` and customize the values. The `.env` file is gitignored and will never be committed.
+> ** Tip**: Copy `.env.example` to `.env` and customize the values. The `.env` file is gitignored and will never be committed.
 
-> **⚠️ Security Note**: Test credentials are for development/demo purposes only. In production, use a proper employee onboarding system with strong, unique passwords and multi-factor authentication.
+> ** Security Note**: Test credentials are for development/demo purposes only. In production, use a proper employee onboarding system with strong, unique passwords and multi-factor authentication.
 
 ##  Security Documentation
 
@@ -1731,13 +1731,13 @@ When adding new environment variables:
 
 This project underwent comprehensive code quality audits to maintain best practices:
 
-#### ✅ Security Constants Centralization
+####  Security Constants Centralization
 - **Issue:** Bcrypt salt rounds duplicated 4 times across codebase
 - **Fix:** Created `src/constants/security.js` with `BCRYPT_SALT_ROUNDS: 12`
 - **Impact:** Single source of truth for cryptographic parameters
 - **Files Updated:** `user.js`, `staff.js`, `seedEmployee.js`, `resetEmployeePassword.js`
 
-#### ✅ Authentication Utilities
+####  Authentication Utilities
 - **Issue:** 8 scattered bcrypt operations across services and scripts
 - **Fix:** Created `src/utils/auth.js` with:
   - `hashPassword(password)` - Consistent password hashing
@@ -1745,7 +1745,7 @@ This project underwent comprehensive code quality audits to maintain best practi
   - `validatePasswordStrength(password)` - Complexity checks
 - **Benefits:** Easier testing, future algorithm migration, consistent error handling
 
-#### ✅ Validation Middleware
+####  Validation Middleware
 - **Issue:** 15 duplicate validation error handlers across routes
 - **Fix:** Created `src/middleware/validationHandler.js`
 - **Impact:** ~60 lines of code removed, consistent error responses
@@ -1753,21 +1753,21 @@ This project underwent comprehensive code quality audits to maintain best practi
 #### Code Quality Metrics
 | Metric | Before | After | Improvement |
 |--------|--------|-------|-------------|
-| Duplicate constants | 4 | 0 | ✅ 100% |
-| Scattered bcrypt calls | 8 | 0 | ✅ 100% |
-| Duplicate validation | 15 | 0 | ✅ 100% |
-| Lines removed | - | ~95 | ✅ -95 lines |
+| Duplicate constants | 4 | 0 |  100% |
+| Scattered bcrypt calls | 8 | 0 |  100% |
+| Duplicate validation | 15 | 0 |  100% |
+| Lines removed | - | ~95 |  -95 lines |
 
 ### Architecture Quality
-- ✅ **Modular Design:** Clear separation of concerns (models, services, routes, middleware)
-- ✅ **DRY Principle:** No code duplication
-- ✅ **SOLID Principles:** Single responsibility, dependency injection
-- ✅ **Security First:** Centralized security configurations
-- ✅ **Maintainable:** Easy to update, extend, and test
+-  **Modular Design:** Clear separation of concerns (models, services, routes, middleware)
+-  **DRY Principle:** No code duplication
+-  **SOLID Principles:** Single responsibility, dependency injection
+-  **Security First:** Centralized security configurations
+-  **Maintainable:** Easy to update, extend, and test
 
 ---
 
-## 🏦 International Payments System
+##  International Payments System
 
 ### Overview
 Comprehensive SWIFT MT103 international payment system for employee portal with full compliance and fraud detection.
@@ -1838,7 +1838,7 @@ Frontend built with vanilla JS for security:
 
 ---
 
-## 📝 License
+##  License
 
 MIT License - See [LICENSE](LICENSE) for details
 
