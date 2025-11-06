@@ -74,7 +74,7 @@ async function updateEmployee() {
       fullName: employee.fullName,
       username: employee.username,
       email: employee.email,
-      employeeId: employee.employeeId,
+      employeeId: '[REDACTED]',
       role: employee.role,
       department: employee.department,
       isActive: employee.isActive

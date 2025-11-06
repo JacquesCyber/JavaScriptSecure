@@ -33,7 +33,7 @@ const router = express.Router();
  * TODO: Replace with proper JWT authentication
  */
 const extractEmployeeId = (req, res, next) => {
-  const employeeId = req.body.employeeId || req.query.employeeId;
+  const employeeId = req.body.employeeId;
   
   // Strictly validate employeeId: must be a string/ObjectId
   if (
