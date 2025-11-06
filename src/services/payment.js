@@ -19,6 +19,7 @@
 import Payment from '../models/Payment.js';
 import User from '../models/User.js';
 import crypto from 'crypto';
+import { encrypt, decrypt } from '../utils/encryption.js';
 
 export class PaymentService {
   /**
@@ -214,7 +215,7 @@ export class PaymentService {
   /**
    * Validate PayPal email
    * @param {string} email - PayPal email
-   * @returns {string} Validated email
+   * @returns {string} Encrypted and validated email
    */
   static validatePayPalEmail(email) {
     if (!email) {
@@ -226,7 +227,8 @@ export class PaymentService {
       throw new Error('Invalid PayPal email format');
     }
 
-    return email.toLowerCase();
+    // Encrypt email before storing
+    return encrypt(email.toLowerCase());
   }
 
   /**
@@ -268,7 +270,8 @@ export class PaymentService {
       if (!/^\d{10,12}$/.test(bankDetails.accountNumber)) {
         throw new Error('Account number must be between 10-12 digits');
       }
-      validated.accountNumber = bankDetails.accountNumber;
+      // Encrypt account number before storing
+      validated.accountNumber = encrypt(bankDetails.accountNumber);
     }
 
     // Legacy US banking fields (for backward compatibility)
@@ -317,7 +320,8 @@ export class PaymentService {
     if (!swiftDetails.beneficiaryAccount || swiftDetails.beneficiaryAccount.trim().length === 0) {
       throw new Error('Beneficiary account/IBAN is required');
     }
-    validated.beneficiaryAccount = swiftDetails.beneficiaryAccount.trim();
+    // Encrypt beneficiary account before storing
+    validated.beneficiaryAccount = encrypt(swiftDetails.beneficiaryAccount.trim());
 
     // Validate bank name
     if (!swiftDetails.bankName || swiftDetails.bankName.trim().length === 0) {
@@ -506,7 +510,22 @@ export class PaymentService {
           }
         }),
         ...(payment.paymentMethod.paypalEmail && {
-          paypalEmail: payment.paymentMethod.paypalEmail
+          // Decrypt PayPal email for display (consider masking instead)
+          paypalEmail: this.maskEmail(decrypt(payment.paymentMethod.paypalEmail))
+        }),
+        ...(payment.paymentMethod.bankDetails?.accountNumber && {
+          bankDetails: {
+            ...payment.paymentMethod.bankDetails,
+            // Decrypt and mask account number for display
+            accountNumber: this.maskAccountNumber(decrypt(payment.paymentMethod.bankDetails.accountNumber))
+          }
+        }),
+        ...(payment.paymentMethod.swiftDetails?.beneficiaryAccount && {
+          swiftDetails: {
+            ...payment.paymentMethod.swiftDetails,
+            // Decrypt and mask beneficiary account for display
+            beneficiaryAccount: this.maskAccountNumber(decrypt(payment.paymentMethod.swiftDetails.beneficiaryAccount))
+          }
         })
       },
       description: payment.description,
@@ -517,6 +536,30 @@ export class PaymentService {
     };
 
     return sanitized;
+  }
+
+  /**
+   * Mask email address for display
+   * @param {string} email - Email address
+   * @returns {string} Masked email
+   */
+  static maskEmail(email) {
+    if (!email) return email;
+    const [username, domain] = email.split('@');
+    const maskedUsername = username.substring(0, 2) + '*'.repeat(Math.max(username.length - 2, 3));
+    return `${maskedUsername}@${domain}`;
+  }
+
+  /**
+   * Mask account number for display
+   * @param {string} accountNumber - Account number
+   * @returns {string} Masked account number
+   */
+  static maskAccountNumber(accountNumber) {
+    if (!accountNumber) return accountNumber;
+    if (accountNumber.length <= 4) return accountNumber;
+    const lastFour = accountNumber.slice(-4);
+    return '*'.repeat(accountNumber.length - 4) + lastFour;
   }
 
   /**

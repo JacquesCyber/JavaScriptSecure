@@ -236,42 +236,94 @@
           </h5>
           <p>
             This is a demonstration payment processing system created for educational and academic purposes only.
-            <strong>This is NOT a real payment processor.</strong>
+            <strong>This is NOT a real payment processor and should NEVER be used for actual financial transactions.</strong>
+            While sensitive data is encrypted using AES-256, this system is NOT PCI DSS Level 1 compliant and is not intended for production use.
           </p>
         </div>
 
         <div class="info-section">
-          <h5>Important Guidelines</h5>
+          <h5>Critical Security Notice</h5>
 
           <div class="disclaimer-list">
             <ul>
               <li class="text-danger">
                 <i class="bi bi-x-circle-fill"></i>
-                <strong>DO NOT</strong> enter any real or sensitive personal information
+                <strong>NO REAL CARD NUMBERS:</strong> Use only the provided test card numbers from Stripe's testing suite
               </li>
               <li class="text-danger">
                 <i class="bi bi-x-circle-fill"></i>
-                <strong>DO NOT</strong> use real credit card numbers, bank account details, or passwords
+                <strong>NO REAL BANK ACCOUNTS:</strong> Never enter actual bank account numbers or routing numbers
               </li>
               <li class="text-danger">
                 <i class="bi bi-x-circle-fill"></i>
-                <strong>DO NOT</strong> use this system for actual financial transactions
+                <strong>NO REAL PERSONAL DATA:</strong> Do not use real names, addresses, phone numbers, or email addresses you actually use
+              </li>
+              <li class="text-danger">
+                <i class="bi bi-x-circle-fill"></i>
+                <strong>NO REAL PASSWORDS:</strong> Never use passwords you use on other sites or services
+              </li>
+              <li class="text-danger">
+                <i class="bi bi-x-circle-fill"></i>
+                <strong>NO REAL TRANSACTIONS:</strong> This system does not connect to real payment processors or banks
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="info-section">
+          <h5>What This System Demonstrates</h5>
+
+          <div class="disclaimer-list">
+            <ul>
+              <li class="text-success">
+                <i class="bi bi-check-circle-fill"></i>
+                <strong>Encryption:</strong> AES-256-CBC encryption for sensitive financial data (account numbers, emails)
               </li>
               <li class="text-success">
                 <i class="bi bi-check-circle-fill"></i>
-                Use only test data and fictional information for demonstration purposes
+                <strong>Security:</strong> NoSQL injection prevention, input validation, and authentication systems
               </li>
               <li class="text-success">
                 <i class="bi bi-check-circle-fill"></i>
-                This project demonstrates secure coding practices and payment workflow concepts
+                <strong>Workflows:</strong> International payment processing, SWIFT transfers, and compliance verification
+              </li>
+              <li class="text-success">
+                <i class="bi bi-check-circle-fill"></i>
+                <strong>Best Practices:</strong> PCI DSS concepts (CVV not stored, only last 4 card digits retained)
               </li>
             </ul>
           </div>
         </div>
 
         <div class="info-alert">
-          <strong><i class="bi bi-lightbulb-fill"></i> Purpose:</strong> This application showcases international payment processing workflows,
-          security implementations, and compliance verification systems in an educational context.
+          <strong><i class="bi bi-info-circle-fill"></i> Data Storage:</strong> 
+          All data entered is stored in a test database with encryption enabled for sensitive fields. 
+          However, this is an academic environment - assume all data may be visible to instructors and system administrators. 
+          <strong>Use fictional test data only.</strong>
+        </div>
+
+        <div class="info-section">
+          <h5>Legal Disclaimer</h5>
+          <div class="disclaimer-list">
+            <ul>
+              <li class="text-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                The creators accept <strong>NO LIABILITY</strong> for any data entered into this system
+              </li>
+              <li class="text-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                You use this system entirely <strong>AT YOUR OWN RISK</strong>
+              </li>
+              <li class="text-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                This system makes <strong>NO WARRANTY</strong> of data security or privacy
+              </li>
+              <li class="text-danger">
+                <i class="bi bi-exclamation-triangle-fill"></i>
+                By proceeding, you acknowledge this is for <strong>EDUCATIONAL PURPOSES ONLY</strong>
+              </li>
+            </ul>
+          </div>
         </div>
 
         <div class="checkbox-container">
@@ -283,8 +335,14 @@
               required
             >
             <label class="form-check-label" for="acknowledge-checkbox">
-              <strong>I understand and acknowledge</strong> that this is an academic demonstration system,
-              and I will not enter any real or sensitive information.
+              <strong>I ACKNOWLEDGE AND AGREE:</strong>
+              <ul class="mb-0 mt-2" style="list-style: none; padding-left: 0;">
+                <li>✓ This is an academic demonstration system only</li>
+                <li>✓ I will use ONLY test data (provided test cards, fictional information)</li>
+                <li>✓ I will NOT enter any real financial or personal information</li>
+                <li>✓ I understand the creators accept NO LIABILITY for any data entered</li>
+                <li>✓ I use this system entirely AT MY OWN RISK</li>
+              </ul>
             </label>
           </div>
         </div>
@@ -316,7 +374,8 @@
         <div class="text-center mt-3">
           <small class="footer-note">
             <i class="bi bi-shield-check"></i>
-            By accepting, you agree to use only test data in this system
+            <strong>Academic Project:</strong> Cybersecurity & Payment Processing Demonstration<br>
+            By accepting, you confirm understanding this is NOT a real payment system
           </small>
         </div>
       </div>

@@ -450,9 +450,6 @@ export class PaymentController extends PageController {
       
       this.app.showNotification('Processing payment...', 'info');
       
-      console.log('Starting payment process...');
-      console.log('Payment data:', data);
-      
       // Prepare payment data for API
       const paymentData = {
         amount: parseFloat(data.amount),
@@ -469,8 +466,6 @@ export class PaymentController extends PageController {
         paymentData.userId = this.app.user.id;
       }
       
-      console.log('Final payment data being sent:', JSON.stringify(paymentData, null, 2));
-      
       // Submit to MongoDB via API
       const response = await fetch('/api/payments/process', {
         method: 'POST',
@@ -479,9 +474,7 @@ export class PaymentController extends PageController {
         body: JSON.stringify(paymentData)
       });
       
-      console.log('Payment response status:', response.status);
       const result = await response.json();
-      console.log('Payment response data:', result);
 
       if (result.success) {
         // If this is a SWIFT payment, also create an international payment for employee review
@@ -499,7 +492,8 @@ export class PaymentController extends PageController {
         // Display detailed validation errors
         let errorMessage = result.message || 'Payment failed';
         if (result.errors && result.errors.length > 0) {
-          console.error('Validation errors:', result.errors);
+          // Log error count only, not details
+          console.error('Validation failed with', result.errors.length, 'error(s)');
           const errorDetails = result.errors.map(err => 
             `${err.path || err.param}: ${err.msg}`
           ).join(', ');
