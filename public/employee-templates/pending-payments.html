@@ -41,7 +41,7 @@
 
   <!-- Statistics Cards -->
   <div class="row mb-4">
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="card bg-info text-white">
         <div class="card-body">
           <h5 class="card-title">Total Pending</h5>
@@ -49,7 +49,7 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="card bg-warning text-dark">
         <div class="card-body">
           <h5 class="card-title">High Risk</h5>
@@ -57,19 +57,11 @@
         </div>
       </div>
     </div>
-    <div class="col-md-3">
+    <div class="col-md-4">
       <div class="card bg-success text-white">
         <div class="card-body">
           <h5 class="card-title">Total Value</h5>
           <p class="card-text display-6" id="stat-total-value">$0</p>
-        </div>
-      </div>
-    </div>
-    <div class="col-md-3">
-      <div class="card bg-primary text-white">
-        <div class="card-body">
-          <h5 class="card-title">Awaiting Me</h5>
-          <p class="card-text display-6" id="stat-awaiting-me">0</p>
         </div>
       </div>
     </div>
@@ -96,18 +88,15 @@
       </div>
 
       <div id="payments-table-container" class="table-responsive d-none">
-        <table class="table table-hover table-striped" id="pending-payments-table">
+        <table class="table table-hover table-striped table-sm" id="pending-payments-table">
           <thead class="table-dark">
             <tr>
-              <th>Transaction ID</th>
+              <th style="min-width: 100px;">Transaction</th>
               <th>Customer</th>
-              <th>Beneficiary</th>
               <th>Amount</th>
-              <th>Currency</th>
-              <th>AML Risk</th>
-              <th>Fraud Score</th>
+              <th>Risk</th>
               <th>Submitted</th>
-              <th>Actions</th>
+              <th style="width: 80px;">Actions</th>
             </tr>
           </thead>
           <tbody id="payments-tbody">
@@ -164,18 +153,13 @@
 <!-- Payment Row Template (hidden, used for cloning) -->
 <template id="payment-row-template">
   <tr class="payment-row" data-payment-id="">
-    <td class="payment-id"></td>
+    <td class="payment-id" style="font-size: 0.85rem;"></td>
     <td class="customer-name"></td>
-    <td class="beneficiary-name"></td>
-    <td class="amount"></td>
-    <td class="currency"></td>
+    <td class="amount" style="white-space: nowrap;"></td>
     <td>
       <span class="badge aml-risk-badge"></span>
     </td>
-    <td>
-      <span class="badge fraud-score-badge"></span>
-    </td>
-    <td class="submitted-date"></td>
+    <td class="submitted-date" style="font-size: 0.85rem;"></td>
     <td>
       <button class="btn btn-sm btn-primary verify-btn" title="Verify Payment">
         <i class="bi bi-search"></i>
