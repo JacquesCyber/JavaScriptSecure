@@ -21,7 +21,3 @@ PORT = "8787"
 binding = "SESSIONS"
 id = "f2024d7829cd444795d4735a3b405a81"
 preview_id = "147a9e06957f4decb8677b24149a03a4"
-
-# Limits
-[limits]
-cpu_ms = 50

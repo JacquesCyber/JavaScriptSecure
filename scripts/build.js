@@ -21,7 +21,7 @@ const config = {
   // API endpoint (will be replaced during build)
   apiEndpoint: {
     development: 'http://localhost:3000',
-    production: 'https://api.securebank.pages.dev' // Your Cloudflare Worker URL
+    production: process.env.API_URL || 'https://javascriptsecure-api.onrender.com' // Update after Render deployment
   }
 };
 
