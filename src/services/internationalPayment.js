@@ -312,6 +312,12 @@ export class InternationalPaymentService {
    * Get payment by transaction ID
    */
   static async getPayment(transactionId, employeeId) {
+    let castedEmployeeId;
+    try {
+      castedEmployeeId = new mongoose.Types.ObjectId(employeeId);
+    } catch (err) {
+      throw new Error('Invalid employeeId');
+    }
     const payment = await InternationalPayment.findOne({ transactionId })
       .populate('customerId', 'fullName email accountNumber')
       .populate('employeeId', 'fullName email')
@@ -322,8 +328,8 @@ export class InternationalPaymentService {
     }
     
     // Verify access rights
-    if (payment.employeeId._id.toString() !== employeeId.toString()) {
-      const employee = await Staff.findById(employeeId);
+    if (payment.employeeId._id.toString() !== castedEmployeeId.toString()) {
+      const employee = await Staff.findById(castedEmployeeId);
       if (!employee || !['admin', 'manager'].includes(employee.role)) {
         throw new Error('Access denied');
       }
@@ -341,7 +347,7 @@ export class InternationalPaymentService {
   static async getEmployeePayments(employeeId, options = {}) {
     const { limit = 50, skip = 0, status, startDate, endDate } = options;
     
-    const query = { employeeId };
+    const query = { employeeId:  mongoose.Types.ObjectId(employeeId)  };
     
     if (status) {
       query.status = { $eq: status };

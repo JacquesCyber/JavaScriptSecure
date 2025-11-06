@@ -75,7 +75,7 @@ async function seedEmployee() {
     console.log('Department:', employee.department);
     console.log('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
     console.log('\n Login Username for Testing (do not use in production):');
-    console.log('   Username:', testUsername);
+    console.log('   Username:', [REDACTED]);
     console.log('   Password: ', [REDACTED]);
     console.log('\n Access Portal: http://localhost:3000/employee-portal\n');
     
