@@ -2,9 +2,24 @@
   <div class="col-md-8">
     <div class="card border-warning shadow-lg">
       <div class="card-header bg-warning text-dark text-center">
-        <h2 class="mb-0">💳 Payment Processor</h2>
+        <h2 class="mb-0">Payment Processor</h2>
       </div>
       <div class="card-body p-4">
+        <!-- PCI DSS Warning Banner -->
+        <div class="alert alert-danger border-danger mb-4" role="alert">
+          <h6 class="alert-heading"><strong>WARNING: Testing Environment Only</strong></h6>
+          <p class="mb-0">This is an academic project demonstrating payment security. Sensitive data (account numbers, emails) is encrypted using AES-256. However, this is NOT PCI DSS Level 1 compliant. For testing purposes only - use provided test cards only.</p>
+        </div>
+        <div class="alert alert-info mb-4" role="alert">
+          <h6 class="alert-heading"><strong>Security Measures Implemented:</strong></h6>
+          <ul class="mb-0 small">
+            <li>Bank account numbers encrypted with AES-256-CBC</li>
+            <li>PayPal emails encrypted before storage</li>
+            <li>SWIFT/IBAN details encrypted at rest</li>
+            <li>Only last 4 card digits stored (never full numbers)</li>
+            <li>CVV never stored (PCI DSS requirement)</li>
+          </ul>
+        </div>
         <form id="payment-form" class="needs-validation" novalidate>
           <div class="row">
             <div class="col-md-4">
@@ -54,8 +69,19 @@
             <div class="row">
               <div class="col-md-12">
                 <div class="mb-3">
-                  <label for="card-number" class="form-label">Card Number</label>
-                  <input type="text" class="form-control" id="card-number" name="cardNumber" placeholder="1234 5678 9012 3456">
+                  <label for="card-number" class="form-label">Test Card Number</label>
+                  <select class="form-select" id="card-number" name="cardNumber" required>
+                    <option value="">Select a test card...</option>
+                    <option value="4242424242424242">Visa - Payment Succeeds</option>
+                    <option value="4000000000000002">Visa - Payment Declined</option>
+                    <option value="4000000000009995">Visa - Insufficient Funds</option>
+                    <option value="4000000000009987">Visa - Lost Card</option>
+                    <option value="4000000000000127">Visa - Incorrect CVC</option>
+                    <option value="5555555555554444">Mastercard - Payment Succeeds</option>
+                    <option value="378282246310005">American Express - Payment Succeeds</option>
+                    <option value="6011111111111117">Discover - Payment Succeeds</option>
+                  </select>
+                  <div class="form-text">Official Stripe test cards - Select scenario to test</div>
                 </div>
               </div>
             </div>
@@ -110,7 +136,7 @@
           <!-- PayPal Details -->
           <div id="paypal-details" style="display: none;">
             <div class="alert alert-warning">
-              <h6><i class="fab fa-paypal"></i> PayPal Payment Details</h6>
+              <h6>PayPal Payment Details</h6>
               <small>Enter your PayPal email address for payment processing.</small>
             </div>
             
@@ -128,7 +154,7 @@
           <!-- Bank Transfer Details -->
           <div id="bank-details" style="display: none;">
             <div class="alert alert-info">
-              <h6><i class="fas fa-info-circle"></i> South African Bank Transfer Details</h6>
+              <h6>South African Bank Transfer Details</h6>
               <small>Please provide your South African bank account information for the transfer.</small>
             </div>
             
@@ -174,7 +200,7 @@
           <!-- EFT Details -->
           <div id="eft-details" style="display: none;">
             <div class="alert alert-success">
-              <h6><i class="fas fa-university"></i> EFT (Electronic Funds Transfer) Details</h6>
+              <h6>EFT (Electronic Funds Transfer) Details</h6>
               <small>Provide your South African bank details for electronic funds transfer.</small>
             </div>
             
@@ -220,7 +246,7 @@
           <!-- SWIFT Payment Details -->
           <div id="swift-details" style="display: none;">
             <div class="alert alert-info">
-              <h6><i class="fas fa-info-circle"></i> SWIFT International Transfer Details</h6>
+              <h6>SWIFT International Transfer Details</h6>
               <small>Please provide the beneficiary bank information for your international transfer.</small>
             </div>
             
@@ -289,7 +315,7 @@
           
           <div class="row">
             <div class="col-md-6">
-              <button type="submit" class="btn btn-warning w-100">🔒 Process Payment</button>
+              <button type="submit" class="btn btn-warning w-100">Process Payment</button>
             </div>
             <div class="col-md-6">
               <a href="#" data-page="dashboard" class="btn btn-outline-secondary w-100">Cancel</a>
@@ -299,8 +325,8 @@
         
         <div class="mt-4 text-center">
           <small class="text-muted">
-            🔒 Your payment information is encrypted and secure<br>
-            💳 We support Visa, MasterCard, American Express
+            <strong>Security:</strong> Sensitive payment data is encrypted with AES-256<br>
+            Test environment only - Use provided test cards
           </small>
         </div>
       </div>

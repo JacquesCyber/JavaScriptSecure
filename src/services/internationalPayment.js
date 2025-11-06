@@ -20,6 +20,7 @@ import InternationalPayment from '../models/InternationalPayment.js';
 import User from '../models/User.js';
 import Staff from '../models/Staff.js';
 import { validateInternationalPayment } from '../validators/internationalPayment.js';
+import { encrypt, decrypt } from '../utils/encryption.js';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 
@@ -77,7 +78,7 @@ export class InternationalPaymentService {
       currency: validation.data.currency,
       beneficiary: {
         name: validation.data.beneficiaryName,
-        accountNumber: validation.data.beneficiaryAccount,
+        accountNumber: encrypt(validation.data.beneficiaryAccount), // Encrypt account number
         address: {
           street: paymentData.beneficiaryAddress?.street,
           city: validation.data.bankCity || paymentData.beneficiaryAddress?.city,
@@ -85,8 +86,8 @@ export class InternationalPaymentService {
           postalCode: paymentData.beneficiaryAddress?.postalCode,
           country: validation.data.bankCountry
         },
-        phone: paymentData.beneficiaryPhone,
-        email: paymentData.beneficiaryEmail
+        phone: paymentData.beneficiaryPhone ? encrypt(paymentData.beneficiaryPhone) : undefined, // Encrypt phone
+        email: paymentData.beneficiaryEmail ? encrypt(paymentData.beneficiaryEmail) : undefined // Encrypt email
       },
       beneficiaryBank: {
         name: validation.data.bankName,
@@ -100,7 +101,7 @@ export class InternationalPaymentService {
       intermediaryBank: paymentData.intermediaryBankSwift ? {
         name: paymentData.intermediaryBankName,
         swiftCode: paymentData.intermediaryBankSwift,
-        accountNumber: paymentData.intermediaryBankAccount
+        accountNumber: paymentData.intermediaryBankAccount ? encrypt(paymentData.intermediaryBankAccount) : undefined // Encrypt if present
       } : undefined,
       compliance: {
         purpose: validation.data.purpose,
@@ -511,11 +512,63 @@ export class InternationalPaymentService {
   static sanitizePaymentData(payment) {
     const sanitized = payment.toObject({ virtuals: true });
     
+    // Decrypt and mask sensitive beneficiary data for display
+    if (sanitized.beneficiary) {
+      if (sanitized.beneficiary.accountNumber) {
+        const decrypted = decrypt(sanitized.beneficiary.accountNumber);
+        sanitized.beneficiary.accountNumber = this.maskAccountNumber(decrypted);
+      }
+      if (sanitized.beneficiary.email) {
+        const decrypted = decrypt(sanitized.beneficiary.email);
+        sanitized.beneficiary.email = this.maskEmail(decrypted);
+      }
+      if (sanitized.beneficiary.phone) {
+        const decrypted = decrypt(sanitized.beneficiary.phone);
+        sanitized.beneficiary.phone = this.maskPhone(decrypted);
+      }
+    }
+    
+    // Decrypt and mask intermediary bank account if present
+    if (sanitized.intermediaryBank?.accountNumber) {
+      const decrypted = decrypt(sanitized.intermediaryBank.accountNumber);
+      sanitized.intermediaryBank.accountNumber = this.maskAccountNumber(decrypted);
+    }
+    
     // Remove sensitive internal data
     delete sanitized.internalNotes;
     delete sanitized.__v;
     
     return sanitized;
+  }
+  
+  /**
+   * Mask email address for display
+   */
+  static maskEmail(email) {
+    if (!email) return email;
+    const [username, domain] = email.split('@');
+    const maskedUsername = username.substring(0, 2) + '*'.repeat(Math.max(username.length - 2, 3));
+    return `${maskedUsername}@${domain}`;
+  }
+
+  /**
+   * Mask account number for display
+   */
+  static maskAccountNumber(accountNumber) {
+    if (!accountNumber) return accountNumber;
+    if (accountNumber.length <= 4) return accountNumber;
+    const lastFour = accountNumber.slice(-4);
+    return '*'.repeat(accountNumber.length - 4) + lastFour;
+  }
+
+  /**
+   * Mask phone number for display
+   */
+  static maskPhone(phone) {
+    if (!phone) return phone;
+    if (phone.length <= 4) return phone;
+    const lastFour = phone.slice(-4);
+    return '*'.repeat(phone.length - 4) + lastFour;
   }
   
   /**
