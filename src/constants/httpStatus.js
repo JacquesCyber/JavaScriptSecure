@@ -2,14 +2,13 @@
  * HTTP Status Codes Constants
  * -------------------------------------------------------------
  * This file defines commonly used HTTP status codes.
- * Using named constants improves code readability and maintainability.
+ * We want to know the exact codes for proper API responses. 
+ * This helps with debugging and client communication.
  *
  * Usage:
  *   import { HTTP_STATUS } from '../constants/httpStatus.js';
  *   res.status(HTTP_STATUS.OK).json({ ... });
  *
- * Last reviewed: 2025-11-04
- * Maintainer: Backend Team <backend@example.com>
  */
 
 export const HTTP_STATUS = Object.freeze({
@@ -26,7 +25,7 @@ export const HTTP_STATUS = Object.freeze({
   
   // Client Errors
   BAD_REQUEST: 400,
-  UNAUTHORIZED: 401,
+  UNAUTHORIZED: 401, // If you fail basic authentication you get 401
   FORBIDDEN: 403,
   NOT_FOUND: 404,
   METHOD_NOT_ALLOWED: 405,

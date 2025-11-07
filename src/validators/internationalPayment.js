@@ -13,22 +13,19 @@
  * Usage:
  *   import { validateInternationalPayment } from '../validators/internationalPayment.js';
  *
- * Last reviewed: 2025-11-04
  */
 
 import { VALIDATION_PATTERNS } from './patterns.js';
 import { INTERNATIONAL_CURRENCIES } from '../constants/currencies.js';
 import { PAYMENT_PURPOSE_CODES } from '../constants/purposeCodes.js';
 
-/**
- * Validate SWIFT/BIC code
- * Format: 6 chars (bank) + 2 chars (country) + 2 chars (location) + optional 3 chars (branch)
- */
+
 export function validateSwiftCode(swiftCode) {
   if (!swiftCode || typeof swiftCode !== 'string') {
     return { valid: false, error: 'SWIFT code is required' };
   }
   
+  // Clean and standardize input
   const cleaned = swiftCode.trim().toUpperCase();
   
   if (!VALIDATION_PATTERNS.bic.test(cleaned)) {
@@ -55,9 +52,7 @@ export function validateSwiftCode(swiftCode) {
   return { valid: true, swiftCode: cleaned };
 }
 
-/**
- * Validate IBAN (International Bank Account Number)
- */
+// Validate IBAN (International Bank Account Number)
 export function validateIBAN(iban) {
   if (!iban || typeof iban !== 'string') {
     return { valid: false, error: 'IBAN is required' };
@@ -113,9 +108,7 @@ export function validateIBAN(iban) {
   return { valid: true, iban: cleaned };
 }
 
-/**
- * Validate beneficiary name
- */
+// Validate beneficiary name
 export function validateBeneficiaryName(name) {
   if (!name || typeof name !== 'string') {
     return { valid: false, error: 'Beneficiary name is required' };
@@ -134,9 +127,7 @@ export function validateBeneficiaryName(name) {
   return { valid: true, beneficiaryName: cleaned };
 }
 
-/**
- * Validate payment reference
- */
+// Validate payment reference
 export function validatePaymentReference(reference) {
   if (!reference || typeof reference !== 'string') {
     return { valid: false, error: 'Payment reference is required' };
@@ -155,9 +146,7 @@ export function validatePaymentReference(reference) {
   return { valid: true, reference: cleaned };
 }
 
-/**
- * Validate country code (ISO 3166-1 alpha-2)
- */
+// Validate country code (ISO 3166-1 alpha-2)
 export function validateCountryCode(code) {
   if (!code || typeof code !== 'string') {
     return { valid: false, error: 'Country code is required' };
@@ -201,9 +190,7 @@ export function validateCountryCode(code) {
   return { valid: true, countryCode: cleaned };
 }
 
-/**
- * Validate payment purpose code
- */
+// Validate purpose code
 export function validatePurposeCode(code) {
   if (!code || typeof code !== 'string') {
     return { valid: false, error: 'Purpose code is required' };
@@ -221,9 +208,7 @@ export function validatePurposeCode(code) {
   return { valid: true, purposeCode: cleaned, description: PAYMENT_PURPOSE_CODES[cleaned] };
 }
 
-/**
- * Validate payment amount
- */
+// Validate payment amount  
 export function validatePaymentAmount(amount, currency = 'USD') {
   if (typeof amount !== 'number' || isNaN(amount)) {
     return { valid: false, error: 'Amount must be a valid number' };
@@ -252,9 +237,7 @@ export function validatePaymentAmount(amount, currency = 'USD') {
   return { valid: true, amount: Math.round(amount * 100) / 100 };
 }
 
-/**
- * Validate currency code
- */
+// Validate currency code (ISO 4217)
 export function validateCurrency(currency) {
   if (!currency || typeof currency !== 'string') {
     return { valid: false, error: 'Currency code is required' };
@@ -276,9 +259,7 @@ export function validateCurrency(currency) {
   return { valid: true, currency: cleaned };
 }
 
-/**
- * Comprehensive validation for international payment
- */
+// Main function to validate international payment data
 export function validateInternationalPayment(paymentData) {
   const errors = [];
   
@@ -370,6 +351,7 @@ export function validateInternationalPayment(paymentData) {
   };
 }
 
+// Export all validators
 export default {
   validateSwiftCode,
   validateIBAN,
@@ -383,3 +365,5 @@ export default {
   INTERNATIONAL_CURRENCIES,
   PAYMENT_PURPOSE_CODES
 };
+
+// -----------------------------------End of File-------------------------------------------

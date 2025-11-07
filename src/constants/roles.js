@@ -3,6 +3,7 @@
  * -------------------------------------------------------------
  * This file defines all user roles used throughout the application.
  * Centralizing roles prevents typos and makes role management easier.
+ * We have three primary roles: CUSTOMER, STAFF, and ADMIN.
  *
  * Usage:
  *   import { USER_ROLES } from '../constants/roles.js';

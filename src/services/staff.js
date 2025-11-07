@@ -28,6 +28,7 @@ export class StaffService {
 
       const hashedPassword = await hashPassword(staffData.password);
 
+      // Create new staff member
       const staff = new Staff({
         fullName: staffData.fullName,
         email: staffData.email,
@@ -44,6 +45,7 @@ export class StaffService {
         }
       });
 
+      // Save to database
       await staff.save();
       return {
         success: true,
@@ -64,6 +66,7 @@ export class StaffService {
     }
   }
 
+  // Staff login
   static async loginStaff(identifier, password) {
     try {
       // Support login with username, email, or employeeId
@@ -81,6 +84,7 @@ export class StaffService {
         throw new Error('Invalid credentials');
       }
 
+      // Verify password
       const valid = await verifyPassword(password, staff.password);
       if (!valid) {
         console.log('Invalid password for staff:', staff.username);
@@ -96,6 +100,7 @@ export class StaffService {
         role: staff.role
       });
 
+      // Return staff details without password
       return {
         success: true,
         message: 'Login successful',
@@ -117,12 +122,14 @@ export class StaffService {
     }
   }
 
+  // Get staff by ID
   static async getStaffById(staffId) {
     const staff = await Staff.findById(staffId).select('-password');
     if (!staff) throw new Error('Staff member not found');
     return staff;
   }
 
+  // Update staff member
   static async updateStaff(staffId, updateData) {
     try {
       const staff = await Staff.findById(staffId);
@@ -158,6 +165,7 @@ export class StaffService {
 
       await staff.save();
 
+      // Return updated staff details without password
       return {
         success: true,
         message: 'Staff member updated successfully',
@@ -178,6 +186,7 @@ export class StaffService {
     }
   }
 
+  // Get all staff members with optional filters
   static async getAllStaff(filters = {}) {
     const query = {};
     if (filters.department) query.department = filters.department;
@@ -188,6 +197,7 @@ export class StaffService {
     return staff;
   }
 
+  // Deactivate staff member
   static async deactivateStaff(staffId) {
     const staff = await Staff.findById(staffId);
     if (!staff) throw new Error('Staff member not found');
@@ -196,6 +206,7 @@ export class StaffService {
     return { success: true, message: 'Staff member deactivated successfully' };
   }
 
+  // Check if staff has specific permission
   static async checkPermission(staffId, permission) {
     try {
       const staff = await Staff.findById(staffId).select('permissions role');

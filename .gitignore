@@ -23,9 +23,4 @@ keys/
 
 # Build output
 dist/
-.wrangler/
-.dev.vars
-
-# Cloudflare
-wrangler.toml.local
 package-lock.json

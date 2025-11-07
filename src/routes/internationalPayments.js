@@ -15,7 +15,6 @@
  * Usage:
  *   app.use('/api/international-payments', internationalPaymentsRouter);
  *
- * Last reviewed: 2025-11-04
  */
 
 import express from 'express';
@@ -28,10 +27,7 @@ import mongoose from 'mongoose';
 
 const router = express.Router();
 
-/**
- * Middleware to extract employee ID from request
- * TODO: Replace with proper JWT authentication
- */
+// Middleware to extract and validate employeeId from request
 const extractEmployeeId = (req, res, next) => {
   const employeeId = req.body.employeeId;
   
@@ -147,10 +143,7 @@ const createPaymentValidation = [
     .withMessage('Notes cannot exceed 500 characters')
 ];
 
-/**
- * POST /api/international-payments/create
- * Create a new international payment
- */
+// Create a new international payment
 router.post('/create', authLimiter, createPaymentValidation, handleValidationErrors, extractEmployeeId, async (req, res) => {
   console.log(' Creating new international payment');
   
@@ -177,10 +170,7 @@ router.post('/create', authLimiter, createPaymentValidation, handleValidationErr
   }
 });
 
-/**
- * POST /api/international-payments/:transactionId/submit
- * Submit payment for review
- */
+// Submit payment for review
 router.post('/:transactionId/submit', authLimiter, extractEmployeeId, async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -198,10 +188,7 @@ router.post('/:transactionId/submit', authLimiter, extractEmployeeId, async (req
   }
 });
 
-/**
- * POST /api/international-payments/:transactionId/approve
- * Approve a payment (requires admin/manager role)
- */
+// Approve a payment (requires admin/manager role)
 router.post('/:transactionId/approve', authLimiter, extractEmployeeId, [
   body('notes')
     .optional()
@@ -226,10 +213,7 @@ router.post('/:transactionId/approve', authLimiter, extractEmployeeId, [
   }
 });
 
-/**
- * POST /api/international-payments/:transactionId/reject
- * Reject a payment (requires admin/manager role)
- */
+// Reject a payment (requires admin/manager role)
 router.post('/:transactionId/reject', authLimiter, extractEmployeeId, [
   body('reason')
     .notEmpty()
@@ -255,10 +239,7 @@ router.post('/:transactionId/reject', authLimiter, extractEmployeeId, [
   }
 });
 
-/**
- * POST /api/international-payments/:transactionId/process
- * Process an approved payment
- */
+// Process a payment (mark as sent/processed)
 router.post('/:transactionId/process', authLimiter, extractEmployeeId, async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -276,10 +257,7 @@ router.post('/:transactionId/process', authLimiter, extractEmployeeId, async (re
   }
 });
 
-/**
- * GET /api/international-payments/:transactionId
- * Get payment details
- */
+// Get payment details by transaction ID
 router.get('/:transactionId', extractEmployeeId, async (req, res) => {
   try {
     const { transactionId } = req.params;
@@ -298,11 +276,7 @@ router.get('/:transactionId', extractEmployeeId, async (req, res) => {
   }
 });
 
-/**
- * Post /api/international-payments/employee/:employeeId
- * Get all payments for an employee
- * Expects: { employeeId, limit?, skip?, status?, startDate?, endDate? } in request body
- */
+// Get payments for an employee with optional filters
   router.post('/employee', [
   body('employeeId')
     .notEmpty()
@@ -342,10 +316,7 @@ router.get('/:transactionId', extractEmployeeId, async (req, res) => {
   }
 });
 
-/**
- * GET /api/international-payments/pending/approvals
- * Get all payments pending approval
- */
+// Get pending approvals for admin/manager
 router.get('/pending/approvals', [
   query('limit')
     .optional()
@@ -374,10 +345,7 @@ router.get('/pending/approvals', [
   }
 });
 
-/**
- * GET /api/international-payments/stats/overview
- * Get payment statistics
- */
+// Get payment statistics overview
 router.post('/stats/overview', [
   body('status')
     .optional()
@@ -411,10 +379,7 @@ router.post('/stats/overview', [
   }
 });
 
-/**
- * GET /api/international-payments/stats/by-country
- * Get payments grouped by destination country
- */
+// Get payment statistics by country
 router.get('/stats/by-country', async (req, res) => {
   try {
     const result = await InternationalPaymentService.getPaymentsByCountry();
@@ -429,10 +394,7 @@ router.get('/stats/by-country', async (req, res) => {
   }
 });
 
-/**
- * GET /api/international-payments/health
- * Health check endpoint
- */
+// Health check endpoint
 router.get('/health', (req, res) => {
   res.json({
     success: true,

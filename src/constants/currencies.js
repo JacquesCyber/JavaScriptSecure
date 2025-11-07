@@ -1,14 +1,12 @@
 /*
  * Currency Constants
  * -------------------------------------------------------------
- * This file defines all supported currencies in ISO 4217 format.
- * Centralizing currencies ensures consistency in payment processing.
+ * This file defines all supported currencies in 3 char (ISO 4217) format.
+ * All our currencies are standardized for both domestic and international payments.
  *
  * Usage:
  *   import { CURRENCIES, INTERNATIONAL_CURRENCIES } from '../constants/currencies.js';
  *
- * Last reviewed: 2025-11-04
- * Maintainer: Backend Team <backend@example.com>
  */
 
 // Domestic payment currencies (commonly used in South Africa)

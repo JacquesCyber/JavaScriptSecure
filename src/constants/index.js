@@ -1,13 +1,11 @@
 /*
  * Constants Index
  * -------------------------------------------------------------
- * This file exports all constants for easy importing.
+ * This file exports all constants for easy importing. It acts as a central hub.
  *
  * Usage:
  *   import { USER_ROLES, CURRENCIES, HTTP_STATUS } from '../constants/index.js';
  *
- * Last reviewed: 2025-11-04
- * Maintainer: Backend Team <backend@example.com>
  */
 
 export * from './roles.js';

@@ -15,8 +15,6 @@
  *   import { errorHandler } from './middleware/errorHandler.js';
  *   app.use(errorHandler);
  *
- * Last reviewed: 2025-11-04
- * Maintainer: Security Team <security@example.com>
  */
 
 import { HTTP_STATUS } from '../constants/httpStatus.js';
@@ -62,9 +60,7 @@ export const errorHandler = (err, req, res, next) => {
   res.status(statusCode).json(errorResponse);
 };
 
-/**
- * Get generic error message based on status code (production)
- */
+// Get generic error message based on status code
 function getGenericErrorMessage(statusCode) {
   switch (statusCode) {
     case HTTP_STATUS.BAD_REQUEST:
@@ -87,9 +83,7 @@ function getGenericErrorMessage(statusCode) {
   }
 }
 
-/**
- * 404 Not Found handler
- */
+// 404 Not Found handler
 export const notFoundHandler = (req, res, next) => {
   const error = new Error(`Route not found: ${req.method} ${req.originalUrl}`);
   error.statusCode = HTTP_STATUS.NOT_FOUND;
@@ -97,19 +91,14 @@ export const notFoundHandler = (req, res, next) => {
   next(error);
 };
 
-/**
- * Async error wrapper - wraps async route handlers to catch errors
- * Usage: app.get('/route', asyncHandler(async (req, res) => { ... }))
- */
+// Async wrapper to catch errors in async route handlers
 export const asyncHandler = (fn) => {
   return (req, res, next) => {
     Promise.resolve(fn(req, res, next)).catch(next);
   };
 };
 
-/**
- * Custom error class for application errors
- */
+// Custom Error Classes
 export class AppError extends Error {
   constructor(message, statusCode = HTTP_STATUS.INTERNAL_SERVER_ERROR, code = 'APP_ERROR') {
     super(message);
@@ -120,9 +109,7 @@ export class AppError extends Error {
   }
 }
 
-/**
- * Validation error class
- */
+// Validation error class
 export class ValidationError extends AppError {
   constructor(message, validationErrors = []) {
     super(message, HTTP_STATUS.UNPROCESSABLE_ENTITY, 'VALIDATION_ERROR');
@@ -130,36 +117,28 @@ export class ValidationError extends AppError {
   }
 }
 
-/**
- * Authentication error class
- */
+// Authentication error class
 export class AuthenticationError extends AppError {
   constructor(message = 'Authentication required') {
     super(message, HTTP_STATUS.UNAUTHORIZED, 'AUTHENTICATION_ERROR');
   }
 }
 
-/**
- * Authorization error class
- */
+// Authorization error class
 export class AuthorizationError extends AppError {
   constructor(message = 'Access denied') {
     super(message, HTTP_STATUS.FORBIDDEN, 'AUTHORIZATION_ERROR');
   }
 }
 
-/**
- * Not found error class
- */
+// Not Found error class
 export class NotFoundError extends AppError {
   constructor(message = 'Resource not found') {
     super(message, HTTP_STATUS.NOT_FOUND, 'NOT_FOUND');
   }
 }
 
-/**
- * Conflict error class
- */
+// Conflict error class
 export class ConflictError extends AppError {
   constructor(message = 'Resource conflict') {
     super(message, HTTP_STATUS.CONFLICT, 'CONFLICT');

@@ -10,24 +10,13 @@
  *   const hash = await hashPassword('myPassword123');
  *   const isValid = await verifyPassword('myPassword123', hash);
  *
- * Last reviewed: 2025-11-04
  * Maintainer: Security Team <security@securebank.com>
  */
 
 import bcrypt from 'bcrypt';
 import { SECURITY_CONSTANTS } from '../constants/security.js';
 
-/**
- * Hash a plain-text password using bcrypt
- * 
- * @param {string} password - Plain-text password to hash
- * @returns {Promise<string>} - Bcrypt hashed password
- * @throws {Error} - If password is empty or hashing fails
- * 
- * @example
- * const hash = await hashPassword('SecurePassword123!');
- * // Returns: $2b$12$...
- */
+// Hash a plaintext password
 export async function hashPassword(password) {
   if (!password || typeof password !== 'string') {
     throw new Error('Password must be a non-empty string');
@@ -40,20 +29,7 @@ export async function hashPassword(password) {
   }
 }
 
-/**
- * Verify a plain-text password against its bcrypt hash
- * 
- * @param {string} password - Plain-text password to verify
- * @param {string} hash - Bcrypt hash to compare against
- * @returns {Promise<boolean>} - True if password matches hash, false otherwise
- * @throws {Error} - If parameters are invalid or comparison fails
- * 
- * @example
- * const isValid = await verifyPassword('SecurePassword123!', hashedPassword);
- * if (isValid) {
- *   // Password is correct
- * }
- */
+// Verify a plaintext password against a hash
 export async function verifyPassword(password, hash) {
   if (!password || typeof password !== 'string') {
     throw new Error('Password must be a non-empty string');
@@ -63,6 +39,7 @@ export async function verifyPassword(password, hash) {
     throw new Error('Hash must be a non-empty string');
   }
 
+  // Compare the plaintext password with the hash
   try {
     return await bcrypt.compare(password, hash);
   } catch (error) {
@@ -70,16 +47,7 @@ export async function verifyPassword(password, hash) {
   }
 }
 
-/**
- * Validate password strength
- * 
- * @param {string} password - Password to validate
- * @returns {Object} - { isValid: boolean, errors: string[] }
- * 
- * @example
- * const result = validatePasswordStrength('weak');
- * // Returns: { isValid: false, errors: ['Password too short', ...] }
- */
+// Validate password strength
 export function validatePasswordStrength(password) {
   const errors = [];
 
@@ -108,3 +76,5 @@ export function validatePasswordStrength(password) {
     errors
   };
 }
+
+// --------------------------------End of File---------------------------------------------

@@ -8,14 +8,9 @@
  * Usage:
  *   import { PAYMENT_PURPOSE_CODES } from '../constants/purposeCodes.js';
  *
- * Last reviewed: 2025-11-04
- * Maintainer: Compliance Team <compliance@example.com>
  */
 
-/**
- * SWIFT MT103 Purpose Codes
- * Used to categorize the reason for international payments
- */
+// Swift MT103 Purpose Codes these codes are required for international payments as they prevent fraud and ensure compliance.
 export const PAYMENT_PURPOSE_CODES = Object.freeze({
   'SALA': 'Salary Payment',
   'PENS': 'Pension Payment',
@@ -32,28 +27,20 @@ export const PAYMENT_PURPOSE_CODES = Object.freeze({
   'OTHR': 'Other'
 });
 
-/**
- * Get all valid purpose codes
- */
+// Array of all valid purpose codes
 export const ALL_PURPOSE_CODES = Object.freeze(
   Object.keys(PAYMENT_PURPOSE_CODES)
 );
 
-/**
- * Check if a purpose code is valid
- */
+// Check if a purpose code is valid
 export function isValidPurposeCode(code) {
   return code && PAYMENT_PURPOSE_CODES.hasOwnProperty(code.toUpperCase());
 }
 
-/**
- * Get description for a purpose code
- */
+// Get purpose description by code
 export function getPurposeDescription(code) {
   return PAYMENT_PURPOSE_CODES[code?.toUpperCase()] || 'Unknown Purpose';
 }
 
-/**
- * Default purpose code
- */
+// Default purpose code
 export const DEFAULT_PURPOSE_CODE = 'OTHR';

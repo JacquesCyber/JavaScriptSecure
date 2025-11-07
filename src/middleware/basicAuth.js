@@ -2,8 +2,8 @@
  * HTTP Basic Authentication Middleware
  * -------------------------------------------------------------
  * Protects the entire application with username/password
- * Perfect for academic demonstrations that need restricted access
- * 
+ * This is essential for a payment processor demo. We only want authorized users to view our academic submission.
+ * Also relatively effective against DDoS and bots.
  * Works like a YouTube private link - only people with credentials can access
  * 
  * Usage:
@@ -55,7 +55,7 @@ export const basicAuth = (req, res, next) => {
         <div class="auth-box">
           <h1>Authentication Required</h1>
           <p>This is a protected academic demonstration.</p>
-          <p><strong>Contact your instructor for access credentials.</strong></p>
+          <p><strong>Contact System Administrator</strong></p>
         </div>
       </body>
       </html>
@@ -113,7 +113,7 @@ export const basicAuth = (req, res, next) => {
         <div class="error-box">
           <h1>Invalid Credentials</h1>
           <p>The username or password you entered is incorrect.</p>
-          <p><strong>Please contact your instructor.</strong></p>
+          <p><strong>Please contact System Administrator</strong></p>
         </div>
       </body>
       </html>
@@ -153,7 +153,7 @@ export const basicAuth = (req, res, next) => {
         <div class="error-box">
           <h1>Authentication Error</h1>
           <p>An error occurred during authentication.</p>
-          <p><strong>Please try again or contact support.</strong></p>
+          <p><strong>Please try again or contact System Administrator.</strong></p>
         </div>
       </body>
       </html>

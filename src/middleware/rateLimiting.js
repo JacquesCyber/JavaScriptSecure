@@ -23,11 +23,10 @@
 import rateLimit from 'express-rate-limit';
 import { securityConfig } from '../../config/security.js';
 
-/**
- * General Rate Limiter
- * Limits all requests to 100 per 15 minutes per IP
- * Skips health endpoint to allow monitoring
- */
+
+// General Rate Limiter
+// Limits all requests to 100 per 15 minutes per IP
+// Skips health endpoint to allow monitoring
 export const generalLimiter = rateLimit({
   windowMs: securityConfig.rateLimit.store.windowMs,
   max: securityConfig.rateLimit.store.max,
@@ -40,11 +39,10 @@ export const generalLimiter = rateLimit({
   skip: (req) => req.path === '/health'
 });
 
-/**
- * API Rate Limiter
- * Limits API endpoints to 10 requests per 15 minutes per IP
- * More restrictive for API endpoints
- */
+
+// API Rate Limiter
+// Limits API endpoints to 10 requests per 15 minutes per IP
+// More restrictive for API endpoints
 export const apiLimiter = rateLimit({
   windowMs: securityConfig.rateLimit.api.windowMs,
   max: securityConfig.rateLimit.api.max,
@@ -56,11 +54,10 @@ export const apiLimiter = rateLimit({
   legacyHeaders: false
 });
 
-/**
- * Authentication Rate Limiter
- * Limits login/register attempts to 5 per 15 minutes per IP
- * Skips successful requests to only limit failed attempts
- */
+
+// Authentication Rate Limiter
+// Limits login/register attempts to 5 per 15 minutes per IP
+// Skips successful requests to only limit failed attempts
 export const authLimiter = rateLimit({
   windowMs: 15 * 60 * 1000, // 15 minutes
   max: 5, // 5 attempts per window
@@ -82,10 +79,8 @@ export const authLimiter = rateLimit({
   }
 });
 
-/**
- * Strict Rate Limiter for sensitive operations
- * For password reset, account recovery, etc.
- */
+// Strict Rate Limiter for sensitive operations
+// For password reset, account recovery, etc.
 export const strictLimiter = rateLimit({
   windowMs: 60 * 60 * 1000, // 1 hour
   max: 3, // 3 attempts per hour

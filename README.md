@@ -980,9 +980,9 @@ await AuditLog.create(auditLog);
 - Never store secrets in code or environment variables
 
 **DDoS Protection**:
-- Cloudflare or AWS Shield
-- Rate limiting at CDN layer
-- Web Application Firewall (WAF)
+- Rate limiting at application layer (express-rate-limit)
+- Platform-level protection (Render.com)
+- Web Application Firewall (WAF) - Consider Cloudflare/AWS Shield for production
 
 **Penetration Testing**:
 - Annual third-party penetration tests
