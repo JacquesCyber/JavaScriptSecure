@@ -34,3 +34,5 @@ export const DEFAULT_USER_ROLE = USER_ROLES.CUSTOMER;
 
 // Default role for new staff
 export const DEFAULT_STAFF_ROLE = USER_ROLES.STAFF;
+
+//----------------------------- END OF FILE -----------------------------

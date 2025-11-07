@@ -44,3 +44,5 @@ export function getPurposeDescription(code) {
 
 // Default purpose code
 export const DEFAULT_PURPOSE_CODE = 'OTHR';
+
+//----------------------------- END OF FILE -----------------------------

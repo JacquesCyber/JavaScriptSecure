@@ -10,7 +10,6 @@
  *   const hash = await hashPassword('myPassword123');
  *   const isValid = await verifyPassword('myPassword123', hash);
  *
- * Maintainer: Security Team <security@securebank.com>
  */
 
 import bcrypt from 'bcrypt';

@@ -44,3 +44,5 @@ export const ALL_CARD_BRANDS = Object.freeze(
 export function isValidCardBrand(brand) {
   return ALL_CARD_BRANDS.includes(brand);
 }
+
+//----------------------------- END OF FILE -----------------------------

@@ -8,7 +8,10 @@
  * Usage:
  *   import { HTTP_STATUS } from '../constants/httpStatus.js';
  *   res.status(HTTP_STATUS.OK).json({ ... });
- *
+ *  
+ * REFERENCES:
+ *  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Status
+ *  - https://www.iana.org/assignments/http-status-codes/http-status-codes.xhtml
  */
 
 export const HTTP_STATUS = Object.freeze({
@@ -40,3 +43,5 @@ export const HTTP_STATUS = Object.freeze({
   SERVICE_UNAVAILABLE: 503,
   GATEWAY_TIMEOUT: 504
 });
+
+//----------------------------- END OF FILE -----------------------------

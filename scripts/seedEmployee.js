@@ -7,6 +7,9 @@
  * 
  * Assignment Note: "Employees are pre-registered when employed.
  * No registration necessary; however, they do need to log on."
+ * 
+ * This file is for error handling and seeding a test employee. In production it can be deleted once the employee is created.
+ * Or the employee can be created directly in the database by an admin.
  */
 
 import mongoose from 'mongoose';
@@ -90,3 +93,6 @@ async function seedEmployee() {
 
 // Run the seed function
 seedEmployee();
+
+
+//----------------------------- END OF FILE -----------------------------

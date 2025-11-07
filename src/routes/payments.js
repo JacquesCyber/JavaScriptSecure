@@ -15,6 +15,7 @@
  *
  * REFERENCES:
  *  - https://stripe.com/docs/payments/accept-a-payment
+ *  - https://docs.stripe.com/testing
  */
 import express from 'express';
 import { body } from 'express-validator';

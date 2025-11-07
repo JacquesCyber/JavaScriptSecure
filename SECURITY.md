@@ -27,7 +27,6 @@ This project maintains the following security standards:
 - **Session-Based Authentication:** httpOnly cookies with secure flags
 - **Password Hashing:** bcrypt with 12 salt rounds (configurable in `src/constants/security.js`)
 - **Role-Based Access Control (RBAC):** Staff roles (staff, supervisor, admin)
-- **Multi-Factor Ready:** Architecture supports MFA integration
 - **CSRF Protection:** Token validation on all state-changing operations (login endpoints excluded)
 - **Session Management:** 15-minute timeout with secure cookie attributes
 - **Password Policy:** Minimum 8 characters with complexity requirements
@@ -126,67 +125,14 @@ Sensitive data encryption in `src/utils/encryption.js`:
 - Automatic IV generation and authentication tags
 - Environment-based key management
 
-## Code Quality & Security Audits
-
-### November 2025 Audit Results
-
-#### High-Priority Fixes Implemented
-1. **Duplicate Security Constants**
-   - **Issue:** `saltRounds` declared 4 times across codebase
-   - **Risk:** Inconsistent cryptographic parameters
-   - **Fix:** Centralized in `src/constants/security.js`
-   - **Impact:** 100% elimination of duplicates
-
-2. **Scattered Cryptographic Operations**
-   - **Issue:** 8 direct bcrypt calls across services
-   - **Risk:** Inconsistent error handling, hard to maintain
-   - **Fix:** Created `src/utils/auth.js` utilities
-   - **Impact:** 100% consolidation, easier testing
-
-3. **Duplicate Validation Handlers**
-   - **Issue:** 15 identical validation error blocks
-   - **Risk:** Inconsistent error responses
-   - **Fix:** Created `src/middleware/validationHandler.js`
-   - **Impact:** ~60 lines removed, standardized responses
-
-4. **Double Encryption Prevention**
-   - **Issue:** Beneficiary accounts encrypted twice causing validation failures
-   - **Risk:** Data corruption, failed transactions
-   - **Fix:** Removed premature encryption in service layer validation
-   - **Impact:** SWIFT payments now process correctly
-
-5. **Payment Auto-Approval Issue**
-   - **Issue:** Payments automatically marked as completed bypassing approval workflow
-   - **Risk:** Unauthorized transactions, lack of audit trail
-   - **Fix:** Removed automatic processing simulation, payments stay in pending status
-   - **Impact:** All payments now require manual approval by authorized staff
-
-6. **Input Normalization**
-   - **Issue:** SWIFT codes and IBANs with spaces/lowercase failed validation
-   - **Risk:** Valid payments rejected due to format variations
-   - **Fix:** Added normalization (trim, uppercase, remove spaces) before validation
-   - **Impact:** User-friendly input handling while maintaining security
-
-#### Security Improvements
-| Metric | Before | After | Status |
-|--------|--------|-------|--------|
-| Duplicate constants | 4 | 0 | Fixed |
-| Scattered bcrypt calls | 8 | 0 | Fixed |
-| Duplicate validation | 15 | 0 | Fixed |
-| Security utilities | 0 | 2 | Added |
-| Code reduction | - | -95 lines | Improved |
-| Double encryption bugs | 1 | 0 | Fixed |
-| Payment workflow gaps | 1 | 0 | Fixed |
-| Input normalization | None | Full | Added |
+## Code Quality
 
 ### Ongoing Security Practices
 - Regular dependency audits (`npm audit`)
 - ESLint security plugin (`npm run lint:security`)
-- Manual code reviews for security-critical changes
 - Input validation on all endpoints
 - Principle of least privilege
 - Defense in depth architecture
-- Detailed logging for security events
 
 ## International Payments Security
 
@@ -194,18 +140,6 @@ Sensitive data encryption in `src/utils/encryption.js`:
 - **SWIFT/BIC Validation:** 8-11 character format with strict regex
 - **IBAN Validation:** MOD-97 checksum with country-specific length validation
 - **Purpose Code Validation:** ISO 20022 compliant codes (SALA, PENS, SUPP, etc.)
-- **AML Risk Scoring:** Automatic risk assessment based on:
-  - Transaction amount thresholds
-  - Destination country risk
-  - Customer transaction history
-  - Velocity checks
-- **Sanctions Screening:** Architecture ready for OFAC/EU integration
-- **Fraud Detection:**
-  - Velocity checks (transaction frequency limits)
-  - Pattern analysis (unusual behavior detection)
-  - Amount thresholds (>$50,000 flagged)
-  - Geographic risk assessment (high-risk countries)
-  - First-time beneficiary checks
 
 ### Payment Workflow Security
 1. **Draft:** Customer creates payment (validation only)
@@ -248,7 +182,7 @@ Each status change is logged with:
    - Account type validation
 
 3. **SWIFT International Payments**
-   - Full IBAN validation with MOD-97 checksum
+   - Full IBAN validation 
    - SWIFT/BIC code validation
    - Country-specific IBAN length validation (40+ countries)
    - Beneficiary details encryption
@@ -264,7 +198,7 @@ Each status change is logged with:
 - Fraud score calculation before submission
 - IP address and user agent logging
 - Transaction ID generation with crypto-random bytes
-- Immutable audit trail
+
 
 ## Database Security
 
@@ -293,7 +227,7 @@ Each status change is logged with:
 - Regex pattern matching
 - Custom validators for business logic
 
-## Compliance
+## Conclusion
 
 This application follows security best practices including:
 - OWASP Top 10 protections
@@ -305,43 +239,7 @@ This application follows security best practices including:
 - Input validation on all boundaries
 - Secure session management
 - Cryptographic best practices
-- PCI-DSS compliance (for card data)
-- GDPR-ready (data encryption, masking, audit trails)
-
-## Reporting Security Vulnerabilities
-
-If you discover a security vulnerability, please follow responsible disclosure:
-
-1. **DO NOT** open a public GitHub issue
-2. Email security details to the project maintainer
-3. Include:
-   - Description of the vulnerability
-   - Steps to reproduce
-   - Potential impact
-   - Suggested fix (if available)
-4. Allow 90 days for patching before public disclosure
-
-We take all security reports seriously and will respond within 48 hours.
-
+  
 ## Recent Security Updates
 
-### January 2025
-- Fixed double encryption in SWIFT beneficiary accounts
-- Implemented proper payment approval workflow
-- Added input normalization for international payment codes
-- Enhanced validation error logging for debugging
-- Improved payment status sorting (pending first)
-- Updated .gitignore to prevent credential leaks
-
-### November 2025
-- Centralized security constants
-- Created authentication utilities
-- Standardized validation error handling
-- Implemented comprehensive rate limiting
-- Added CSRF protection
-
----
-
 **Last Updated:** 7 January 2025
-**Security Version:** 2.1
-**Next Audit Due:** April 2025

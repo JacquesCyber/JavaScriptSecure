@@ -29,3 +29,4 @@ export const SECURITY_ERRORS = {
   ACCOUNT_LOCKED: 'Account locked due to too many failed login attempts',
 };
 
+//----------------------------- END OF FILE -----------------------------

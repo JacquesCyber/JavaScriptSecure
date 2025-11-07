@@ -144,3 +144,5 @@ export class ConflictError extends AppError {
     super(message, HTTP_STATUS.CONFLICT, 'CONFLICT');
   }
 }
+
+//----------------------------- END OF FILE -----------------------------
