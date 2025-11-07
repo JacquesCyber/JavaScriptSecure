@@ -2,6 +2,11 @@
 
 A secure, enterprise-grade Node.js business application featuring multi-page architecture, HTTPS support, and comprehensive security practices. Built with modern ES6 modules and component-based design patterns following OWASP Top 10 security guidelines.
 
+## Youtube Videos
+
+- Part 2: https://youtu.be/ktjMTQ-v4fY 
+- Part 3: https://youtu.be/eN_91CEUpC8
+
 ## Deployed Application Access
 
 This application has been deployed to the web under the following URL:
