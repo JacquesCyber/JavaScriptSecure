@@ -24,3 +24,7 @@ keys/
 # Build output
 dist/
 package-lock.json
+
+# Temporary files
+nul
+cookies.txt

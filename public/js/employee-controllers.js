@@ -334,14 +334,61 @@ class PendingPaymentsController {
       // Format amount with currency
       const formattedAmount = `${this.escapeHtml(payment.currency)} ${payment.amount.toLocaleString('en-US', { minimumFractionDigits: 2 })}`;
 
-      // Format submitted date
-      const submittedDate = new Date(payment.submittedAt).toLocaleString('en-US', {
-        month: 'short',
-        day: 'numeric',
-        year: 'numeric',
-        hour: '2-digit',
-        minute: '2-digit'
-      });
+      // Format submitted date with validation
+      let submittedDate = 'N/A';
+      try {
+        const dateValue = payment.submittedAt || payment.createdAt;
+        if (dateValue) {
+          // Parse the date string properly
+          const date = new Date(dateValue);
+
+          // Debug logging for first few payments
+          if (this.filteredPayments.indexOf(payment) < 3) {
+            console.log('Payment date debug:', {
+              transactionId: payment.transactionId,
+              rawDateValue: dateValue,
+              parsedDate: date,
+              dateString: date.toString(),
+              isoString: date.toISOString(),
+              month: date.getMonth(),
+              monthName: date.toLocaleString('en-US', { month: 'long' })
+            });
+          }
+
+          // Check if date is valid
+          if (!isNaN(date.getTime())) {
+            // Use a simpler, more reliable date format
+            const now = new Date();
+            const isToday = date.toDateString() === now.toDateString();
+
+            if (isToday) {
+              // If today, show time only
+              submittedDate = 'Today ' + date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              });
+            } else {
+              // Otherwise show full date and time
+              submittedDate = date.toLocaleDateString('en-US', {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+              }) + ' ' + date.toLocaleTimeString('en-US', {
+                hour: '2-digit',
+                minute: '2-digit',
+                hour12: true
+              });
+            }
+          } else {
+            console.warn('Invalid date for payment:', payment._id, 'Date value:', dateValue);
+          }
+        } else {
+          console.warn('No date value for payment:', payment._id);
+        }
+      } catch (error) {
+        console.error('Error formatting date for payment:', payment._id, error);
+      }
 
       row.innerHTML = `
         <td style="font-size: 0.85rem;">${this.escapeHtml(payment.transactionId)}</td>

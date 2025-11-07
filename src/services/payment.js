@@ -61,17 +61,9 @@ export class PaymentService {
       await payment.save();
       console.log('Payment created with ID:', payment.transactionId);
 
-      // Simulate payment processing (in real app, integrate with payment processor)
-      const processingResult = await this.simulatePaymentProcessing(payment);
-      
-      // Update payment status
-      payment.status = processingResult.status;
-      payment.processorTransactionId = processingResult.processorTransactionId;
-      payment.processorResponse = processingResult.processorResponse;
-      
-      await payment.save();
-      
-      console.log('Payment processed:', payment.status);
+      // Payment remains in 'pending' status for manual review by employees
+      // The automatic processing simulation has been removed to allow proper approval workflow
+      console.log('Payment awaiting manual approval:', payment.status);
       
       return {
         success: true,
@@ -290,8 +282,9 @@ export class PaymentService {
     if (!swiftDetails.beneficiaryAccount || swiftDetails.beneficiaryAccount.trim().length === 0) {
       throw new Error('Beneficiary account/IBAN is required');
     }
-    // Encrypt beneficiary account before storing
-    validated.beneficiaryAccount = encrypt(swiftDetails.beneficiaryAccount.trim());
+    // Store account without encryption here - validation happens at model level
+    // Encryption should be handled separately if needed for storage
+    validated.beneficiaryAccount = swiftDetails.beneficiaryAccount.trim();
 
     // Validate bank name
     if (!swiftDetails.bankName || swiftDetails.bankName.trim().length === 0) {
