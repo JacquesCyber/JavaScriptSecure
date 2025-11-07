@@ -8,12 +8,15 @@ This application has been deployed to the web under the following URL:
 - https://javascriptsecure.onrender.com
 
 In order to access the deployed application the following credentials will have to be entered once the URL has been opened:
-- Username: **instructor**
-- Password: **AcademicPortfolioPeice!**
+- **Username**: instructor
+- **Password**: AcademicPortfolioPeice!
 
 Employee Portal Access:
 
-- 
+- **Employee ID**: EMP001234
+- **Password**: SecureBank2024!
+- **Email**: jane.smith@securebank.com
+
 ## Security Highlights
 
 This application implements industry-leading security practices:
@@ -372,7 +375,6 @@ PORT=3000
 ## Documentation
 
 - **[SECURITY.md](SECURITY.md)** - Security policies and vulnerability reporting
-- **[ENCRYPTION_SETUP.md](ENCRYPTION_SETUP.md)** - Encryption configuration guide
 - Inline code documentation throughout codebase
 
 ---
