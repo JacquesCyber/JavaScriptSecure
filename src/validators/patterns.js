@@ -12,8 +12,6 @@
  * Usage:
  *   import { VALIDATION_PATTERNS } from '../validators/patterns.js';
  *
- * Last reviewed: 2025-11-04
- * Maintainer: Security Team <security@example.com>
  */
 
 export const VALIDATION_PATTERNS = Object.freeze({
@@ -64,9 +62,7 @@ export const VALIDATION_PATTERNS = Object.freeze({
   url: /^(https?:\/\/)([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,6}([/?#]\S*)?$/u
 });
 
-/**
- * Validate a value against a pattern
- */
+// Validate value against a named pattern
 export function validatePattern(value, patternName) {
   const pattern = VALIDATION_PATTERNS[patternName];
   if (!pattern) {
@@ -75,9 +71,9 @@ export function validatePattern(value, patternName) {
   return pattern.test(value);
 }
 
-/**
- * Get pattern by name
- */
+// Get pattern by name
 export function getPattern(patternName) {
   return VALIDATION_PATTERNS[patternName];
 }
+
+// -----------------------------------End of File-------------------------------------------

@@ -13,7 +13,6 @@
  * Usage:
  *   import { InternationalPaymentService } from '../services/internationalPayment.js';
  *
- * Last reviewed: 2025-11-04
  */
 
 import InternationalPayment from '../models/InternationalPayment.js';
@@ -24,13 +23,9 @@ import { encrypt, decrypt } from '../utils/encryption.js';
 import crypto from 'crypto';
 import mongoose from 'mongoose';
 
-/**
- * International Payment Service Class
- */
 export class InternationalPaymentService {
-  /**
-   * Create a new international payment (draft status)
-   */
+  
+  // Create a new international payment (draft status)
   static async createPayment(paymentData, employeeId, ipAddress, userAgent) {
     console.log(' Creating international payment...');
     
@@ -132,9 +127,7 @@ export class InternationalPaymentService {
     };
   }
   
-  /**
-   * Submit payment for review
-   */
+  // Submit payment for review
   static async submitForReview(transactionId, employeeId) {
     // Type check for injection prevention
     if (typeof transactionId !== "string" || typeof employeeId !== "string") {
@@ -171,9 +164,7 @@ export class InternationalPaymentService {
     };
   }
   
-  /**
-   * Approve a payment (requires elevated privileges)
-   */
+  // Approve a payment
   static async approvePayment(transactionId, approverId, notes) {
      // Prevent NoSQL injection by ensuring approverId is a string (optionally validate as ObjectId)
     if (typeof approverId !== 'string' || !/^[a-fA-F0-9]{24}$/.test(approverId)) {
@@ -230,9 +221,7 @@ export class InternationalPaymentService {
     };
   }
   
-  /**
-   * Reject a payment
-   */
+  // Reject a payment
   static async rejectPayment(transactionId, approverId, reason) {
      // Prevent NoSQL injection by ensuring approverId is a string (optionally validate as ObjectId)
     if (typeof approverId !== 'string' || !/^[a-fA-F0-9]{24}$/.test(approverId)) {
@@ -270,9 +259,7 @@ export class InternationalPaymentService {
     };
   }
   
-  /**
-   * Process an approved payment
-   */
+  // Process an approved payment
   static async processPayment(transactionId, employeeId) {
     const payment = await InternationalPayment.findOne({ transactionId });
     
@@ -309,9 +296,7 @@ export class InternationalPaymentService {
     };
   }
   
-  /**
-   * Get payment by transaction ID
-   */
+  // Get payment by transaction ID
   static async getPayment(transactionId, employeeId) {
     let castedEmployeeId;
     try {
@@ -342,9 +327,7 @@ export class InternationalPaymentService {
     };
   }
   
-  /**
-   * Get payments by employee
-   */
+  // Get payments by employee
   static async getEmployeePayments(employeeId, options = {}) {
     const { limit = 50, skip = 0, status, startDate, endDate } = options;
     
@@ -369,6 +352,7 @@ export class InternationalPaymentService {
     
     const total = await InternationalPayment.countDocuments(query);
     
+    // Return sanitized payments
     return {
       success: true,
       payments: payments.map(p => this.sanitizePaymentData(p)),
@@ -381,9 +365,7 @@ export class InternationalPaymentService {
     };
   }
   
-  /**
-   * Get pending approvals
-   */
+  // Get pending approvals for supervisors/admins
   static async getPendingApprovals(options = {}) {
     const { limit = 50, skip = 0 } = options;
     
@@ -392,7 +374,8 @@ export class InternationalPaymentService {
       status: 'pending_review', 
       approvalStatus: 'pending' 
     });
-    
+
+    // Return sanitized payments
     return {
       success: true,
       payments: payments.map(p => this.sanitizePaymentData(p)),
@@ -405,9 +388,7 @@ export class InternationalPaymentService {
     };
   }
   
-  /**
-   * Calculate fraud score
-   */
+ /// Calculate fraud score
   static async calculateFraudScore(paymentData, customer) {
     let score = 0;
     
@@ -443,9 +424,7 @@ export class InternationalPaymentService {
     return Math.min(score, 100);
   }
   
-  /**
-   * Detect fraud flags
-   */
+  /// Detect fraud flags
   static async detectFraudFlags(paymentData, customer) {
     const flags = [];
     
@@ -465,9 +444,7 @@ export class InternationalPaymentService {
     return flags;
   }
   
-  /**
-   * Assess AML risk level
-   */
+  // Assess AML risk level
   static async assessAMLRisk(paymentData, customer) {
     // Large transactions
     if (paymentData.amount > 100000) return 'high';
@@ -482,9 +459,7 @@ export class InternationalPaymentService {
     return 'low';
   }
   
-  /**
-   * Run compliance checks
-   */
+  /// Run compliance checks
   static async runComplianceChecks(payment) {
     // In real implementation, this would call AML/sanctions APIs
     console.log(' Running compliance checks for:', payment.transactionId);
@@ -506,9 +481,7 @@ export class InternationalPaymentService {
     return payment;
   }
   
-  /**
-   * Sanitize payment data before sending to client
-   */
+  // Sanitize payment data before sending to client
   static sanitizePaymentData(payment) {
     const sanitized = payment.toObject({ virtuals: true });
     
@@ -541,9 +514,7 @@ export class InternationalPaymentService {
     return sanitized;
   }
   
-  /**
-   * Mask email address for display
-   */
+  // Mask email address for display
   static maskEmail(email) {
     if (!email) return email;
     const [username, domain] = email.split('@');
@@ -551,9 +522,7 @@ export class InternationalPaymentService {
     return `${maskedUsername}@${domain}`;
   }
 
-  /**
-   * Mask account number for display
-   */
+  // Mask account number for display
   static maskAccountNumber(accountNumber) {
     if (!accountNumber) return accountNumber;
     if (accountNumber.length <= 4) return accountNumber;
@@ -561,19 +530,15 @@ export class InternationalPaymentService {
     return '*'.repeat(accountNumber.length - 4) + lastFour;
   }
 
-  /**
-   * Mask phone number for display
-   */
+  // Mask phone number for display
   static maskPhone(phone) {
     if (!phone) return phone;
     if (phone.length <= 4) return phone;
     const lastFour = phone.slice(-4);
     return '*'.repeat(phone.length - 4) + lastFour;
   }
-  
-  /**
-   * Get payment statistics
-   */
+
+  // Get payment statistics
   static async getPaymentStats(filter = {}) {
     const stats = await InternationalPayment.getPaymentStats(filter);
     return {
@@ -588,10 +553,8 @@ export class InternationalPaymentService {
       }
     };
   }
-  
-  /**
-   * Get payments by country
-   */
+
+  // Get payments by country
   static async getPaymentsByCountry() {
     const data = await InternationalPayment.getPaymentsByCountry();
     return {

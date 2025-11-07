@@ -22,16 +22,6 @@
 
 import { validationResult } from 'express-validator';
 
-/**
- * Middleware to handle validation errors from express-validator
- * 
- * If validation errors exist, responds with 400 and error details.
- * If validation passes, calls next() to continue to the route handler.
- * 
- * @param {Object} req - Express request object
- * @param {Object} res - Express response object
- * @param {Function} next - Express next middleware function
- */
 export function handleValidationErrors(req, res, next) {
   const errors = validationResult(req);
   

@@ -18,11 +18,6 @@
 import CryptoJS from 'crypto-js';
 import dotenv from 'dotenv';
 
-/**
- * Encryption utility for sensitive data using AES-256
- * Provides secure encryption/decryption for PII like ID numbers
- */
-
 // Load environment variables
 dotenv.config();
 
@@ -48,11 +43,7 @@ if (ENCRYPTION_IV.length !== 16) {
 const SECRET_KEY = CryptoJS.enc.Utf8.parse(ENCRYPTION_KEY);
 const IV = CryptoJS.enc.Utf8.parse(ENCRYPTION_IV);
 
-/**
- * Encrypts a string using AES-256-CBC
- * @param {string} text - The text to encrypt
- * @returns {string} - Base64 encoded encrypted string
- */
+
 export function encrypt(text) {
   try {
     if (!text) return text;
@@ -72,11 +63,7 @@ export function encrypt(text) {
   }
 }
 
-/**
- * Decrypts a string using AES-256-CBC
- * @param {string} encryptedText - The Base64 encoded encrypted string
- * @returns {string} - The decrypted text
- */
+// Decrypt function
 export function decrypt(encryptedText) {
   try {
     if (!encryptedText) return encryptedText;
@@ -95,11 +82,7 @@ export function decrypt(encryptedText) {
   }
 }
 
-/**
- * Encrypts an ID number specifically
- * @param {string} idNumber - The ID number to encrypt
- * @returns {string} - Encrypted ID number
- */
+// ID Number specific encryption/decryption
 export function encryptIdNumber(idNumber) {
   if (!idNumber || typeof idNumber !== 'string') {
     throw new Error('Invalid ID number provided');
@@ -122,11 +105,7 @@ export function encryptIdNumber(idNumber) {
   return encrypt(cleanedIdNumber);
 }
 
-/**
- * Decrypts an ID number specifically
- * @param {string} encryptedIdNumber - The encrypted ID number
- * @returns {string} - Decrypted ID number
- */
+// Decrypt ID Number
 export function decryptIdNumber(encryptedIdNumber) {
   if (!encryptedIdNumber) {
     return encryptedIdNumber;
@@ -142,11 +121,7 @@ export function decryptIdNumber(encryptedIdNumber) {
   return decrypted;
 }
 
-/**
- * Creates a hash for uniqueness checks (one-way)
- * @param {string} text - The text to hash
- * @returns {string} - SHA-256 hash
- */
+// Create SHA-256 hash of text
 export function createHash(text) {
   return CryptoJS.SHA256(text).toString();
 }

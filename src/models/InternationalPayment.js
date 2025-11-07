@@ -14,7 +14,6 @@
  * Usage:
  *   import InternationalPayment from './models/InternationalPayment.js';
  *
- * Last reviewed: 2025-11-04
  */
 import mongoose from 'mongoose';
 import crypto from 'crypto';

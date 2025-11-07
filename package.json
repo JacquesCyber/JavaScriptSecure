@@ -25,8 +25,7 @@
     "eslint": "^9.32.0",
     "eslint-plugin-security": "^3.0.1",
     "globals": "^16.3.0",
-    "nodemon": "^3.1.10",
-    "wrangler": "^4.45.4"
+    "nodemon": "^3.1.10"
   },
   "scripts": {
     "dev": "nodemon src/server.js",
@@ -41,9 +40,6 @@
     "test:server": "cross-env NODE_ENV=test node src/server.js",
     "cert:generate": "cd scripts && ./generate-cert.sh",
     "health": "curl -f http://localhost:3000/health || exit 1",
-    "seed:employee": "node scripts/seedEmployee.js",
-    "build:frontend": "node scripts/build.js",
-    "deploy:pages": "wrangler pages deploy dist --project-name=javascriptsecure --commit-dirty=true",
-    "deploy": "npm run build:frontend && npm run deploy:pages"
+    "seed:employee": "node scripts/seedEmployee.js"
   }
 }

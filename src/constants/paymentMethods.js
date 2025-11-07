@@ -7,8 +7,6 @@
  * Usage:
  *   import { PAYMENT_METHODS } from '../constants/paymentMethods.js';
  *
- * Last reviewed: 2025-11-04
- * Maintainer: Backend Team <backend@example.com>
  */
 
 export const PAYMENT_METHODS = Object.freeze({

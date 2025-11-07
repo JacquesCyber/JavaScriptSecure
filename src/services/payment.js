@@ -22,14 +22,8 @@ import crypto from 'crypto';
 import { encrypt, decrypt } from '../utils/encryption.js';
 
 export class PaymentService {
-  /**
-   * Process a new payment
-   * @param {Object} paymentData - Payment information
-   * @param {string} userId - User ID making the payment
-   * @param {string} ipAddress - Client IP address
-   * @param {string} userAgent - Client user agent
-   * @returns {Promise<Object>} Payment result
-   */
+  
+  // Process a new payment
   static async processPayment(paymentData, userId, ipAddress, userAgent) {
     try {
       // Ensuring userId is a string
@@ -91,11 +85,7 @@ export class PaymentService {
     }
   }
 
-  /**
-   * Validate payment data
-   * @param {Object} data - Payment data to validate
-   * @returns {Object} Validated payment data
-   */
+  // Validate payment data
   static validatePaymentData(data) {
     const errors = [];
 
@@ -134,11 +124,7 @@ export class PaymentService {
     };
   }
 
-  /**
-   * Validate specific payment method data
-   * @param {Object} method - Payment method data
-   * @returns {Object} Validated payment method data
-   */
+  // Validate specific payment method data
   static validatePaymentMethod(method) {
     const validated = {};
 
@@ -163,11 +149,7 @@ export class PaymentService {
     return validated;
   }
 
-  /**
-   * Validate card details
-   * @param {Object} cardDetails - Card information
-   * @returns {Object} Validated card details
-   */
+  // Validate card details
   static validateCardDetails(cardDetails) {
     if (!cardDetails) {
       throw new Error('Card details are required');
@@ -212,11 +194,7 @@ export class PaymentService {
     return validated;
   }
 
-  /**
-   * Validate PayPal email
-   * @param {string} email - PayPal email
-   * @returns {string} Encrypted and validated email
-   */
+  // Validate PayPal email
   static validatePayPalEmail(email) {
     if (!email) {
       throw new Error('PayPal email is required');
@@ -231,11 +209,7 @@ export class PaymentService {
     return encrypt(email.toLowerCase());
   }
 
-  /**
-   * Validate bank details
-   * @param {Object} bankDetails - Bank information
-   * @returns {Object} Validated bank details
-   */
+  // Validate bank details
   static validateBankDetails(bankDetails) {
     if (!bankDetails) {
       throw new Error('Bank details are required');
@@ -292,11 +266,7 @@ export class PaymentService {
     return validated;
   }
 
-  /**
-   * Validate SWIFT transfer details
-   * @param {Object} swiftDetails - SWIFT payment information
-   * @returns {Object} Validated SWIFT details
-   */
+  // Validate SWIFT transfer details
   static validateSwiftDetails(swiftDetails) {
     if (!swiftDetails) {
       throw new Error('SWIFT details are required');
@@ -351,13 +321,7 @@ export class PaymentService {
     return validated;
   }
 
-  /**
-   * Calculate fraud score for a payment
-   * @param {string} userId - User ID
-   * @param {Object} paymentData - Payment data
-   * @param {string} ipAddress - Client IP
-   * @returns {Promise<number>} Fraud score (0-100)
-   */
+  // Calculate fraud score for a payment
   static async calculateFraudScore(userId, paymentData, ipAddress) {
     let score = 0;
 
@@ -405,12 +369,7 @@ export class PaymentService {
     return Math.min(score, 100);
   }
 
-  /**
-   * Get fraud flags based on score and data
-   * @param {number} fraudScore - Calculated fraud score
-   * @param {Object} paymentData - Payment data
-   * @returns {Array} Array of fraud flags
-   */
+  //  Get fraud flags based on score and data
   static getFraudFlags(fraudScore, paymentData) {
     const flags = [];
 
@@ -425,11 +384,7 @@ export class PaymentService {
     return flags;
   }
 
-  /**
-   * Simulate payment processing
-   * @param {Object} payment - Payment document
-   * @returns {Promise<Object>} Processing result
-   */
+  //  Simulate payment processing
   static async simulatePaymentProcessing(payment) {
     // Simulate processing delay
     await new Promise(resolve => setTimeout(resolve, 1000));
@@ -451,13 +406,7 @@ export class PaymentService {
     };
   }
 
-  /**
-   * Get user payment history
-   * @param {string} userId - User ID
-   * @param {number} limit - Number of payments to return
-   * @param {number} skip - Number of payments to skip
-   * @returns {Promise<Array>} User payments
-   */
+  // Get user payment history
   static async getUserPayments(userId, limit = 50, skip = 0) {
     try {
       const payments = await Payment.getUserPayments(userId, limit, skip);
@@ -468,11 +417,7 @@ export class PaymentService {
     }
   }
 
-  /**
-   * Get user payment statistics
-   * @param {string} userId - User ID
-   * @returns {Promise<Object>} Payment statistics
-   */
+  // Get user payment statistics
   static async getUserPaymentStats(userId) {
     try {
       const stats = await Payment.getPaymentStats(userId);
@@ -489,11 +434,7 @@ export class PaymentService {
     }
   }
 
-  /**
-   * Sanitize payment data for client response
-   * @param {Object} payment - Payment document
-   * @returns {Object} Sanitized payment data
-   */
+  // Sanitize payment data for output
   static sanitizePaymentData(payment) {
     const sanitized = {
       transactionId: payment.transactionId,
