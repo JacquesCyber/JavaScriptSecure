@@ -107,12 +107,19 @@ const paymentValidation = [
       if (!value.swiftDetails?.beneficiaryName || value.swiftDetails.beneficiaryName.trim().length === 0) {
         throw new Error('Beneficiary name is required for SWIFT payments');
       }
-      if (!value.swiftDetails?.swiftCode || !/^[A-Z0-9]{8,11}$/.test(value.swiftDetails.swiftCode)) {
+
+      // Normalize SWIFT code: remove spaces and convert to uppercase before validation
+      const swiftCode = value.swiftDetails?.swiftCode?.replace(/\s/g, '').toUpperCase();
+      if (!swiftCode || !/^[A-Z0-9]{8,11}$/.test(swiftCode)) {
         throw new Error('Invalid SWIFT code format');
       }
-      if (!value.swiftDetails?.beneficiaryAccount || !/^[A-Z0-9]{8,34}$/.test(value.swiftDetails.beneficiaryAccount)) {
+
+      // Normalize beneficiary account: remove spaces and convert to uppercase before validation
+      const beneficiaryAccount = value.swiftDetails?.beneficiaryAccount?.replace(/\s/g, '').toUpperCase();
+      if (!beneficiaryAccount || !/^[A-Z0-9]{8,34}$/.test(beneficiaryAccount)) {
         throw new Error('Invalid beneficiary account format');
       }
+
       if (!value.swiftDetails?.bankName || value.swiftDetails.bankName.trim().length === 0) {
         throw new Error('Bank name is required for SWIFT payments');
       }
@@ -161,6 +168,10 @@ const extractUserIdFromQuery = (req, res, next) => {
 router.post('/process', authLimiter, paymentValidation, handleValidationErrors, extractUserIdFromBody, async (req, res) => {
   console.log(' Payment processing request received');
   console.log(' Request body:', JSON.stringify(req.body, null, 2));
+  console.log(' Payment method:', req.body.paymentMethod?.type);
+  if (req.body.paymentMethod?.type === 'swift') {
+    console.log(' SWIFT Details:', JSON.stringify(req.body.paymentMethod.swiftDetails, null, 2));
+  }
 
   try {
     const { amount, currency, description, paymentMethod, provider } = req.body;
@@ -243,9 +254,14 @@ router.get('/all', async (req, res) => {
     const Payment = (await import('../models/Payment.js')).default;
 
     // Fetch all payments with user details populated
+    // Sort by status (pending first) and then by creation date
     const payments = await Payment.find()
       .populate('userId', 'fullName email accountNumber username')
-      .sort({ createdAt: -1 })
+      .sort({
+        // Pending payments first, then processing, then others
+        status: 1,  // Alphabetically: pending comes before processing, completed, failed
+        createdAt: -1  // Newest first within each status
+      })
       .limit(limit)
       .skip(skip)
       .lean();

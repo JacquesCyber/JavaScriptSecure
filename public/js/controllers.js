@@ -653,8 +653,10 @@ export class PaymentController extends PageController {
       case 'swift':
         methodData.swiftDetails = {
           beneficiaryName: data.beneficiaryName,
-          beneficiaryAccount: data.beneficiaryAccount,
-          swiftCode: data.swiftCode,
+          // Normalize IBAN/account: remove spaces and convert to uppercase
+          beneficiaryAccount: data.beneficiaryAccount?.replace(/\s/g, '').toUpperCase(),
+          // Normalize SWIFT code: remove spaces and convert to uppercase
+          swiftCode: data.swiftCode?.replace(/\s/g, '').toUpperCase(),
           bankName: data.bankName,
           bankCountry: data.bankCountry,
           purpose: data.purpose || 'other',
