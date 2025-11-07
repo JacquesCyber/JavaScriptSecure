@@ -69,3 +69,5 @@ async function resetPaymentsToPending() {
 
 // Run the script
 resetPaymentsToPending();
+
+//----------------------------- END OF FILE -----------------------------

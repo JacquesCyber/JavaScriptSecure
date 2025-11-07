@@ -78,3 +78,4 @@ export const CURRENCY_SYMBOLS = Object.freeze({
   IDR: 'Rp'
 });
 
+//----------------------------- END OF FILE -----------------------------

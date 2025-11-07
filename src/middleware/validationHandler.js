@@ -16,8 +16,6 @@
  *     }
  *   );
  *
- * Last reviewed: 2025-11-04
- * Maintainer: Backend Team <backend@securebank.com>
  */
 
 import { validationResult } from 'express-validator';
@@ -39,3 +37,5 @@ export function handleValidationErrors(req, res, next) {
 
   next();
 }
+
+//----------------------------- END OF FILE -----------------------------

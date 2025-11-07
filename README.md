@@ -8,8 +8,14 @@ This application has been deployed to the web under the following URL:
 - https://javascriptsecure.onrender.com
 
 In order to access the deployed application the following credentials will have to be entered once the URL has been opened:
-- Username: **instructor**
-- Password: **AcademicPortfolioPeice!**
+- **Username**: instructor
+- **Password**: AcademicPortfolioPeice!
+
+Employee Portal Access:
+
+- **Employee ID**: EMP001234
+- **Password**: SecureBank2024!
+- **Email**: jane.smith@securebank.com
 
 ## Security Highlights
 
@@ -118,12 +124,6 @@ cp .env.example .env
 ```bash
 # HTTP Development (recommended)
 npm run dev
-# Access: http://localhost:3000
-
-# HTTPS Development (production-like testing)
-npm run cert:generate  # Generate certificates
-npm run start:https
-# Access: https://localhost:3000
 ```
 
 ### Employee Portal Access
@@ -300,12 +300,6 @@ npm audit --audit-level=high
 npm run health
 ```
 
-### Recommended Tools
-- OWASP ZAP - Web vulnerability scanner
-- Burp Suite - Security testing
-- npm audit - Dependency scanning
-- Snyk - Vulnerability scanning
-
 ---
 
 ## Environment Configuration
@@ -342,7 +336,7 @@ PORT=3000
 - Rate limiting
 - CSRF protection
 
-### Production Banking Requirements
+### Production Banking Requirements (If we deployed commercially)
 
 **1. Infrastructure Separation**
 - Separate domains for customer/employee/admin portals
@@ -378,39 +372,9 @@ PORT=3000
 
 ---
 
-## Contributing
-
-### Security Requirements
-
-**Pre-Commit Checklist**:
-```bash
-npm run lint:security          # Security linting
-npm audit --audit-level=high   # Vulnerability scan
-```
-
-**Mandatory Standards**:
-- Never commit secrets or API keys
-- Validate all user inputs server-side
-- Use parameterized queries only
-- Implement rate limiting on new endpoints
-- Hash passwords with bcrypt (12+ rounds)
-- Apply CSRF protection to state-changing operations
-- Log security events appropriately
-
-### Pull Request Guidelines
-
-1. Descriptive title following conventional commits
-2. Include security impact assessment
-3. Test both HTTP and HTTPS modes
-4. Document breaking changes
-5. Run full security test suite
-
----
-
 ## Documentation
 
 - **[SECURITY.md](SECURITY.md)** - Security policies and vulnerability reporting
-- **[ENCRYPTION_SETUP.md](ENCRYPTION_SETUP.md)** - Encryption configuration guide
 - Inline code documentation throughout codebase
 
 ---
@@ -418,3 +382,12 @@ npm audit --audit-level=high   # Vulnerability scan
 ## License
 
 MIT License - See [LICENSE](LICENSE) for details
+
+
+# Acknowledgements
+
+- Anthropic for AI assistance especially with Regex patterns and security best practices. 
+- OWASP for their comprehensive security guidelines and resources.
+- Render.com for providing free hosting for development.
+- Stripe for their test cards and payment processing documentation.
+- Bootswatch for free Bootstrap themes we used Cyborg for the UI design.

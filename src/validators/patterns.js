@@ -11,7 +11,11 @@
  *
  * Usage:
  *   import { VALIDATION_PATTERNS } from '../validators/patterns.js';
- *
+ * 
+ *REFERENCES:
+ *  - https://owasp.org/www-community/OWASP_Validation_Regex_Repository
+ *  - https://cheatsheetseries.owasp.org/cheatsheets/Input_Validation_Cheat_Sheet.html
+ *  Note: Claude Anthropic AI was used to help generate and review regex patterns for security and efficiency.
  */
 
 export const VALIDATION_PATTERNS = Object.freeze({

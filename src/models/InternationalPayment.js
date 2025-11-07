@@ -568,7 +568,7 @@ internationalPaymentSchema.statics.getPaymentStats = function(filter = {}) {
     }
   ]);
 };
-
+// Static method to get payments grouped by beneficiary country
 internationalPaymentSchema.statics.getPaymentsByCountry = function() {
   return this.aggregate([
     {

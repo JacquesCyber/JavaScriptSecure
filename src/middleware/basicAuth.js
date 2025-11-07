@@ -9,6 +9,10 @@
  * Usage:
  *   import { basicAuth } from './middleware/basicAuth.js';
  *   app.use(basicAuth); // Apply to all routes
+ * 
+ * REFERENCES:
+ *  - https://developer.mozilla.org/en-US/docs/Web/HTTP/Authentication
+ *  - https://expressjs.com/en/4x/api.html#req.headers
  */
 
 export const basicAuth = (req, res, next) => {
@@ -162,3 +166,5 @@ export const basicAuth = (req, res, next) => {
 };
 
 export default basicAuth;
+
+//----------------------------- END OF FILE -----------------------------

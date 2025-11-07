@@ -34,3 +34,5 @@ async function checkPaymentStatus() {
 }
 
 checkPaymentStatus();
+
+//----------------------------- END OF FILE -----------------------------
