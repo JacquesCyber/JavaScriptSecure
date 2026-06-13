@@ -110,6 +110,19 @@ jobs:
           echo "- Low priority alerts properly ignored"
           echo "- CI/CD passes with tiered security approach"
 
+  semgrep:
+    runs-on: ubuntu-latest
+    container:
+      image: semgrep/semgrep
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Run Semgrep SAST scan
+        run: semgrep ci
+        env:
+          SEMGREP_APP_TOKEN: ${{ secrets.SEMGREP_APP_TOKEN }}
+
   dependency-scan:
     runs-on: ubuntu-latest
     steps:
